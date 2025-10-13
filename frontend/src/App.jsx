@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard';
 import './App.css';
 
 /**
@@ -12,22 +13,67 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <Routes>
-          {/* 기본 페이지 (임시) */}
-          <Route path="/" element={
-            <div style={{ textAlign: 'center', marginTop: '100px' }}>
-              <h1>스포츠 허브</h1>
-              <div style={{ marginTop: '20px' }}>
-                <a href="/login" style={{ margin: '0 10px' }}>로그인</a>
-                <a href="/signup" style={{ margin: '0 10px' }}>회원가입</a>
-              </div>
-            </div>
-          } />
+          {/* 기본 경로 - 대시보드로 이동 */}
+          <Route path="/" element={<Dashboard />} />
           
           {/* 로그인 페이지 */}
           <Route path="/login" element={<Login />} />
           
           {/* 회원가입 페이지 */}
           <Route path="/signup" element={<Signup />} />
+
+          {/* 대시보드 (메인 페이지) */}
+          <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* 마이페이지 (추후 구현) */}
+          <Route path="/mypage" element={
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: '100px', 
+              fontSize: '24px',
+              color: '#888'
+            }}>
+              <h1>👤 마이페이지</h1>
+              <p style={{ fontSize: '18px', marginTop: '20px' }}>
+                마이페이지 기능은 추후 구현 예정입니다.
+              </p>
+              <a 
+                href="/dashboard" 
+                style={{ 
+                  color: '#646cff', 
+                  textDecoration: 'underline',
+                  fontSize: '16px'
+                }}
+              >
+                대시보드로 돌아가기
+              </a>
+            </div>
+          } />
+
+          {/* 404 페이지 */}
+          <Route path="*" element={
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: '100px',
+              fontSize: '24px',
+              color: '#888'
+            }}>
+              <h1>404 - 페이지를 찾을 수 없습니다</h1>
+              <p style={{ fontSize: '18px', marginTop: '20px', color: '#666' }}>
+                요청하신 페이지를 찾을 수 없습니다.
+              </p>
+              <a 
+                href="/" 
+                style={{ 
+                  color: '#646cff', 
+                  textDecoration: 'underline',
+                  fontSize: '16px'
+                }}
+              >
+                홈으로 돌아가기
+              </a>
+            </div>
+          } />
         </Routes>
       </div>
     </BrowserRouter>
