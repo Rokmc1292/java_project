@@ -3,15 +3,16 @@ package com.example.backend.controller;
 import com.example.backend.dto.MatchDto;
 import com.example.backend.service.SportsApiService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
- * 스포츠 경기 정보 API Controller
- * 축구, 농구, 야구, e스포츠, UFC 경기 일정 및 실시간 점수 조회
+ * 스포츠 경기 정보 API 컨트롤러
  */
 @RestController
 @RequestMapping("/api/sports")
@@ -22,23 +23,25 @@ public class SportsController {
 
     /**
      * 경기 일정 조회
-     * GET /api/sports/fixtures?date=2025-01-15&sport=football
+     * GET /api/sports/fixtures?date=2024-12-20&sport=all
      *
-     * @param date 조회 날짜 (선택, 기본값: 오늘)
-     * @param sport 종목 (선택, all/football/basketball/baseball/esports/mma, 기본값: all)
+     * @param date 조회할 날짜 (YYYY-MM-DD)
+     * @param sport 종목 (all, football, basketball, baseball, mma, esports)
      * @return 경기 목록
      */
     @GetMapping("/fixtures")
     public ResponseEntity<List<MatchDto>> getFixtures(
-            @RequestParam(required = false) String date,
-            @RequestParam(required = false, defaultValue = "all") String sport
-    ) {
-        // 날짜가 없으면 오늘 날짜 사용
-        if (date == null || date.isEmpty()) {
-            date = LocalDate.now().toString();
-        }
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date,
+            @RequestParam(defaultValue = "all") String sport) {
 
-        List<MatchDto> matches = sportsApiService.getAllFixtures(date, sport);
+        String dateStr = (date != null)
+                ? date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        System.out.println("경기 일정 요청 - 날짜: " + dateStr + ", 종목: " + sport);
+
+        List<MatchDto> matches = sportsApiService.getAllFixtures(dateStr, sport);
+
         return ResponseEntity.ok(matches);
     }
 
@@ -50,66 +53,95 @@ public class SportsController {
      */
     @GetMapping("/live")
     public ResponseEntity<List<MatchDto>> getLiveMatches() {
-        List<MatchDto> liveMatches = sportsApiService.getAllLiveMatches();
-        return ResponseEntity.ok(liveMatches);
+        System.out.println("실시간 경기 요청");
+
+        List<MatchDto> matches = sportsApiService.getAllLiveMatches();
+
+        return ResponseEntity.ok(matches);
     }
 
     /**
-     * 종목별 경기 일정 조회
-     * GET /api/sports/football?date=2025-01-15
+     * 축구 경기 일정 조회
+     * GET /api/sports/football?date=2024-12-20
      */
     @GetMapping("/football")
     public ResponseEntity<List<MatchDto>> getFootballFixtures(
-            @RequestParam(required = false) String date
-    ) {
-        if (date == null || date.isEmpty()) {
-            date = LocalDate.now().toString();
-        }
-        List<MatchDto> matches = sportsApiService.getFootballFixtures(date);
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+
+        String dateStr = (date != null)
+                ? date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        List<MatchDto> matches = sportsApiService.getFootballFixtures(dateStr);
+
         return ResponseEntity.ok(matches);
     }
 
+    /**
+     * 농구 경기 일정 조회
+     * GET /api/sports/basketball?date=2024-12-20
+     */
     @GetMapping("/basketball")
     public ResponseEntity<List<MatchDto>> getBasketballGames(
-            @RequestParam(required = false) String date
-    ) {
-        if (date == null || date.isEmpty()) {
-            date = LocalDate.now().toString();
-        }
-        List<MatchDto> matches = sportsApiService.getBasketballGames(date);
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+
+        String dateStr = (date != null)
+                ? date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        List<MatchDto> matches = sportsApiService.getBasketballGames(dateStr);
+
         return ResponseEntity.ok(matches);
     }
 
+    /**
+     * 야구 경기 일정 조회
+     * GET /api/sports/baseball?date=2024-12-20
+     */
     @GetMapping("/baseball")
     public ResponseEntity<List<MatchDto>> getBaseballGames(
-            @RequestParam(required = false) String date
-    ) {
-        if (date == null || date.isEmpty()) {
-            date = LocalDate.now().toString();
-        }
-        List<MatchDto> matches = sportsApiService.getBaseballGames(date);
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+
+        String dateStr = (date != null)
+                ? date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        List<MatchDto> matches = sportsApiService.getBaseballGames(dateStr);
+
         return ResponseEntity.ok(matches);
     }
 
+    /**
+     * MMA 경기 일정 조회 (UFC)
+     * GET /api/sports/mma?date=2024-12-20
+     */
+    @GetMapping("/mma")
+    public ResponseEntity<List<MatchDto>> getMmaFights(
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
+
+        String dateStr = (date != null)
+                ? date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        List<MatchDto> matches = sportsApiService.getMmaFights(dateStr);
+
+        return ResponseEntity.ok(matches);
+    }
+
+    /**
+     * e스포츠 경기 일정 조회
+     * GET /api/sports/esports?date=2024-12-20
+     */
     @GetMapping("/esports")
     public ResponseEntity<List<MatchDto>> getEsportsMatches(
-            @RequestParam(required = false) String date
-    ) {
-        if (date == null || date.isEmpty()) {
-            date = LocalDate.now().toString();
-        }
-        List<MatchDto> matches = sportsApiService.getEsportsMatches(date);
-        return ResponseEntity.ok(matches);
-    }
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate date) {
 
-    @GetMapping("/ufc")
-    public ResponseEntity<List<MatchDto>> getUfcEvents(
-            @RequestParam(required = false) String date
-    ) {
-        if (date == null || date.isEmpty()) {
-            date = LocalDate.now().toString();
-        }
-        List<MatchDto> matches = sportsApiService.getUfcEventsByDate(date);
+        String dateStr = (date != null)
+                ? date.format(DateTimeFormatter.ISO_LOCAL_DATE)
+                : LocalDate.now().format(DateTimeFormatter.ISO_LOCAL_DATE);
+
+        List<MatchDto> matches = sportsApiService.getEsportsMatches(dateStr);
+
         return ResponseEntity.ok(matches);
     }
 }
