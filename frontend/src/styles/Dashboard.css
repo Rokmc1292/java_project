@@ -1,0 +1,193 @@
+/* 대시보드 스타일 */
+
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* 헤더 */
+.dashboard-header {
+  text-align: center;
+  padding: 60px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 16px;
+  color: white;
+  margin-bottom: 40px;
+}
+
+.dashboard-header h1 {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.dashboard-header p {
+  font-size: 1.3rem;
+  opacity: 0.9;
+}
+
+/* 메뉴 그리드 */
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+  margin-bottom: 50px;
+}
+
+/* 메뉴 카드 */
+.menu-card {
+  background: white;
+  border-radius: 12px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.menu-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.menu-card.disabled:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* 카드 아이콘 */
+.card-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  display: inline-block;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.menu-card h2 {
+  font-size: 1.5rem;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.menu-card p {
+  font-size: 1rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* 추후 구현 배지 */
+.coming-soon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: #ff9800;
+  color: white;
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* 종목 섹션 */
+.sports-section {
+  text-align: center;
+  padding: 40px 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 40px;
+}
+
+.sports-section h2 {
+  font-size: 2rem;
+  margin-bottom: 30px;
+  color: #333;
+}
+
+/* 종목 그리드 */
+.sports-grid {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.sport-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  min-width: 120px;
+  transition: transform 0.3s;
+}
+
+.sport-item:hover {
+  transform: scale(1.1);
+}
+
+.sport-emoji {
+  font-size: 3rem;
+}
+
+.sport-item span:last-child {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+}
+
+/* 푸터 */
+.dashboard-footer {
+  text-align: center;
+  padding: 30px;
+  color: #999;
+  font-size: 0.9rem;
+}
+
+/* 반응형 */
+@media (max-width: 768px) {
+  .dashboard-header h1 {
+    font-size: 2rem;
+  }
+
+  .dashboard-header p {
+    font-size: 1rem;
+  }
+
+  .menu-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sports-grid {
+    gap: 15px;
+  }
+
+  .sport-item {
+    min-width: 100px;
+    padding: 15px;
+  }
+
+  .sport-emoji {
+    font-size: 2.5rem;
+  }
+}

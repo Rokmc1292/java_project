@@ -1,7 +1,9 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import Fixtures from './pages/Fixtures';
 import Dashboard from './pages/Dashboard';
+import Navbar from './components/Navbar';
 import './App.css';
 
 /**
@@ -24,6 +26,109 @@ function App() {
 
           {/* 대시보드 (메인 페이지) */}
           <Route path="/dashboard" element={<Dashboard />} />
+
+          {/* ✅ 경기 일정 페이지 (새로 추가) */}
+          <Route path="/fixtures" element={<Fixtures />} />
+
+          {/* 커뮤니티 (추후 구현) */}
+          <Route path="/community" element={
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: '100px', 
+              fontSize: '24px',
+              color: '#888'
+            }}>
+              <h1>💬 커뮤니티</h1>
+              <p style={{ fontSize: '18px', marginTop: '20px' }}>
+                커뮤니티 기능은 추후 구현 예정입니다.
+              </p>
+              <a 
+                href="/dashboard" 
+                style={{ 
+                  color: '#646cff', 
+                  textDecoration: 'underline',
+                  fontSize: '16px'
+                }}
+              >
+                대시보드로 돌아가기
+              </a>
+            </div>
+          } />
+
+          {/* 승부예측 (추후 구현) */}
+          <Route path="/predictions" element={
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: '100px', 
+              fontSize: '24px',
+              color: '#888'
+            }}>
+              <h1>🎯 승부예측</h1>
+              <p style={{ fontSize: '18px', marginTop: '20px' }}>
+                승부예측 기능은 추후 구현 예정입니다.
+              </p>
+              <a 
+                href="/dashboard" 
+                style={{ 
+                  color: '#646cff', 
+                  textDecoration: 'underline',
+                  fontSize: '16px'
+                }}
+              >
+                대시보드로 돌아가기
+              </a>
+            </div>
+          } />
+
+          {/* 실시간 (추후 구현) */}
+          <Route path="/live" element={
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: '100px', 
+              fontSize: '24px',
+              color: '#888'
+            }}>
+              <h1>🔴 실시간</h1>
+              <p style={{ fontSize: '18px', marginTop: '20px' }}>
+                실시간 기능은 추후 구현 예정입니다.
+              </p>
+              <a 
+                href="/dashboard" 
+                style={{ 
+                  color: '#646cff', 
+                  textDecoration: 'underline',
+                  fontSize: '16px'
+                }}
+              >
+                대시보드로 돌아가기
+              </a>
+            </div>
+          } />
+
+          {/* 뉴스 (추후 구현) */}
+          <Route path="/news" element={
+            <div style={{ 
+              textAlign: 'center', 
+              marginTop: '100px', 
+              fontSize: '24px',
+              color: '#888'
+            }}>
+              <h1>📰 뉴스</h1>
+              <p style={{ fontSize: '18px', marginTop: '20px' }}>
+                뉴스 기능은 추후 구현 예정입니다.
+              </p>
+              <a 
+                href="/dashboard" 
+                style={{ 
+                  color: '#646cff', 
+                  textDecoration: 'underline',
+                  fontSize: '16px'
+                }}
+              >
+                대시보드로 돌아가기
+              </a>
+            </div>
+          } />
 
           {/* 마이페이지 (추후 구현) */}
           <Route path="/mypage" element={

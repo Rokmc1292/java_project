@@ -1,98 +1,99 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
-import TabMenu from '../components/TabMenu';
-import HomeTab from '../components/tabs/HomeTab';
-import CommunityTab from '../components/tabs/CommunityTab';
-import LiveTab from '../components/tabs/LiveTab';
-import PredictionTab from '../components/tabs/PredictionTab';
-import ScheduleTab from '../components/tabs/ScheduleTab';
-import NewsTab from '../components/tabs/NewsTab';
+import { Link } from 'react-router-dom';
+import '../styles/Dashboard.css';
 
 /**
- * 메인 대시보드 페이지
- * 로그인 후 보이는 메인 화면
- * 탭 네비게이션으로 각 기능 페이지 전환
+ * 대시보드 (홈) 페이지
+ * 메인 화면으로 주요 기능 소개 및 빠른 링크 제공
  */
 function Dashboard() {
-  const navigate = useNavigate();
-  const [user, setUser] = useState(null);
-  const [activeTab, setActiveTab] = useState('home');
-
-  // 컴포넌트 마운트 시 로그인 확인
-  useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      // 로그인되지 않은 경우 로그인 페이지로 리다이렉트
-      alert('로그인이 필요합니다.');
-      navigate('/login');
-      return;
-    }
-    setUser(JSON.parse(storedUser));
-  }, [navigate]);
-
-  // 사용자 정보 로딩 중
-  if (!user) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '100vh',
-        fontSize: '20px'
-      }}>
-        로딩중...
-      </div>
-    );
-  }
-
-  // 활성화된 탭에 따라 컴포넌트 렌더링
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'home':
-        return <HomeTab />;
-      case 'community':
-        return <CommunityTab />;
-      case 'live':
-        return <LiveTab />;
-      case 'prediction':
-        return <PredictionTab />;
-      case 'schedule':
-        return <ScheduleTab />;
-      case 'news':
-        return <NewsTab />;
-      default:
-        return <HomeTab />;
-    }
-  };
-
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#1a1a1a' }}>
-      {/* 상단 네비게이션 바 */}
-      <Navbar user={user} />
-      
-      {/* 탭 메뉴 */}
-      <TabMenu activeTab={activeTab} setActiveTab={setActiveTab} />
-      
-      {/* 메인 콘텐츠 영역 */}
-      <main style={{ 
-        maxWidth: '1400px', 
-        margin: '0 auto',
-        minHeight: 'calc(100vh - 130px)'
-      }}>
-        {renderTabContent()}
-      </main>
+    <div className="dashboard-container">
+      {/* 헤더 */}
+      <header className="dashboard-header">
+        <h1>⚽ Sports Hub</h1>
+        <p>모든 스포츠 팬을 위한 종합 플랫폼</p>
+      </header>
+
+      {/* 메뉴 카드 */}
+      <div className="menu-grid">
+        {/* 경기 일정 */}
+        <Link to="/fixtures" className="menu-card">
+          <div className="card-icon">📅</div>
+          <h2>경기 일정</h2>
+          <p>오늘의 경기와 예정된 경기를 확인하세요</p>
+        </Link>
+
+        {/* 커뮤니티 */}
+        <Link to="/community" className="menu-card disabled">
+          <div className="card-icon">💬</div>
+          <h2>커뮤니티</h2>
+          <p>팬들과 함께 이야기를 나눠보세요</p>
+          <span className="coming-soon">추후 구현</span>
+        </Link>
+
+        {/* 승부예측 */}
+        <Link to="/predictions" className="menu-card disabled">
+          <div className="card-icon">🎯</div>
+          <h2>승부예측</h2>
+          <p>경기 결과를 예측하고 포인트를 받으세요</p>
+          <span className="coming-soon">추후 구현</span>
+        </Link>
+
+        {/* 실시간 */}
+        <Link to="/live" className="menu-card disabled">
+          <div className="card-icon">🔴</div>
+          <h2>실시간</h2>
+          <p>진행 중인 경기를 실시간으로 시청하세요</p>
+          <span className="coming-soon">추후 구현</span>
+        </Link>
+
+        {/* 뉴스 */}
+        <Link to="/news" className="menu-card disabled">
+          <div className="card-icon">📰</div>
+          <h2>뉴스</h2>
+          <p>최신 스포츠 뉴스를 확인하세요</p>
+          <span className="coming-soon">추후 구현</span>
+        </Link>
+
+        {/* 마이페이지 */}
+        <Link to="/mypage" className="menu-card disabled">
+          <div className="card-icon">👤</div>
+          <h2>마이페이지</h2>
+          <p>내 정보와 활동 내역을 확인하세요</p>
+          <span className="coming-soon">추후 구현</span>
+        </Link>
+      </div>
+
+      {/* 종목 섹션 */}
+      <div className="sports-section">
+        <h2>지원하는 종목</h2>
+        <div className="sports-grid">
+          <div className="sport-item">
+            <span className="sport-emoji">⚽</span>
+            <span>축구</span>
+          </div>
+          <div className="sport-item">
+            <span className="sport-emoji">🏀</span>
+            <span>농구</span>
+          </div>
+          <div className="sport-item">
+            <span className="sport-emoji">⚾</span>
+            <span>야구</span>
+          </div>
+          <div className="sport-item">
+            <span className="sport-emoji">🎮</span>
+            <span>롤</span>
+          </div>
+          <div className="sport-item">
+            <span className="sport-emoji">🥊</span>
+            <span>UFC</span>
+          </div>
+        </div>
+      </div>
 
       {/* 푸터 */}
-      <footer style={{
-        backgroundColor: '#0a0a0a',
-        padding: '20px',
-        textAlign: 'center',
-        color: '#666',
-        borderTop: '1px solid #333',
-        marginTop: '40px'
-      }}>
-        <p>© 2025 Sports Community Platform. All rights reserved.</p>
+      <footer className="dashboard-footer">
+        <p>© 2025 Sports Hub. All rights reserved.</p>
       </footer>
     </div>
   );

@@ -1,101 +1,67 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import '../styles/Navbar.css';
 
 /**
- * 상단 네비게이션 바 컴포넌트
- * 로고, 메뉴, 로그인 사용자 정보 표시
+ * 네비게이션 바 컴포넌트
+ * 모든 페이지 상단에 표시되는 메뉴
  */
-function Navbar({ user }) {
-  const navigate = useNavigate();
+function Navbar() {
+  const location = useLocation();
 
-  // 로그아웃 처리
-  const handleLogout = () => {
-    if (window.confirm('로그아웃 하시겠습니까?')) {
-      localStorage.removeItem('user');
-      navigate('/login');
-    }
+  // 현재 경로가 활성화된 메뉴인지 확인
+  const isActive = (path) => {
+    return location.pathname === path ? 'active' : '';
   };
 
   return (
-    <nav style={{
-      backgroundColor: '#1a1a1a',
-      padding: '15px 20px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      borderBottom: '2px solid #646cff'
-    }}>
-      {/* 로고 */}
-      <div 
-        style={{ 
-          fontSize: '24px', 
-          fontWeight: 'bold', 
-          color: '#646cff',
-          cursor: 'pointer'
-        }}
-        onClick={() => navigate('/')}
-      >
-        ⚽ Sports Community
-      </div>
+    <nav className="navbar">
+      <div className="navbar-container">
+        {/* 로고 */}
+        <Link to="/" className="navbar-logo">
+          ⚽ Sports Hub
+        </Link>
 
-      {/* 사용자 정보 */}
-      {user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            {/* 프로필 이미지 */}
-            <img 
-              src={user.profileImage || '/images/default-profile.png'} 
-              alt="profile"
-              style={{
-                width: '35px',
-                height: '35px',
-                borderRadius: '50%',
-                border: '2px solid #646cff'
-              }}
-            />
-            {/* 닉네임 및 티어 */}
-            <div>
-              <div style={{ fontSize: '14px', fontWeight: 'bold' }}>
-                {user.nickname}
-              </div>
-              <div style={{ fontSize: '12px', color: '#888' }}>
-                {user.tier} ({user.tierScore}점)
-              </div>
-            </div>
-          </div>
-          
-          {/* 마이페이지 버튼 */}
-          <button
-            onClick={() => navigate('/mypage')}
-            style={{
-              padding: '8px 15px',
-              backgroundColor: '#646cff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            마이페이지
-          </button>
+        {/* 메뉴 */}
+        <ul className="navbar-menu">
+          <li className="navbar-item">
+            <Link to="/dashboard" className={`navbar-link ${isActive('/dashboard')}`}>
+              🏠 홈
+            </Link>
+          </li>
+          <li className="navbar-item">
+            <Link to="/fixtures" className={`navbar-link ${isActive('/fixtures')}`}>
+              📅 경기일정
+            </Link>
+          </li>
+          <li className="navbar-item">
+            <Link to="/community" className={`navbar-link ${isActive('/community')}`}>
+              💬 커뮤니티
+            </Link>
+          </li>
+          <li className="navbar-item">
+            <Link to="/predictions" className={`navbar-link ${isActive('/predictions')}`}>
+              🎯 승부예측
+            </Link>
+          </li>
+          <li className="navbar-item">
+            <Link to="/live" className={`navbar-link ${isActive('/live')}`}>
+              🔴 실시간
+            </Link>
+          </li>
+          <li className="navbar-item">
+            <Link to="/news" className={`navbar-link ${isActive('/news')}`}>
+              📰 뉴스
+            </Link>
+          </li>
+        </ul>
 
-          {/* 로그아웃 버튼 */}
-          <button
-            onClick={handleLogout}
-            style={{
-              padding: '8px 15px',
-              backgroundColor: '#333',
-              color: 'white',
-              border: '1px solid #666',
-              borderRadius: '4px',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            로그아웃
-          </button>
+        {/* 사용자 메뉴 */}
+        <div className="navbar-user">
+          <Link to="/mypage" className="navbar-link">
+            👤 마이페이지
+          </Link>
         </div>
-      )}
+      </div>
     </nav>
   );
 }
