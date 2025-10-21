@@ -50,12 +50,12 @@ public class MatchService {
         if ("ALL".equalsIgnoreCase(sportType)) {
             List<Match> matches = matchRepository.findByMatchDate(date);
             allMatches.addAll(matches.stream()
-                    .map(this::convertMatchToDto)
+                    .map(this::convertToDto)
                     .collect(Collectors.toList()));
         } else if (!"MMA".equalsIgnoreCase(sportType)) {
             List<Match> matches = matchRepository.findByMatchDateAndSport(date, sportType);
             allMatches.addAll(matches.stream()
-                    .map(this::convertMatchToDto)
+                    .map(this::convertToDto)
                     .collect(Collectors.toList()));
         }
 
@@ -85,7 +85,7 @@ public class MatchService {
             allMatches.addAll(matches.stream()
                     .filter(m -> "ALL".equalsIgnoreCase(sportType) ||
                             m.getLeague().getSport().getSportName().equalsIgnoreCase(sportType))
-                    .map(this::convertMatchToDto)
+                    .map(this::convertToDto)
                     .collect(Collectors.toList()));
         }
 
@@ -95,7 +95,7 @@ public class MatchService {
     /**
      * Match 엔티티를 MatchDto로 변환
      */
-    private MatchDto convertMatchToDto(Match match) {
+    public MatchDto convertToDto(Match match) {
         return MatchDto.builder()
                 .matchId(match.getMatchId())
                 .sportType(match.getLeague().getSport().getSportName())

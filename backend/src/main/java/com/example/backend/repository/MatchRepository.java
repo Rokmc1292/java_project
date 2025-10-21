@@ -55,4 +55,16 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             "ORDER BY m.matchDate ASC")
     List<Match> findByDateRange(@Param("startDate") LocalDateTime startDate,
                                 @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * 상태별 경기 조회 (실시간 경기)
+     */
+    @Query("SELECT m FROM Match m " +
+            "JOIN FETCH m.league l " +
+            "JOIN FETCH l.sport s " +
+            "JOIN FETCH m.homeTeam ht " +
+            "JOIN FETCH m.awayTeam at " +
+            "WHERE m.status = :status " +
+            "ORDER BY m.matchDate DESC")
+    List<Match> findByStatusOrderByMatchDateDesc(@Param("status") String status);
 }
