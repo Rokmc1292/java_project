@@ -6,6 +6,7 @@ import com.example.backend.entity.MmaFight;
 import com.example.backend.repository.MatchRepository;
 import com.example.backend.repository.MmaFightRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,6 +28,9 @@ public class MatchService {
 
     private final MatchRepository matchRepository;
     private final MmaFightRepository mmaFightRepository;
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     /**
      * 특정 날짜의 모든 경기 조회
@@ -99,19 +103,19 @@ public class MatchService {
                         .leagueId(match.getLeague().getLeagueId())
                         .name(match.getLeague().getLeagueName())
                         .country(match.getLeague().getCountry())
-                        .logo(match.getLeague().getLeagueLogo())
+                        .logo(buildImageUrl(match.getLeague().getLeagueLogo()))
                         .build())
                 .teams(MatchDto.TeamInfo.builder()
                         .home(MatchDto.Team.builder()
                                 .id(match.getHomeTeam().getTeamId())
                                 .name(match.getHomeTeam().getTeamName())
-                                .logo(match.getHomeTeam().getTeamLogo())
+                                .logo(buildImageUrl(match.getHomeTeam().getTeamLogo()))
                                 .country(match.getHomeTeam().getCountry())
                                 .build())
                         .away(MatchDto.Team.builder()
                                 .id(match.getAwayTeam().getTeamId())
                                 .name(match.getAwayTeam().getTeamName())
-                                .logo(match.getAwayTeam().getTeamLogo())
+                                .logo(buildImageUrl(match.getAwayTeam().getTeamLogo()))
                                 .country(match.getAwayTeam().getCountry())
                                 .build())
                         .build())
@@ -138,13 +142,13 @@ public class MatchService {
                         .leagueId(fight.getLeague().getLeagueId())
                         .name(fight.getLeague().getLeagueName())
                         .country(fight.getLeague().getCountry())
-                        .logo(fight.getLeague().getLeagueLogo())
+                        .logo(buildImageUrl(fight.getLeague().getLeagueLogo()))
                         .build())
                 .teams(MatchDto.TeamInfo.builder()
                         .home(MatchDto.Team.builder()
                                 .id(fight.getFighter1().getFighterId())
                                 .name(fight.getFighter1().getFighterName())
-                                .logo(fight.getFighter1().getFighterImage())
+                                .logo(buildImageUrl(fight.getFighter1().getFighterImage()))
                                 .country(fight.getFighter1().getCountry())
                                 .weightClass(fight.getFighter1().getWeightClass())
                                 .record(fight.getFighter1().getRecord())
@@ -152,7 +156,7 @@ public class MatchService {
                         .away(MatchDto.Team.builder()
                                 .id(fight.getFighter2().getFighterId())
                                 .name(fight.getFighter2().getFighterName())
-                                .logo(fight.getFighter2().getFighterImage())
+                                .logo(buildImageUrl(fight.getFighter2().getFighterImage()))
                                 .country(fight.getFighter2().getCountry())
                                 .weightClass(fight.getFighter2().getWeightClass())
                                 .record(fight.getFighter2().getRecord())
@@ -169,5 +173,23 @@ public class MatchService {
                         .build())
                 .score(null)  // UFC는 점수가 없음
                 .build();
+    }
+
+    /**
+     * 이미지 URL을 절대 경로로 변환
+     * 상대 경로인 경우 baseUrl을 앞에 붙임
+     */
+    private String buildImageUrl(String imagePath) {
+        if (imagePath == null || imagePath.isEmpty()) {
+            return null;
+        }
+
+        // 이미 절대 URL인 경우 (http:// 또는 https://로 시작)
+        if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+            return imagePath;
+        }
+
+        // 상대 경로인 경우 baseUrl 추가
+        return baseUrl + imagePath;
     }
 }
