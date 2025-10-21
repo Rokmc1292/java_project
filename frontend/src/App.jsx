@@ -3,6 +3,11 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Fixtures from './pages/Fixtures';
 import Dashboard from './pages/Dashboard';
+import Community from './pages/Community';
+import Predictions from './pages/Predictions';
+import Live from './pages/Live';
+import News from './pages/News';
+import MyPage from './pages/MyPage';
 import Navbar from './components/Navbar';
 import './App.css';
 
@@ -17,143 +22,33 @@ function App() {
         <Routes>
           {/* 기본 경로 - 대시보드로 이동 */}
           <Route path="/" element={<Dashboard />} />
-          
+
           {/* 로그인 페이지 */}
           <Route path="/login" element={<Login />} />
-          
+
           {/* 회원가입 페이지 */}
           <Route path="/signup" element={<Signup />} />
 
           {/* 대시보드 (메인 페이지) */}
           <Route path="/dashboard" element={<Dashboard />} />
 
-          {/* ✅ 경기 일정 페이지 (새로 추가) */}
+          {/* 경기 일정 페이지 */}
           <Route path="/fixtures" element={<Fixtures />} />
 
-          {/* 커뮤니티 (추후 구현) */}
-          <Route path="/community" element={
-            <div style={{ 
-              textAlign: 'center', 
-              marginTop: '100px', 
-              fontSize: '24px',
-              color: '#888'
-            }}>
-              <h1>💬 커뮤니티</h1>
-              <p style={{ fontSize: '18px', marginTop: '20px' }}>
-                커뮤니티 기능은 추후 구현 예정입니다.
-              </p>
-              <a 
-                href="/dashboard" 
-                style={{ 
-                  color: '#646cff', 
-                  textDecoration: 'underline',
-                  fontSize: '16px'
-                }}
-              >
-                대시보드로 돌아가기
-              </a>
-            </div>
-          } />
+          {/* 커뮤니티 */}
+          <Route path="/community" element={<Community />} />
 
-          {/* 승부예측 (추후 구현) */}
-          <Route path="/predictions" element={
-            <div style={{ 
-              textAlign: 'center', 
-              marginTop: '100px', 
-              fontSize: '24px',
-              color: '#888'
-            }}>
-              <h1>🎯 승부예측</h1>
-              <p style={{ fontSize: '18px', marginTop: '20px' }}>
-                승부예측 기능은 추후 구현 예정입니다.
-              </p>
-              <a 
-                href="/dashboard" 
-                style={{ 
-                  color: '#646cff', 
-                  textDecoration: 'underline',
-                  fontSize: '16px'
-                }}
-              >
-                대시보드로 돌아가기
-              </a>
-            </div>
-          } />
+          {/* 승부예측 */}
+          <Route path="/predictions" element={<Predictions />} />
 
-          {/* 실시간 (추후 구현) */}
-          <Route path="/live" element={
-            <div style={{ 
-              textAlign: 'center', 
-              marginTop: '100px', 
-              fontSize: '24px',
-              color: '#888'
-            }}>
-              <h1>🔴 실시간</h1>
-              <p style={{ fontSize: '18px', marginTop: '20px' }}>
-                실시간 기능은 추후 구현 예정입니다.
-              </p>
-              <a 
-                href="/dashboard" 
-                style={{ 
-                  color: '#646cff', 
-                  textDecoration: 'underline',
-                  fontSize: '16px'
-                }}
-              >
-                대시보드로 돌아가기
-              </a>
-            </div>
-          } />
+          {/* 실시간 */}
+          <Route path="/live" element={<Live />} />
 
-          {/* 뉴스 (추후 구현) */}
-          <Route path="/news" element={
-            <div style={{ 
-              textAlign: 'center', 
-              marginTop: '100px', 
-              fontSize: '24px',
-              color: '#888'
-            }}>
-              <h1>📰 뉴스</h1>
-              <p style={{ fontSize: '18px', marginTop: '20px' }}>
-                뉴스 기능은 추후 구현 예정입니다.
-              </p>
-              <a 
-                href="/dashboard" 
-                style={{ 
-                  color: '#646cff', 
-                  textDecoration: 'underline',
-                  fontSize: '16px'
-                }}
-              >
-                대시보드로 돌아가기
-              </a>
-            </div>
-          } />
+          {/* 뉴스 */}
+          <Route path="/news" element={<News />} />
 
-          {/* 마이페이지 (추후 구현) */}
-          <Route path="/mypage" element={
-            <div style={{ 
-              textAlign: 'center', 
-              marginTop: '100px', 
-              fontSize: '24px',
-              color: '#888'
-            }}>
-              <h1>👤 마이페이지</h1>
-              <p style={{ fontSize: '18px', marginTop: '20px' }}>
-                마이페이지 기능은 추후 구현 예정입니다.
-              </p>
-              <a 
-                href="/dashboard" 
-                style={{ 
-                  color: '#646cff', 
-                  textDecoration: 'underline',
-                  fontSize: '16px'
-                }}
-              >
-                대시보드로 돌아가기
-              </a>
-            </div>
-          } />
+          {/* 마이페이지 */}
+          <Route path="/mypage" element={<MyPage />} />
 
           {/* 404 페이지 */}
           <Route path="*" element={
