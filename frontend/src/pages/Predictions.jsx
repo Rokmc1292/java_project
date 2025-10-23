@@ -71,9 +71,10 @@ function Predictions() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          matchId: matchId,
-          userId: user.userId,
-          predictedResult: predictionType // 'HOME_WIN', 'DRAW', 'AWAY_WIN'
+          matchId: matchId.toString(),
+          username: user.username,
+          predictedResult: predictionType, // 'HOME', 'DRAW', 'AWAY'
+          comment: ''
         })
       });
 
@@ -156,7 +157,7 @@ function Predictions() {
                 }}
               >
                 <div style={{ fontSize: '14px', color: '#888', marginBottom: '10px' }}>
-                  {match.league?.name} | {new Date(match.detail?.matchDate).toLocaleString()}
+                  {match.league?.name} | {match.detail?.matchDate}
                 </div>
 
                 <div style={{
@@ -194,7 +195,7 @@ function Predictions() {
                       fontWeight: 'bold',
                       flex: 1
                     }}
-                    onClick={() => handlePrediction(match.matchId, 'HOME_WIN')}
+                    onClick={() => handlePrediction(match.matchId, 'HOME')}
                   >
                     홈 승리
                   </button>
@@ -224,7 +225,7 @@ function Predictions() {
                       fontWeight: 'bold',
                       flex: 1
                     }}
-                    onClick={() => handlePrediction(match.matchId, 'AWAY_WIN')}
+                    onClick={() => handlePrediction(match.matchId, 'AWAY')}
                   >
                     원정 승리
                   </button>

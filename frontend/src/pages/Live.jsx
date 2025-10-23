@@ -77,14 +77,14 @@ function Live() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/live/chatroom/${currentChatroomId}/message`,
+        `http://localhost:8080/api/live/chatroom/${currentChatroomId}/messages`,
         {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            userId: user.userId,
+            username: user.username,
             message: newMessage
           })
         }
@@ -99,7 +99,8 @@ function Live() {
         setMessages(messagesData || []);
         setNewMessage(''); // 입력창 초기화
       } else {
-        alert('메시지 전송에 실패했습니다.');
+        const error = await response.json();
+        alert(error.message || '메시지 전송에 실패했습니다.');
       }
     } catch (error) {
       console.error('메시지 전송 오류:', error);

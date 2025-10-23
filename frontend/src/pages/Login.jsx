@@ -52,12 +52,12 @@ function Login() {
     try {
       // 로그인 API 호출
       const result = await login(formData);
-      
+
       // 로그인 성공 시 사용자 정보를 localStorage에 저장
       localStorage.setItem('user', JSON.stringify(result));
-      
+
       alert(`${result.nickname}님, 환영합니다!`);
-      navigate('/dashboard'); // 대시보드로 이동 (수정됨)
+      navigate('/'); // 홈(경기 일정)으로 이동
     } catch (error) {
       setError(error.message || '로그인에 실패했습니다.');
     } finally {

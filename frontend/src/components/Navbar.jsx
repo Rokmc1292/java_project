@@ -49,12 +49,7 @@ function Navbar() {
         {/* 메뉴 */}
         <ul className="navbar-menu">
           <li className="navbar-item">
-            <Link to="/dashboard" className={`navbar-link ${isActive('/dashboard')}`}>
-              홈
-            </Link>
-          </li>
-          <li className="navbar-item">
-            <Link to="/fixtures" className={`navbar-link ${isActive('/fixtures')}`}>
+            <Link to="/fixtures" className={`navbar-link ${isActive('/fixtures') || isActive('/')}`}>
               경기일정
             </Link>
           </li>
