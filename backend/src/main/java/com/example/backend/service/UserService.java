@@ -111,6 +111,16 @@ public class UserService {
     }
 
     /**
+     * 사용자 정보 조회
+     */
+    @Transactional(readOnly = true)
+    public UserResponse getUserInfo(Long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        return convertToUserResponse(user);
+    }
+
+    /**
      * User 엔티티를 UserResponse DTO로 변환
      * 비밀번호 등 민감한 정보는 제외
      */

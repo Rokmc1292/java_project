@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -9,6 +10,7 @@ import Live from './pages/Live';
 import News from './pages/News';
 import MyPage from './pages/MyPage';
 import Navbar from './components/Navbar';
+import SplashScreen from './components/SplashScreen';
 import './App.css';
 
 /**
@@ -16,6 +18,25 @@ import './App.css';
  * React Router를 사용하여 페이지 라우팅 설정
  */
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
+
+  // 처음 방문 시에만 스플래시 화면 표시
+  useEffect(() => {
+    const hasVisited = sessionStorage.getItem('hasVisited');
+    if (hasVisited) {
+      setShowSplash(false);
+    }
+  }, []);
+
+  const handleSplashFinish = () => {
+    sessionStorage.setItem('hasVisited', 'true');
+    setShowSplash(false);
+  };
+
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
   return (
     <BrowserRouter>
       <div className="App">

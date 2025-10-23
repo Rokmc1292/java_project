@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import Navbar from '../components/Navbar';
 import '../styles/Fixtures.css';
 
 /**
@@ -87,12 +88,18 @@ function Fixtures() {
 
   // 날짜 포맷팅 (한국 시간)
   const formatDate = (dateString) => {
+    // ISO 8601 형식의 날짜 문자열을 파싱
+    // 백엔드에서 Asia/Seoul 타임존으로 전송됨
     const date = new Date(dateString);
+
+    // 한국 시간대로 명시적으로 포맷팅
     return date.toLocaleString('ko-KR', {
       month: 'long',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
+      hour12: false,
+      timeZone: 'Asia/Seoul'
     });
   };
 
@@ -104,12 +111,14 @@ function Fixtures() {
   };
 
   return (
-    <div className="fixtures-container">
-      {/* 헤더 */}
-      <div className="fixtures-header">
-        <h1>경기 일정</h1>
-        <p>오늘의 스포츠 경기를 확인하세요</p>
-      </div>
+    <div>
+      <Navbar />
+      <div className="fixtures-container">
+        {/* 헤더 */}
+        <div className="fixtures-header">
+          <h1>경기 일정</h1>
+          <p>오늘의 스포츠 경기를 확인하세요</p>
+        </div>
 
       {/* 필터 섹션 */}
       <div className="fixtures-filters">
@@ -269,6 +278,7 @@ function Fixtures() {
             ))}
           </div>
         )}
+      </div>
       </div>
     </div>
   );
