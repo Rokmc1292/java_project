@@ -86,21 +86,11 @@ function Fixtures() {
     }
   };
 
-  // 날짜 포맷팅 (한국 시간)
+  // 날짜 포맷팅 - 백엔드에서 제공한 시간 그대로 표시
   const formatDate = (dateString) => {
-    // ISO 8601 형식의 날짜 문자열을 파싱
-    // 백엔드에서 Asia/Seoul 타임존으로 전송됨
-    const date = new Date(dateString);
-
-    // 한국 시간대로 명시적으로 포맷팅
-    return date.toLocaleString('ko-KR', {
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-      timeZone: 'Asia/Seoul'
-    });
+    // 백엔드에서 이미 한국 시간으로 변환하여 전송하므로
+    // 프론트엔드에서는 변환 없이 그대로 표시
+    return dateString;
   };
 
   // 날짜 변경 (이전/다음 날)

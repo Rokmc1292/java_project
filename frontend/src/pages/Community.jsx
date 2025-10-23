@@ -9,8 +9,21 @@ function Community() {
   const [posts, setPosts] = useState([]);
   const [category, setCategory] = useState('전체글');
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
   const categories = ['전체글', '인기글', '축구', '야구', '농구', '롤', 'UFC', '자유게시판'];
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        console.error('사용자 정보 파싱 오류:', e);
+      }
+    }
+  }, []);
 
   // 게시글 목록 조회
   const fetchPosts = async () => {
@@ -165,7 +178,13 @@ function Community() {
               fontSize: '16px',
               fontWeight: 'bold'
             }}
-            onClick={() => alert('글쓰기 기능은 로그인 후 사용 가능합니다.')}
+            onClick={() => {
+              if (!user) {
+                alert('글쓰기 기능은 로그인 후 사용 가능합니다.');
+              } else {
+                alert('글쓰기 기능은 추후 구현 예정입니다.');
+              }
+            }}
           >
             ✏️ 글쓰기
           </button>

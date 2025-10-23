@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Fixtures from './pages/Fixtures';
-import Dashboard from './pages/Dashboard';
 import Community from './pages/Community';
 import Predictions from './pages/Predictions';
 import Live from './pages/Live';
@@ -41,8 +40,8 @@ function App() {
     <BrowserRouter>
       <div className="App">
         <Routes>
-          {/* 기본 경로 - 대시보드로 이동 */}
-          <Route path="/" element={<Dashboard />} />
+          {/* 기본 경로 - 경기 일정으로 리다이렉트 */}
+          <Route path="/" element={<Fixtures />} />
 
           {/* 로그인 페이지 */}
           <Route path="/login" element={<Login />} />
@@ -50,8 +49,8 @@ function App() {
           {/* 회원가입 페이지 */}
           <Route path="/signup" element={<Signup />} />
 
-          {/* 대시보드 (메인 페이지) */}
-          <Route path="/dashboard" element={<Dashboard />} />
+          {/* 대시보드 경로 - 경기 일정으로 리다이렉트 */}
+          <Route path="/dashboard" element={<Navigate to="/fixtures" replace />} />
 
           {/* 경기 일정 페이지 */}
           <Route path="/fixtures" element={<Fixtures />} />
@@ -73,8 +72,8 @@ function App() {
 
           {/* 404 페이지 */}
           <Route path="*" element={
-            <div style={{ 
-              textAlign: 'center', 
+            <div style={{
+              textAlign: 'center',
               marginTop: '100px',
               fontSize: '24px',
               color: '#888'
@@ -83,10 +82,10 @@ function App() {
               <p style={{ fontSize: '18px', marginTop: '20px', color: '#666' }}>
                 요청하신 페이지를 찾을 수 없습니다.
               </p>
-              <a 
-                href="/" 
-                style={{ 
-                  color: '#646cff', 
+              <a
+                href="/"
+                style={{
+                  color: '#646cff',
                   textDecoration: 'underline',
                   fontSize: '16px'
                 }}
