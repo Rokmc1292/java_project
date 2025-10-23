@@ -1,132 +1,133 @@
-/* 대시보드 스타일 */
+/* 대시보드 스타일 - 네이버 스포츠 스타일 */
 
 .dashboard-container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  background: #f7f8fa;
+  min-height: calc(100vh - 60px);
 }
 
 /* 헤더 */
 .dashboard-header {
   text-align: center;
-  padding: 60px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 16px;
+  padding: 50px 20px;
+  background: linear-gradient(135deg, #1ec800 0%, #16a300 100%);
+  border-radius: 8px;
   color: white;
-  margin-bottom: 40px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(30, 200, 0, 0.2);
 }
 
 .dashboard-header h1 {
-  font-size: 3rem;
-  margin-bottom: 15px;
+  font-size: 2.5rem;
+  margin-bottom: 12px;
   font-weight: 700;
+  letter-spacing: -1px;
 }
 
 .dashboard-header p {
-  font-size: 1.3rem;
-  opacity: 0.9;
+  font-size: 1.1rem;
+  opacity: 0.95;
+  font-weight: 400;
 }
 
 /* 메뉴 그리드 */
 .menu-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 25px;
-  margin-bottom: 50px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
 }
 
 /* 메뉴 카드 */
 .menu-card {
   background: white;
-  border-radius: 12px;
-  padding: 30px;
+  border-radius: 8px;
+  padding: 28px;
   text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: all 0.2s ease;
   text-decoration: none;
   color: inherit;
   position: relative;
   overflow: hidden;
+  border: 1px solid #e4e7ed;
 }
 
 .menu-card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  border-color: #1ec800;
 }
 
 .menu-card.disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 .menu-card.disabled:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border-color: #e4e7ed;
 }
 
 /* 카드 아이콘 */
 .card-icon {
-  font-size: 4rem;
-  margin-bottom: 20px;
+  font-size: 3.5rem;
+  margin-bottom: 16px;
   display: inline-block;
-  animation: float 3s ease-in-out infinite;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
 }
 
 .menu-card h2 {
-  font-size: 1.5rem;
-  margin-bottom: 12px;
-  color: #333;
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+  color: #222;
+  font-weight: 600;
 }
 
 .menu-card p {
-  font-size: 1rem;
-  color: #666;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  color: #777;
+  line-height: 1.5;
 }
 
 /* 추후 구현 배지 */
 .coming-soon {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: #ff9800;
+  top: 12px;
+  right: 12px;
+  background: #ff6b00;
   color: white;
-  padding: 5px 12px;
-  border-radius: 20px;
-  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
   font-weight: 600;
 }
 
 /* 종목 섹션 */
 .sports-section {
   text-align: center;
-  padding: 40px 20px;
+  padding: 35px 20px;
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom: 40px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  margin-bottom: 30px;
+  border: 1px solid #e4e7ed;
 }
 
 .sports-section h2 {
-  font-size: 2rem;
-  margin-bottom: 30px;
-  color: #333;
+  font-size: 1.8rem;
+  margin-bottom: 25px;
+  color: #222;
+  font-weight: 600;
 }
 
 /* 종목 그리드 */
 .sports-grid {
   display: flex;
   justify-content: center;
-  gap: 30px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
@@ -134,24 +135,28 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 20px;
-  background: #f8f9fa;
-  border-radius: 12px;
-  min-width: 120px;
-  transition: transform 0.3s;
+  gap: 8px;
+  padding: 18px;
+  background: #f7f8fa;
+  border-radius: 8px;
+  min-width: 110px;
+  transition: all 0.2s;
+  border: 1px solid transparent;
 }
 
 .sport-item:hover {
-  transform: scale(1.1);
+  transform: translateY(-2px);
+  background: #fff;
+  border-color: #1ec800;
+  box-shadow: 0 2px 8px rgba(30, 200, 0, 0.15);
 }
 
 .sport-emoji {
-  font-size: 3rem;
+  font-size: 2.8rem;
 }
 
 .sport-item span:last-child {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #333;
 }
@@ -159,19 +164,19 @@
 /* 푸터 */
 .dashboard-footer {
   text-align: center;
-  padding: 30px;
+  padding: 25px;
   color: #999;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
 }
 
 /* 반응형 */
 @media (max-width: 768px) {
   .dashboard-header h1 {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
 
   .dashboard-header p {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
 
   .menu-grid {
@@ -179,15 +184,15 @@
   }
 
   .sports-grid {
-    gap: 15px;
+    gap: 12px;
   }
 
   .sport-item {
-    min-width: 100px;
-    padding: 15px;
+    min-width: 95px;
+    padding: 14px;
   }
 
   .sport-emoji {
-    font-size: 2.5rem;
+    font-size: 2.3rem;
   }
 }
