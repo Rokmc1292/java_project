@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 
 /**
@@ -6,8 +7,22 @@ import Navbar from '../components/Navbar';
  * 프로필, 통계, 활동 내역, 설정
  */
 function MyPage() {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
+
+  /**
+   * 로그아웃 처리 함수
+   */
+  const handleLogout = () => {
+    if (window.confirm('정말 로그아웃 하시겠습니까?')) {
+      // localStorage에서 사용자 정보 제거
+      localStorage.removeItem('user');
+      alert('로그아웃되었습니다.');
+      // 로그인 페이지로 이동
+      navigate('/login');
+    }
+  };
 
   // 임시 사용자 데이터
   const dummyUser = {
@@ -310,7 +325,7 @@ function MyPage() {
                 fontSize: '16px',
                 fontWeight: 'bold'
               }}
-              onClick={() => alert('로그아웃되었습니다.')}
+              onClick={handleLogout}
             >
               로그아웃
             </button>

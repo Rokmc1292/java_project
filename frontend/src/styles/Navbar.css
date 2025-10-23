@@ -1,43 +1,46 @@
-/* 네비게이션 바 스타일 */
+/* 네비게이션 바 스타일 - 네이버 스포츠 스타일 */
 
 .navbar {
-  background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: #1ec800;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
 }
 
 .navbar-container {
-  max-width: 1400px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 70px;
+  height: 60px;
 }
 
 /* 로고 */
 .navbar-logo {
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #646cff;
+  color: white;
   text-decoration: none;
-  transition: color 0.3s;
+  transition: opacity 0.3s;
+  letter-spacing: -0.5px;
 }
 
 .navbar-logo:hover {
-  color: #535bf2;
+  opacity: 0.85;
 }
 
 /* 메뉴 */
 .navbar-menu {
   display: flex;
   list-style: none;
-  gap: 5px;
+  gap: 0;
   margin: 0;
   padding: 0;
+  flex: 1;
+  justify-content: center;
 }
 
 .navbar-item {
@@ -46,29 +49,77 @@
 
 .navbar-link {
   display: block;
-  padding: 10px 20px;
-  color: #333;
+  padding: 20px 18px;
+  color: rgba(255, 255, 255, 0.85);
   text-decoration: none;
   font-weight: 500;
-  border-radius: 8px;
-  transition: all 0.3s;
+  font-size: 15px;
+  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
 }
 
 .navbar-link:hover {
-  background: #f0f0ff;
-  color: #646cff;
+  color: white;
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .navbar-link.active {
-  background: #646cff;
   color: white;
+  border-bottom: 3px solid white;
+  font-weight: 600;
 }
 
 /* 사용자 메뉴 */
 .navbar-user {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+}
+
+.navbar-username {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 0 8px;
+}
+
+.navbar-user .navbar-link {
+  padding: 8px 14px;
+  color: white;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  font-size: 14px;
+  border-bottom: none;
+}
+
+.navbar-user .navbar-link:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.navbar-signup {
+  background: white !important;
+  color: #1ec800 !important;
+  font-weight: 600;
+}
+
+.navbar-signup:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+}
+
+.navbar-logout-btn {
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.15);
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.navbar-logout-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
 /* 반응형 */
@@ -79,5 +130,9 @@
 
   .navbar-logo {
     font-size: 1.2rem;
+  }
+
+  .navbar-username {
+    display: none;
   }
 }
