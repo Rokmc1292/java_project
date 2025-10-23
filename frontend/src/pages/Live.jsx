@@ -11,6 +11,20 @@ function Live() {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [currentChatroomId, setCurrentChatroomId] = useState(null);
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        console.error('사용자 정보 파싱 오류:', e);
+      }
+    }
+  }, []);
 
   // 진행 중인 경기 조회
   const fetchLiveMatches = async () => {
@@ -36,6 +50,7 @@ function Live() {
       );
       const data = await response.json();
       const chatroomId = data.chatroomId;
+      setCurrentChatroomId(chatroomId);
 
       // 채팅 메시지 조회
       const messagesResponse = await fetch(
@@ -45,6 +60,50 @@ function Live() {
       setMessages(messagesData || []);
     } catch (error) {
       console.error('채팅방 입장 실패:', error);
+    }
+  };
+
+  // 채팅 메시지 전송
+  const sendMessage = async () => {
+    if (!user) {
+      alert('로그인 후 채팅에 참여할 수 있습니다.');
+      return;
+    }
+
+    if (!newMessage.trim()) {
+      alert('메시지를 입력해주세요.');
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/live/chatroom/${currentChatroomId}/message`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: user.userId,
+            message: newMessage
+          })
+        }
+      );
+
+      if (response.ok) {
+        // 메시지 전송 성공 후 목록 새로고침
+        const messagesResponse = await fetch(
+          `http://localhost:8080/api/live/chatroom/${currentChatroomId}/messages`
+        );
+        const messagesData = await messagesResponse.json();
+        setMessages(messagesData || []);
+        setNewMessage(''); // 입력창 초기화
+      } else {
+        alert('메시지 전송에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('메시지 전송 오류:', error);
+      alert('메시지 전송 중 오류가 발생했습니다.');
     }
   };
 
@@ -309,7 +368,7 @@ function Live() {
                   }}
                 />
                 <button
-                  onClick={() => alert('로그인 후 채팅에 참여할 수 있습니다.')}
+                  onClick={sendMessage}
                   style={{
                     padding: '12px 25px',
                     backgroundColor: '#646cff',

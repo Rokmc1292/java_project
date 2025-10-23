@@ -24,28 +24,42 @@ function MyPage() {
     }
   };
 
-  // 임시 사용자 데이터
-  const dummyUser = {
-    username: 'user123',
-    nickname: '스포츠팬',
-    email: 'user@example.com',
-    tier: 'BRONZE',
-    tierScore: 0,
-    profileImage: '/images/default-profile.png',
-    createdAt: '2025-01-01',
-    predictions: {
-      total: 0,
-      correct: 0,
-      wrong: 0,
-      winRate: 0
-    },
-    posts: [],
-    comments: []
+  // 사용자 정보 조회
+  const fetchUserInfo = async (userId) => {
+    try {
+      const response = await fetch(`http://localhost:8080/api/auth/user/${userId}`);
+      if (response.ok) {
+        const data = await response.json();
+        setUser({
+          ...data,
+          predictions: {
+            total: 0,
+            correct: 0,
+            wrong: 0,
+            winRate: 0
+          },
+          posts: [],
+          comments: []
+        });
+      } else {
+        console.error('사용자 정보 조회 실패');
+      }
+    } catch (error) {
+      console.error('사용자 정보 조회 오류:', error);
+    }
   };
 
   useEffect(() => {
-    // 실제로는 API로 사용자 정보 조회
-    setUser(dummyUser);
+    // localStorage에서 사용자 정보 가져오기
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const parsedUser = JSON.parse(userData);
+        fetchUserInfo(parsedUser.userId);
+      } catch (e) {
+        console.error('사용자 정보 파싱 오류:', e);
+      }
+    }
   }, []);
 
   const tabs = [

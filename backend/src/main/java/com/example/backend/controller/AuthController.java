@@ -98,4 +98,21 @@ public class AuthController {
         response.put("isDuplicate", isDuplicate);
         return ResponseEntity.ok(response);
     }
+
+    /**
+     * 사용자 정보 조회 API
+     * GET /api/auth/user/{userId}
+     * 응답: 사용자 정보 (UserResponse)
+     */
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<?> getUserInfo(@PathVariable Long userId) {
+        try {
+            UserResponse userResponse = userService.getUserInfo(userId);
+            return ResponseEntity.ok(userResponse);
+        } catch (IllegalArgumentException e) {
+            Map<String, String> error = new HashMap<>();
+            error.put("message", e.getMessage());
+            return ResponseEntity.badRequest().body(error);
+        }
+    }
 }

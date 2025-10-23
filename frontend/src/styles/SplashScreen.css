@@ -1,0 +1,106 @@
+/* Netflix 스타일 스플래시 화면 */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease-out;
+}
+
+.splash-screen.fade-out {
+  opacity: 0;
+}
+
+.splash-content {
+  text-align: center;
+  animation: zoomIn 1s ease-out;
+}
+
+.splash-logo {
+  font-size: 80px;
+  font-weight: 900;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 8px;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+.logo-sport {
+  color: #ffffff;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+               0 0 40px rgba(255, 255, 255, 0.6);
+}
+
+.logo-hub {
+  color: #ffd700;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8),
+               0 0 40px rgba(255, 215, 0, 0.6);
+  margin-left: 20px;
+}
+
+.splash-tagline {
+  color: #ffffff;
+  font-size: 20px;
+  margin-top: 20px;
+  letter-spacing: 3px;
+  opacity: 0.9;
+  animation: fadeInUp 1s ease-out 0.5s both;
+}
+
+/* 애니메이션 */
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 0.9;
+    transform: translateY(0);
+  }
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+                 0 0 40px rgba(255, 255, 255, 0.6);
+  }
+  to {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 1),
+                 0 0 60px rgba(255, 255, 255, 0.8),
+                 0 0 80px rgba(255, 255, 255, 0.6);
+  }
+}
+
+/* 모바일 대응 */
+@media (max-width: 768px) {
+  .splash-logo {
+    font-size: 50px;
+    letter-spacing: 4px;
+  }
+
+  .logo-hub {
+    margin-left: 10px;
+  }
+
+  .splash-tagline {
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+}

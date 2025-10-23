@@ -9,6 +9,19 @@ function Predictions() {
   const [matches, setMatches] = useState([]);
   const [selectedSport, setSelectedSport] = useState('ALL');
   const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        setUser(JSON.parse(userData));
+      } catch (e) {
+        console.error('사용자 정보 파싱 오류:', e);
+      }
+    }
+  }, []);
 
   const sports = [
     { value: 'ALL', label: '전체' },
@@ -43,6 +56,38 @@ function Predictions() {
   useEffect(() => {
     fetchMatches();
   }, [selectedSport]);
+
+  // 예측 제출 핸들러
+  const handlePrediction = async (matchId, predictionType) => {
+    if (!user) {
+      alert('로그인 후 예측에 참여할 수 있습니다.');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:8080/api/predictions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          matchId: matchId,
+          userId: user.userId,
+          predictedResult: predictionType // 'HOME_WIN', 'DRAW', 'AWAY_WIN'
+        })
+      });
+
+      if (response.ok) {
+        alert('예측이 등록되었습니다!');
+      } else {
+        const error = await response.json();
+        alert(error.message || '예측 등록에 실패했습니다.');
+      }
+    } catch (error) {
+      console.error('예측 등록 오류:', error);
+      alert('예측 등록 중 오류가 발생했습니다.');
+    }
+  };
 
   return (
     <div>
@@ -149,7 +194,7 @@ function Predictions() {
                       fontWeight: 'bold',
                       flex: 1
                     }}
-                    onClick={() => alert('로그인 후 예측에 참여할 수 있습니다.')}
+                    onClick={() => handlePrediction(match.matchId, 'HOME_WIN')}
                   >
                     홈 승리
                   </button>
@@ -164,7 +209,7 @@ function Predictions() {
                       fontWeight: 'bold',
                       flex: 1
                     }}
-                    onClick={() => alert('로그인 후 예측에 참여할 수 있습니다.')}
+                    onClick={() => handlePrediction(match.matchId, 'DRAW')}
                   >
                     무승부
                   </button>
@@ -179,7 +224,7 @@ function Predictions() {
                       fontWeight: 'bold',
                       flex: 1
                     }}
-                    onClick={() => alert('로그인 후 예측에 참여할 수 있습니다.')}
+                    onClick={() => handlePrediction(match.matchId, 'AWAY_WIN')}
                   >
                     원정 승리
                   </button>
