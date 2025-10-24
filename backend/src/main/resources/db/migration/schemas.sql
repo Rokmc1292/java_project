@@ -1,0 +1,1012 @@
+-- MySQL dump 10.13  Distrib 8.0.43, for Win64 (x86_64)
+--
+-- Host: localhost    Database: sports_community
+-- ------------------------------------------------------
+-- Server version	8.0.43
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `board_categories`
+--
+
+DROP TABLE IF EXISTS `board_categories`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `board_categories` (
+  `category_id` bigint NOT NULL AUTO_INCREMENT,
+  `category_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '카테고리 이름',
+  `display_order` int DEFAULT '0' COMMENT '표시 순서',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '활성화 여부',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`category_id`),
+  UNIQUE KEY `category_name` (`category_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시판 카테고리';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `board_categories`
+--
+
+LOCK TABLES `board_categories` WRITE;
+/*!40000 ALTER TABLE `board_categories` DISABLE KEYS */;
+INSERT INTO `board_categories` VALUES (1,'축구',1,1,'2025-10-15 10:30:28'),(2,'야구',2,1,'2025-10-15 10:30:28'),(3,'농구',3,1,'2025-10-15 10:30:28'),(4,'롤',4,1,'2025-10-15 10:30:28'),(5,'UFC',5,1,'2025-10-15 10:30:28'),(6,'자유게시판',99,1,'2025-10-15 10:30:28');
+/*!40000 ALTER TABLE `board_categories` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `chat_messages`
+--
+
+DROP TABLE IF EXISTS `chat_messages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `chat_messages` (
+  `message_id` bigint NOT NULL AUTO_INCREMENT,
+  `chatroom_id` bigint NOT NULL COMMENT '채팅방 ID',
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `message` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '메시지 내용',
+  `message_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'USER' COMMENT '메시지 타입 (USER, SYSTEM)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`message_id`),
+  KEY `user_id` (`user_id`),
+  KEY `idx_chatroom_created` (`chatroom_id`,`created_at`),
+  CONSTRAINT `chat_messages_ibfk_1` FOREIGN KEY (`chatroom_id`) REFERENCES `chatrooms` (`chatroom_id`) ON DELETE CASCADE,
+  CONSTRAINT `chat_messages_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='채팅 메시지';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `chat_messages`
+--
+
+LOCK TABLES `chat_messages` WRITE;
+/*!40000 ALTER TABLE `chat_messages` DISABLE KEYS */;
+INSERT INTO `chat_messages` VALUES (1,1,2,'ㅗㅗ','USER','2025-10-23 05:48:15');
+/*!40000 ALTER TABLE `chat_messages` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `chatrooms`
+--
+
+DROP TABLE IF EXISTS `chatrooms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `chatrooms` (
+  `chatroom_id` bigint NOT NULL AUTO_INCREMENT,
+  `match_id` bigint NOT NULL COMMENT '경기 ID',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '활성화 여부',
+  `viewer_count` int DEFAULT '0' COMMENT '현재 시청자 수',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`chatroom_id`),
+  UNIQUE KEY `unique_match_chatroom` (`match_id`),
+  CONSTRAINT `chatrooms_ibfk_1` FOREIGN KEY (`match_id`) REFERENCES `matches` (`match_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='채팅방';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `chatrooms`
+--
+
+LOCK TABLES `chatrooms` WRITE;
+/*!40000 ALTER TABLE `chatrooms` DISABLE KEYS */;
+INSERT INTO `chatrooms` VALUES (1,78,1,0,'2025-10-22 15:06:52'),(2,79,1,0,'2025-10-23 05:07:52');
+/*!40000 ALTER TABLE `chatrooms` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `comment_votes`
+--
+
+DROP TABLE IF EXISTS `comment_votes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `comment_votes` (
+  `vote_id` bigint NOT NULL AUTO_INCREMENT,
+  `comment_id` bigint NOT NULL COMMENT '댓글 ID',
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `vote_type` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '투표 타입 (LIKE, DISLIKE)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`vote_id`),
+  UNIQUE KEY `unique_vote` (`comment_id`,`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `comment_votes_ibfk_1` FOREIGN KEY (`comment_id`) REFERENCES `comments` (`comment_id`) ON DELETE CASCADE,
+  CONSTRAINT `comment_votes_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='댓글 추천/비추천';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `comment_votes`
+--
+
+LOCK TABLES `comment_votes` WRITE;
+/*!40000 ALTER TABLE `comment_votes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `comment_votes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `comments`
+--
+
+DROP TABLE IF EXISTS `comments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `comments` (
+  `comment_id` bigint NOT NULL AUTO_INCREMENT,
+  `post_id` bigint NOT NULL COMMENT '게시글 ID',
+  `user_id` bigint NOT NULL COMMENT '작성자 ID',
+  `parent_comment_id` bigint DEFAULT NULL COMMENT '부모 댓글 ID',
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '댓글 내용',
+  `like_count` int DEFAULT '0' COMMENT '추천수',
+  `dislike_count` int DEFAULT '0' COMMENT '비추천수',
+  `is_deleted` tinyint(1) DEFAULT '0' COMMENT '삭제 여부',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`comment_id`),
+  KEY `idx_post` (`post_id`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_parent` (`parent_comment_id`),
+  KEY `idx_comments_post_created` (`post_id`,`created_at`),
+  KEY `idx_comments_parent` (`parent_comment_id`),
+  CONSTRAINT `comments_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `comments_ibfk_3` FOREIGN KEY (`parent_comment_id`) REFERENCES `comments` (`comment_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='댓글';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `comments`
+--
+
+LOCK TABLES `comments` WRITE;
+/*!40000 ALTER TABLE `comments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `comments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `favorite_teams`
+--
+
+DROP TABLE IF EXISTS `favorite_teams`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `favorite_teams` (
+  `favorite_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `team_id` bigint NOT NULL COMMENT '팀 ID',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`favorite_id`),
+  UNIQUE KEY `unique_favorite` (`user_id`,`team_id`),
+  KEY `team_id` (`team_id`),
+  CONSTRAINT `favorite_teams_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `favorite_teams_ibfk_2` FOREIGN KEY (`team_id`) REFERENCES `teams` (`team_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='즐겨찾기 팀';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `favorite_teams`
+--
+
+LOCK TABLES `favorite_teams` WRITE;
+/*!40000 ALTER TABLE `favorite_teams` DISABLE KEYS */;
+/*!40000 ALTER TABLE `favorite_teams` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `fighters`
+--
+
+DROP TABLE IF EXISTS `fighters`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `fighters` (
+  `fighter_id` bigint NOT NULL AUTO_INCREMENT,
+  `fighter_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '파이터 이름',
+  `fighter_image` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '파이터 이미지 URL',
+  `country` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '국가',
+  `weight_class` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '체급 (Heavyweight, Lightweight 등)',
+  `record` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '전적 (예: 25-3-0)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`fighter_id`),
+  KEY `idx_fighter_name` (`fighter_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='UFC 파이터 정보';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `fighters`
+--
+
+LOCK TABLES `fighters` WRITE;
+/*!40000 ALTER TABLE `fighters` DISABLE KEYS */;
+INSERT INTO `fighters` VALUES (1,'톰 아스피날','http://localhost:8080/images/fighters/tom_aspinal.avif','England','Heavyweight','15-3-0','2025-10-16 00:22:52'),(2,'시릴 가네','http://localhost:8080/images/fighters/ciryl_gane.avif','France','Heavyweight','13-2-0','2025-10-16 00:22:52');
+/*!40000 ALTER TABLE `fighters` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `leagues`
+--
+
+DROP TABLE IF EXISTS `leagues`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `leagues` (
+  `league_id` bigint NOT NULL AUTO_INCREMENT,
+  `sport_id` bigint NOT NULL COMMENT '종목 ID',
+  `league_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '리그 이름 (EPL, NBA, LCK 등)',
+  `country` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '국가',
+  `league_logo` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '리그 로고 URL',
+  `display_order` int DEFAULT '0' COMMENT '표시 순서',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '활성화 여부',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`league_id`),
+  KEY `idx_sport` (`sport_id`),
+  CONSTRAINT `leagues_ibfk_1` FOREIGN KEY (`sport_id`) REFERENCES `sports` (`sport_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='리그 정보';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `leagues`
+--
+
+LOCK TABLES `leagues` WRITE;
+/*!40000 ALTER TABLE `leagues` DISABLE KEYS */;
+INSERT INTO `leagues` VALUES (1,1,'EPL','England','http://localhost:8080/images/leagues/epl-logo.jpg',1,1,'2025-10-15 11:18:45'),(2,2,'NBA','USA','http://localhost:8080/images/leagues/nba-logo.png',1,1,'2025-10-15 11:18:45'),(3,3,'KBO','South Korea','http://localhost:8080/images/leagues/kbo-logo.png',1,1,'2025-10-15 11:18:45'),(4,4,'LCK','South Korea','http://localhost:8080/images/leagues/lck-logo.png',1,1,'2025-10-15 11:18:45'),(5,5,'UFC','USA','http://localhost:8080/images/leagues/ufc-logo.png',1,1,'2025-10-15 11:18:45');
+/*!40000 ALTER TABLE `leagues` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `matches`
+--
+
+DROP TABLE IF EXISTS `matches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `matches` (
+  `match_id` bigint NOT NULL AUTO_INCREMENT,
+  `league_id` bigint NOT NULL COMMENT '리그 ID',
+  `home_team_id` bigint NOT NULL COMMENT '홈팀 ID',
+  `away_team_id` bigint NOT NULL COMMENT '원정팀 ID',
+  `match_date` datetime NOT NULL COMMENT '경기 날짜 및 시간',
+  `venue` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '경기장',
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'SCHEDULED' COMMENT '경기 상태 (SCHEDULED, LIVE, FINISHED, POSTPONED)',
+  `home_score` int DEFAULT '0' COMMENT '홈팀 점수',
+  `away_score` int DEFAULT '0' COMMENT '원정팀 점수',
+  `weather` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '날씨 정보',
+  `precipitation_probability` int DEFAULT NULL COMMENT '강수 확률',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`match_id`),
+  KEY `home_team_id` (`home_team_id`),
+  KEY `away_team_id` (`away_team_id`),
+  KEY `idx_match_date` (`match_date`),
+  KEY `idx_status` (`status`),
+  KEY `idx_league` (`league_id`),
+  CONSTRAINT `matches_ibfk_1` FOREIGN KEY (`league_id`) REFERENCES `leagues` (`league_id`) ON DELETE CASCADE,
+  CONSTRAINT `matches_ibfk_2` FOREIGN KEY (`home_team_id`) REFERENCES `teams` (`team_id`) ON DELETE CASCADE,
+  CONSTRAINT `matches_ibfk_3` FOREIGN KEY (`away_team_id`) REFERENCES `teams` (`team_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=381 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='경기 일정';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `matches`
+--
+
+LOCK TABLES `matches` WRITE;
+/*!40000 ALTER TABLE `matches` DISABLE KEYS */;
+INSERT INTO `matches` VALUES (1,1,3,8,'2025-08-16 04:00:00','안필드','FINISHED',4,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(2,1,13,2,'2025-08-16 20:30:00','빌라 파크','FINISHED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(3,1,18,7,'2025-08-16 23:00:00','토트넘 홋스퍼 스타디움','FINISHED',3,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(4,1,9,20,'2025-08-16 23:00:00','아메리칸 익스프레스 스타디움','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(5,1,11,16,'2025-08-16 23:00:00','스타디움 오브 라이트','FINISHED',3,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(6,1,15,5,'2025-08-17 01:30:00','몰리뉴 스타디움','FINISHED',0,4,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(7,1,17,19,'2025-08-17 22:00:00','스탬퍼드 브리지','FINISHED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(8,1,1,10,'2025-08-17 22:00:00','더 시티 그라운드','FINISHED',3,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(9,1,6,12,'2025-08-18 00:30:00','올드 트래퍼드','FINISHED',0,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(10,1,4,14,'2025-08-19 04:00:00','엘런드 로드','FINISHED',1,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(11,1,16,17,'2025-08-23 04:00:00','런던 스타디움','FINISHED',1,5,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(12,1,5,18,'2025-08-23 20:30:00','에티하드 스타디움','FINISHED',0,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(13,1,8,15,'2025-08-23 23:00:00','바이탈리티 스타디움','FINISHED',1,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(14,1,10,13,'2025-08-23 23:00:00','지테크 커뮤니티 스타디움','FINISHED',1,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(15,1,7,11,'2025-08-23 23:00:00','터프 무어','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(16,1,12,4,'2025-08-24 01:30:00','에미레이츠 스타디움','FINISHED',5,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(17,1,19,1,'2025-08-24 22:00:00','셀허스트 파크','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(18,1,14,9,'2025-08-24 22:00:00','힐 디킨슨 스타디움','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(19,1,20,6,'2025-08-25 00:30:00','크레이븐 코티지','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(20,1,2,3,'2025-08-26 04:00:00','세인트 제임스 파크','FINISHED',2,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(21,1,17,20,'2025-08-30 20:30:00','스탬퍼드 브리지','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(22,1,18,8,'2025-08-30 23:00:00','토트넘 홋스퍼 스타디움','FINISHED',0,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(23,1,15,14,'2025-08-30 23:00:00','몰리뉴 스타디움','FINISHED',2,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(24,1,6,7,'2025-08-30 23:00:00','올드 트래퍼드','FINISHED',3,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(25,1,11,10,'2025-08-30 23:00:00','스타디움 오브 라이트','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(26,1,4,2,'2025-08-31 01:30:00','엘런드 로드','FINISHED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(27,1,9,5,'2025-08-31 22:00:00','아메리칸 익스프레스 스타디움','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(28,1,1,16,'2025-08-31 22:00:00','더 시티 그라운드','FINISHED',0,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(29,1,3,12,'2025-09-01 00:30:00','안필드','FINISHED',1,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(30,1,13,19,'2025-09-01 03:00:00','빌라 파크','FINISHED',0,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(31,1,12,1,'2025-09-13 20:30:00','에미레이츠 스타디움','FINISHED',3,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(32,1,19,11,'2025-09-13 23:00:00','셀허스트 파크','FINISHED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(33,1,8,9,'2025-09-13 23:00:00','바이탈리티 스타디움','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(34,1,20,4,'2025-09-13 23:00:00','크레이븐 코티지','FINISHED',1,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(35,1,14,13,'2025-09-13 23:00:00','힐 디킨슨 스타디움','FINISHED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(36,1,2,15,'2025-09-13 23:00:00','세인트 제임스 파크','FINISHED',1,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(37,1,16,18,'2025-09-14 01:30:00','런던 스타디움','FINISHED',0,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(38,1,10,17,'2025-09-14 04:00:00','지테크 커뮤니티 스타디움','FINISHED',2,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(39,1,7,3,'2025-09-14 22:00:00','터프 무어','FINISHED',0,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(40,1,5,6,'2025-09-15 00:30:00','에티하드 스타디움','FINISHED',3,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(41,1,3,14,'2025-09-20 20:30:00','안필드','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(42,1,16,19,'2025-09-20 23:00:00','런던 스타디움','FINISHED',1,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(43,1,7,1,'2025-09-20 23:00:00','터프 무어','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(44,1,15,4,'2025-09-20 23:00:00','몰리뉴 스타디움','FINISHED',1,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(45,1,9,18,'2025-09-20 23:00:00','아메리칸 익스프레스 스타디움','FINISHED',2,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(46,1,6,17,'2025-09-21 01:30:00','올드 트래퍼드','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(47,1,20,10,'2025-09-21 04:00:00','크레이븐 코티지','FINISHED',3,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(48,1,8,2,'2025-09-21 22:00:00','바이탈리티 스타디움','FINISHED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(49,1,11,13,'2025-09-21 22:00:00','스타디움 오브 라이트','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(50,1,12,5,'2025-09-22 00:30:00','에미레이츠 스타디움','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(51,1,10,6,'2025-09-27 20:30:00','지테크 커뮤니티 스타디움','FINISHED',3,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(52,1,4,8,'2025-09-27 23:00:00','엘런드 로드','FINISHED',2,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(53,1,5,7,'2025-09-27 23:00:00','에티하드 스타디움','FINISHED',5,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(54,1,19,3,'2025-09-27 23:00:00','셀허스트 파크','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(55,1,17,9,'2025-09-27 23:00:00','스탬퍼드 브리지','FINISHED',1,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(56,1,1,11,'2025-09-28 01:30:00','더 시티 그라운드','FINISHED',0,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(57,1,18,15,'2025-09-28 04:00:00','토트넘 홋스퍼 스타디움','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(58,1,13,20,'2025-09-28 22:00:00','빌라 파크','FINISHED',3,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(59,1,2,12,'2025-09-29 00:30:00','세인트 제임스 파크','FINISHED',1,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(60,1,14,16,'2025-09-30 04:00:00','힐 디킨슨 스타디움','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(61,1,8,20,'2025-10-04 04:00:00','바이탈리티 스타디움','FINISHED',3,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(62,1,4,18,'2025-10-04 20:30:00','엘런드 로드','FINISHED',1,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(63,1,6,11,'2025-10-04 23:00:00','올드 트래퍼드','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(64,1,12,16,'2025-10-04 23:00:00','에미레이츠 스타디움','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(65,1,17,3,'2025-10-05 01:30:00','스탬퍼드 브리지','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(66,1,15,9,'2025-10-05 22:00:00','몰리뉴 스타디움','FINISHED',1,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(67,1,2,1,'2025-10-05 22:00:00','세인트 제임스 파크','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(68,1,13,7,'2025-10-05 22:00:00','빌라 파크','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(69,1,14,19,'2025-10-05 22:00:00','힐 디킨슨 스타디움','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(70,1,10,5,'2025-10-06 00:30:00','지테크 커뮤니티 스타디움','FINISHED',0,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(71,1,1,17,'2025-10-18 20:30:00','더 시티 그라운드','FINISHED',0,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(72,1,19,8,'2025-10-18 23:00:00','셀허스트 파크','FINISHED',3,3,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(73,1,7,4,'2025-10-18 23:00:00','터프 무어','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(74,1,9,2,'2025-10-18 23:00:00','아메리칸 익스프레스 스타디움','FINISHED',2,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(75,1,5,14,'2025-10-18 23:00:00','에티하드 스타디움','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(76,1,11,15,'2025-10-18 23:00:00','스타디움 오브 라이트','FINISHED',2,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(77,1,20,12,'2025-10-19 01:30:00','크레이븐 코티지','FINISHED',0,1,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(78,1,18,13,'2025-10-19 22:00:00','토트넘 홋스퍼 스타디움','LIVE',1,2,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:59:15'),(79,1,3,6,'2025-10-20 00:30:00','안필드','LIVE',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-23 14:07:47'),(80,1,16,10,'2025-10-21 04:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(81,1,4,16,'2025-10-25 04:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(82,1,17,11,'2025-10-25 23:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(83,1,2,20,'2025-10-25 23:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(84,1,6,9,'2025-10-26 01:30:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(85,1,10,3,'2025-10-26 04:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(86,1,12,19,'2025-10-26 23:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(87,1,13,5,'2025-10-26 23:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(88,1,15,7,'2025-10-26 23:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(89,1,8,1,'2025-10-26 23:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(90,1,14,18,'2025-10-27 01:30:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(91,1,9,4,'2025-11-02 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(92,1,19,10,'2025-11-02 00:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(93,1,20,15,'2025-11-02 00:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(94,1,7,12,'2025-11-02 00:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(95,1,1,6,'2025-11-02 00:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(96,1,18,17,'2025-11-02 02:30:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(97,1,3,13,'2025-11-02 05:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(98,1,16,2,'2025-11-02 23:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(99,1,5,8,'2025-11-03 01:30:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(100,1,11,14,'2025-11-04 05:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(101,1,18,6,'2025-11-08 21:30:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(102,1,14,20,'2025-11-09 00:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(103,1,16,7,'2025-11-09 00:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(104,1,11,12,'2025-11-09 02:30:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(105,1,17,15,'2025-11-09 05:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(106,1,10,2,'2025-11-09 23:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(107,1,13,8,'2025-11-09 23:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(108,1,1,4,'2025-11-09 23:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(109,1,19,9,'2025-11-09 23:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(110,1,5,3,'2025-11-10 01:30:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(111,1,7,17,'2025-11-22 21:30:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(112,1,8,16,'2025-11-23 00:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(113,1,3,1,'2025-11-23 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(114,1,9,10,'2025-11-23 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(115,1,15,19,'2025-11-23 00:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(116,1,20,11,'2025-11-23 00:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(117,1,2,5,'2025-11-23 02:30:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(118,1,4,13,'2025-11-23 23:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(119,1,12,18,'2025-11-24 01:30:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(120,1,6,14,'2025-11-25 05:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(121,1,5,4,'2025-11-30 00:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(122,1,10,7,'2025-11-30 00:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(123,1,11,8,'2025-11-30 00:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(124,1,14,2,'2025-11-30 02:30:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(125,1,18,20,'2025-11-30 05:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(126,1,19,6,'2025-11-30 21:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(127,1,1,9,'2025-11-30 23:05:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(128,1,16,3,'2025-11-30 23:05:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(129,1,13,15,'2025-11-30 23:05:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(130,1,17,12,'2025-12-01 01:30:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(131,1,20,5,'2025-12-03 04:30:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(132,1,8,14,'2025-12-03 04:30:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(133,1,2,18,'2025-12-03 05:15:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(134,1,7,19,'2025-12-04 04:30:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(135,1,12,10,'2025-12-04 04:30:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(136,1,15,1,'2025-12-04 04:30:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(137,1,9,13,'2025-12-04 04:30:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(138,1,4,17,'2025-12-04 05:15:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(139,1,3,11,'2025-12-04 05:15:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(140,1,6,16,'2025-12-05 05:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(141,1,13,12,'2025-12-06 21:30:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(142,1,14,1,'2025-12-07 00:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(143,1,5,11,'2025-12-07 00:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(144,1,2,7,'2025-12-07 00:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(145,1,18,10,'2025-12-07 00:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(146,1,8,17,'2025-12-07 00:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(147,1,4,3,'2025-12-07 02:30:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(148,1,9,16,'2025-12-07 23:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(149,1,20,19,'2025-12-08 01:30:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(150,1,15,6,'2025-12-09 05:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(151,1,17,14,'2025-12-14 00:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(152,1,3,9,'2025-12-14 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(153,1,7,20,'2025-12-14 02:30:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(154,1,12,15,'2025-12-14 05:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(155,1,16,13,'2025-12-14 23:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(156,1,11,2,'2025-12-14 23:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(157,1,1,18,'2025-12-14 23:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(158,1,19,5,'2025-12-14 23:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(159,1,10,4,'2025-12-15 01:30:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(160,1,6,8,'2025-12-16 05:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(161,1,2,17,'2025-12-20 21:30:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(162,1,9,11,'2025-12-21 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(163,1,5,16,'2025-12-21 00:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(164,1,8,7,'2025-12-21 00:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(165,1,15,10,'2025-12-21 00:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(166,1,18,3,'2025-12-21 02:30:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(167,1,14,12,'2025-12-21 23:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(168,1,4,19,'2025-12-21 23:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(169,1,13,6,'2025-12-22 01:30:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(170,1,20,1,'2025-12-23 05:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(171,1,6,2,'2025-12-28 00:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(172,1,10,8,'2025-12-28 00:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(173,1,12,9,'2025-12-28 00:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(174,1,1,5,'2025-12-28 00:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(175,1,17,13,'2025-12-28 00:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(176,1,3,15,'2025-12-28 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(177,1,11,4,'2025-12-28 00:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(178,1,7,14,'2025-12-28 00:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(179,1,19,18,'2025-12-28 00:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(180,1,16,20,'2025-12-28 00:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(181,1,17,8,'2025-12-31 05:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(182,1,12,13,'2025-12-31 05:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(183,1,3,4,'2025-12-31 05:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(184,1,1,14,'2025-12-31 05:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(185,1,11,5,'2025-12-31 05:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(186,1,6,15,'2025-12-31 05:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(187,1,7,2,'2025-12-31 05:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(188,1,16,9,'2025-12-31 05:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(189,1,10,18,'2025-12-31 05:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(190,1,19,20,'2025-12-31 05:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(191,1,9,7,'2026-01-04 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(192,1,18,11,'2026-01-04 00:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(193,1,13,1,'2026-01-04 00:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(194,1,2,19,'2026-01-04 00:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(195,1,4,6,'2026-01-04 00:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(196,1,20,3,'2026-01-04 00:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(197,1,15,16,'2026-01-04 00:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(198,1,8,12,'2026-01-04 00:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(199,1,14,10,'2026-01-04 00:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(200,1,5,17,'2026-01-04 00:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(201,1,19,13,'2026-01-08 05:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(202,1,16,1,'2026-01-08 05:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(203,1,10,11,'2026-01-08 05:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(204,1,7,6,'2026-01-08 05:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(205,1,20,17,'2026-01-08 05:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(206,1,14,15,'2026-01-08 05:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(207,1,5,9,'2026-01-08 05:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(208,1,2,4,'2026-01-08 05:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(209,1,8,18,'2026-01-08 05:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(210,1,12,3,'2026-01-08 05:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(211,1,1,12,'2026-01-18 00:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(212,1,15,2,'2026-01-18 00:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(213,1,11,19,'2026-01-18 00:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(214,1,9,8,'2026-01-18 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(215,1,13,14,'2026-01-18 00:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(216,1,4,20,'2026-01-18 00:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(217,1,18,16,'2026-01-18 00:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(218,1,3,7,'2026-01-18 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(219,1,6,5,'2026-01-18 00:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(220,1,17,10,'2026-01-18 00:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(221,1,14,4,'2026-01-25 00:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(222,1,8,3,'2026-01-25 00:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(223,1,12,6,'2026-01-25 00:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(224,1,10,1,'2026-01-25 00:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(225,1,20,9,'2026-01-25 00:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(226,1,19,17,'2026-01-25 00:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(227,1,2,13,'2026-01-25 00:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(228,1,7,18,'2026-01-25 00:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(229,1,5,15,'2026-01-25 00:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(230,1,16,11,'2026-01-25 00:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(231,1,6,20,'2026-02-01 00:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(232,1,11,7,'2026-02-01 00:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(233,1,15,8,'2026-02-01 00:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(234,1,1,19,'2026-02-01 00:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(235,1,9,14,'2026-02-01 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(236,1,13,10,'2026-02-01 00:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(237,1,18,5,'2026-02-01 00:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(238,1,4,12,'2026-02-01 00:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(239,1,17,16,'2026-02-01 00:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(240,1,3,2,'2026-02-01 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(241,1,15,17,'2026-02-08 00:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(242,1,7,16,'2026-02-08 00:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(243,1,12,11,'2026-02-08 00:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(244,1,4,1,'2026-02-08 00:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(245,1,9,19,'2026-02-08 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(246,1,20,14,'2026-02-08 00:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(247,1,6,18,'2026-02-08 00:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(248,1,2,10,'2026-02-08 00:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(249,1,3,5,'2026-02-08 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(250,1,8,13,'2026-02-08 00:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(251,1,5,20,'2026-02-12 05:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(252,1,1,15,'2026-02-12 05:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(253,1,13,9,'2026-02-12 05:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(254,1,10,12,'2026-02-12 05:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(255,1,17,4,'2026-02-12 05:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(256,1,19,7,'2026-02-12 05:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(257,1,18,2,'2026-02-12 05:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(258,1,11,3,'2026-02-12 05:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(259,1,16,6,'2026-02-12 05:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(260,1,14,8,'2026-02-12 05:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(261,1,18,12,'2026-02-22 00:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(262,1,14,6,'2026-02-22 00:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(263,1,19,15,'2026-02-22 00:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(264,1,1,3,'2026-02-22 00:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(265,1,17,7,'2026-02-22 00:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(266,1,13,4,'2026-02-22 00:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(267,1,10,9,'2026-02-22 00:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(268,1,5,2,'2026-02-22 00:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(269,1,16,8,'2026-02-22 00:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(270,1,11,20,'2026-02-22 00:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(271,1,6,19,'2026-03-01 00:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(272,1,20,18,'2026-03-01 00:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(273,1,9,1,'2026-03-01 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(274,1,8,11,'2026-03-01 00:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(275,1,12,17,'2026-03-01 00:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(276,1,2,14,'2026-03-01 00:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(277,1,4,5,'2026-03-01 00:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(278,1,15,13,'2026-03-01 00:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(279,1,3,16,'2026-03-01 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(280,1,7,10,'2026-03-01 00:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(281,1,15,3,'2026-03-05 05:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(282,1,20,16,'2026-03-05 05:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(283,1,4,11,'2026-03-05 05:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(284,1,14,7,'2026-03-05 05:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(285,1,8,10,'2026-03-05 05:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(286,1,2,6,'2026-03-05 05:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(287,1,13,17,'2026-03-05 05:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(288,1,5,1,'2026-03-05 05:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(289,1,9,12,'2026-03-05 05:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(290,1,18,19,'2026-03-05 05:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(291,1,7,8,'2026-03-15 00:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(292,1,3,18,'2026-03-15 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(293,1,12,14,'2026-03-15 00:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(294,1,17,2,'2026-03-15 00:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(295,1,11,9,'2026-03-15 00:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(296,1,1,20,'2026-03-15 00:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(297,1,6,13,'2026-03-15 00:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(298,1,19,4,'2026-03-15 00:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(299,1,16,5,'2026-03-15 00:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(300,1,10,15,'2026-03-15 00:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(301,1,5,19,'2026-03-22 00:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(302,1,20,7,'2026-03-22 00:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(303,1,15,12,'2026-03-22 00:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(304,1,2,11,'2026-03-22 00:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(305,1,14,17,'2026-03-22 00:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(306,1,8,6,'2026-03-22 00:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(307,1,9,3,'2026-03-22 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(308,1,18,1,'2026-03-22 00:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(309,1,4,10,'2026-03-22 00:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(310,1,13,16,'2026-03-22 00:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(311,1,12,8,'2026-04-11 23:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(312,1,16,15,'2026-04-11 23:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(313,1,17,5,'2026-04-11 23:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(314,1,7,9,'2026-04-11 23:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(315,1,1,13,'2026-04-11 23:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(316,1,3,20,'2026-04-11 23:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(317,1,10,14,'2026-04-11 23:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(318,1,11,18,'2026-04-11 23:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(319,1,19,2,'2026-04-11 23:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(320,1,6,4,'2026-04-11 23:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(321,1,2,8,'2026-04-18 23:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(322,1,19,16,'2026-04-18 23:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(323,1,13,11,'2026-04-18 23:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(324,1,18,9,'2026-04-18 23:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(325,1,1,7,'2026-04-18 23:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(326,1,4,15,'2026-04-18 23:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(327,1,5,12,'2026-04-18 23:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(328,1,14,3,'2026-04-18 23:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(329,1,10,20,'2026-04-18 23:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(330,1,17,6,'2026-04-18 23:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(331,1,15,18,'2026-04-25 23:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(332,1,11,1,'2026-04-25 23:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(333,1,8,4,'2026-04-25 23:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(334,1,20,13,'2026-04-25 23:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(335,1,6,10,'2026-04-25 23:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(336,1,3,19,'2026-04-25 23:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(337,1,16,14,'2026-04-25 23:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(338,1,9,17,'2026-04-25 23:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(339,1,12,2,'2026-04-25 23:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(340,1,7,5,'2026-04-25 23:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(341,1,2,9,'2026-05-02 23:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(342,1,12,20,'2026-05-02 23:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(343,1,10,16,'2026-05-02 23:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(344,1,4,7,'2026-05-02 23:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(345,1,15,11,'2026-05-02 23:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(346,1,8,19,'2026-05-02 23:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(347,1,14,5,'2026-05-02 23:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(348,1,17,1,'2026-05-02 23:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(349,1,6,3,'2026-05-02 23:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(350,1,13,18,'2026-05-02 23:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(351,1,9,15,'2026-05-09 23:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(352,1,18,4,'2026-05-09 23:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(353,1,20,8,'2026-05-09 23:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(354,1,3,17,'2026-05-09 23:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(355,1,16,12,'2026-05-09 23:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(356,1,7,13,'2026-05-09 23:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(357,1,5,10,'2026-05-09 23:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(358,1,1,2,'2026-05-09 23:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(359,1,11,6,'2026-05-09 23:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(360,1,19,14,'2026-05-09 23:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(361,1,13,3,'2026-05-17 23:00:00','빌라 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(362,1,14,11,'2026-05-17 23:00:00','힐 디킨슨 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(363,1,12,7,'2026-05-17 23:00:00','에미레이츠 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(364,1,4,9,'2026-05-17 23:00:00','엘런드 로드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(365,1,10,19,'2026-05-17 23:00:00','지테크 커뮤니티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(366,1,6,1,'2026-05-17 23:00:00','올드 트래퍼드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(367,1,2,16,'2026-05-17 23:00:00','세인트 제임스 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(368,1,15,20,'2026-05-17 23:00:00','몰리뉴 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(369,1,17,18,'2026-05-17 23:00:00','스탬퍼드 브리지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(370,1,8,5,'2026-05-17 23:00:00','바이탈리티 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(371,1,20,2,'2026-05-25 00:00:00','크레이븐 코티지','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(372,1,11,17,'2026-05-25 00:00:00','스타디움 오브 라이트','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(373,1,18,14,'2026-05-25 00:00:00','토트넘 홋스퍼 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(374,1,16,4,'2026-05-25 00:00:00','런던 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(375,1,9,6,'2026-05-25 00:00:00','아메리칸 익스프레스 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(376,1,19,12,'2026-05-25 00:00:00','셀허스트 파크','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(377,1,5,13,'2026-05-25 00:00:00','에티하드 스타디움','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(378,1,1,8,'2026-05-25 00:00:00','더 시티 그라운드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(379,1,7,15,'2026-05-25 00:00:00','터프 무어','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20'),(380,1,3,10,'2026-05-25 00:00:00','안필드','SCHEDULED',0,0,NULL,NULL,'2025-10-19 14:25:20','2025-10-19 14:25:20');
+/*!40000 ALTER TABLE `matches` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mma_chatrooms`
+--
+
+DROP TABLE IF EXISTS `mma_chatrooms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mma_chatrooms` (
+  `chatroom_id` bigint NOT NULL AUTO_INCREMENT,
+  `fight_id` bigint NOT NULL COMMENT 'UFC 경기 ID',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '활성화 여부',
+  `viewer_count` int DEFAULT '0' COMMENT '현재 시청자 수',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`chatroom_id`),
+  UNIQUE KEY `unique_fight_chatroom` (`fight_id`),
+  CONSTRAINT `mma_chatrooms_ibfk_1` FOREIGN KEY (`fight_id`) REFERENCES `mma_fights` (`fight_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='UFC 채팅방';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mma_chatrooms`
+--
+
+LOCK TABLES `mma_chatrooms` WRITE;
+/*!40000 ALTER TABLE `mma_chatrooms` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mma_chatrooms` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mma_fights`
+--
+
+DROP TABLE IF EXISTS `mma_fights`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mma_fights` (
+  `fight_id` bigint NOT NULL AUTO_INCREMENT,
+  `league_id` bigint NOT NULL COMMENT '리그 ID (UFC)',
+  `fighter1_id` bigint NOT NULL COMMENT '파이터 1 ID',
+  `fighter2_id` bigint NOT NULL COMMENT '파이터 2 ID',
+  `fight_date` datetime NOT NULL COMMENT '경기 날짜 및 시간',
+  `venue` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '경기장',
+  `event_name` varchar(200) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '이벤트 이름 (예: UFC 300)',
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'SCHEDULED' COMMENT '경기 상태 (SCHEDULED, LIVE, FINISHED)',
+  `winner_id` bigint DEFAULT NULL COMMENT '승자 ID',
+  `method` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '승리 방법 (KO, Submission, Decision 등)',
+  `round` int DEFAULT NULL COMMENT '몇 라운드에서 끝났는지',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`fight_id`),
+  KEY `fighter1_id` (`fighter1_id`),
+  KEY `fighter2_id` (`fighter2_id`),
+  KEY `winner_id` (`winner_id`),
+  KEY `idx_fight_date` (`fight_date`),
+  KEY `idx_status` (`status`),
+  KEY `idx_league` (`league_id`),
+  CONSTRAINT `mma_fights_ibfk_1` FOREIGN KEY (`league_id`) REFERENCES `leagues` (`league_id`) ON DELETE CASCADE,
+  CONSTRAINT `mma_fights_ibfk_2` FOREIGN KEY (`fighter1_id`) REFERENCES `fighters` (`fighter_id`) ON DELETE CASCADE,
+  CONSTRAINT `mma_fights_ibfk_3` FOREIGN KEY (`fighter2_id`) REFERENCES `fighters` (`fighter_id`) ON DELETE CASCADE,
+  CONSTRAINT `mma_fights_ibfk_4` FOREIGN KEY (`winner_id`) REFERENCES `fighters` (`fighter_id`) ON DELETE SET NULL
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='UFC 경기 일정';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mma_fights`
+--
+
+LOCK TABLES `mma_fights` WRITE;
+/*!40000 ALTER TABLE `mma_fights` DISABLE KEYS */;
+INSERT INTO `mma_fights` VALUES (1,5,1,2,'2025-10-26 12:00:00','Etihad Arena','UFC 321','SCHEDULED',NULL,NULL,NULL,'2025-10-16 00:28:24','2025-10-16 00:28:24');
+/*!40000 ALTER TABLE `mma_fights` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mma_prediction_statistics`
+--
+
+DROP TABLE IF EXISTS `mma_prediction_statistics`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mma_prediction_statistics` (
+  `stat_id` bigint NOT NULL AUTO_INCREMENT,
+  `fight_id` bigint NOT NULL COMMENT 'UFC 경기 ID',
+  `fighter1_votes` int DEFAULT '0' COMMENT '파이터 1 예측 수',
+  `fighter2_votes` int DEFAULT '0' COMMENT '파이터 2 예측 수',
+  `total_votes` int DEFAULT '0' COMMENT '전체 예측 수',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`stat_id`),
+  UNIQUE KEY `unique_fight_stat` (`fight_id`),
+  CONSTRAINT `mma_prediction_statistics_ibfk_1` FOREIGN KEY (`fight_id`) REFERENCES `mma_fights` (`fight_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='UFC 예측 통계';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mma_prediction_statistics`
+--
+
+LOCK TABLES `mma_prediction_statistics` WRITE;
+/*!40000 ALTER TABLE `mma_prediction_statistics` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mma_prediction_statistics` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `mma_predictions`
+--
+
+DROP TABLE IF EXISTS `mma_predictions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `mma_predictions` (
+  `prediction_id` bigint NOT NULL AUTO_INCREMENT,
+  `fight_id` bigint NOT NULL COMMENT 'UFC 경기 ID',
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `predicted_fighter_id` bigint NOT NULL COMMENT '예측한 파이터 ID',
+  `comment` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '예측 코멘트',
+  `is_correct` tinyint(1) DEFAULT NULL COMMENT '예측 정답 여부',
+  `like_count` int DEFAULT '0' COMMENT '코멘트 추천수',
+  `dislike_count` int DEFAULT '0' COMMENT '코멘트 비추천수',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`prediction_id`),
+  UNIQUE KEY `unique_prediction` (`fight_id`,`user_id`),
+  KEY `predicted_fighter_id` (`predicted_fighter_id`),
+  KEY `idx_fight` (`fight_id`),
+  KEY `idx_user` (`user_id`),
+  CONSTRAINT `mma_predictions_ibfk_1` FOREIGN KEY (`fight_id`) REFERENCES `mma_fights` (`fight_id`) ON DELETE CASCADE,
+  CONSTRAINT `mma_predictions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `mma_predictions_ibfk_3` FOREIGN KEY (`predicted_fighter_id`) REFERENCES `fighters` (`fighter_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='UFC 승부예측';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `mma_predictions`
+--
+
+LOCK TABLES `mma_predictions` WRITE;
+/*!40000 ALTER TABLE `mma_predictions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `mma_predictions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `news`
+--
+
+DROP TABLE IF EXISTS `news`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `news` (
+  `news_id` bigint NOT NULL AUTO_INCREMENT,
+  `sport_id` bigint DEFAULT NULL COMMENT '종목 ID',
+  `title` varchar(300) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '뉴스 제목',
+  `content` text COLLATE utf8mb4_unicode_ci COMMENT '뉴스 내용 요약',
+  `thumbnail_url` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '썸네일 이미지 URL',
+  `source_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '원문 기사 URL',
+  `source_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '언론사 이름',
+  `published_at` datetime NOT NULL COMMENT '발행 시간',
+  `view_count` int DEFAULT '0' COMMENT '조회수',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`news_id`),
+  KEY `idx_sport` (`sport_id`),
+  KEY `idx_published` (`published_at`),
+  KEY `idx_view_count` (`view_count`),
+  CONSTRAINT `news_ibfk_1` FOREIGN KEY (`sport_id`) REFERENCES `sports` (`sport_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='스포츠 뉴스';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `news`
+--
+
+LOCK TABLES `news` WRITE;
+/*!40000 ALTER TABLE `news` DISABLE KEYS */;
+/*!40000 ALTER TABLE `news` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `notifications`
+--
+
+DROP TABLE IF EXISTS `notifications`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `notifications` (
+  `notification_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL COMMENT '수신자 ID',
+  `notification_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '알림 타입',
+  `content` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '알림 내용',
+  `related_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '관련 항목 타입',
+  `related_id` bigint DEFAULT NULL COMMENT '관련 항목 ID',
+  `is_read` tinyint(1) DEFAULT '0' COMMENT '읽음 여부',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`notification_id`),
+  KEY `idx_user_created` (`user_id`,`created_at`),
+  KEY `idx_is_read` (`is_read`),
+  CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='알림';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `notifications`
+--
+
+LOCK TABLES `notifications` WRITE;
+/*!40000 ALTER TABLE `notifications` DISABLE KEYS */;
+/*!40000 ALTER TABLE `notifications` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `post_attachments`
+--
+
+DROP TABLE IF EXISTS `post_attachments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `post_attachments` (
+  `attachment_id` bigint NOT NULL AUTO_INCREMENT,
+  `post_id` bigint NOT NULL COMMENT '게시글 ID',
+  `file_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '파일 타입 (IMAGE, VIDEO, LINK)',
+  `file_url` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '파일 URL',
+  `file_name` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '원본 파일명',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`attachment_id`),
+  KEY `idx_post` (`post_id`),
+  CONSTRAINT `post_attachments_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시글 첨부파일';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `post_attachments`
+--
+
+LOCK TABLES `post_attachments` WRITE;
+/*!40000 ALTER TABLE `post_attachments` DISABLE KEYS */;
+/*!40000 ALTER TABLE `post_attachments` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `post_likes`
+--
+
+DROP TABLE IF EXISTS `post_likes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `post_likes` (
+  `like_id` bigint NOT NULL AUTO_INCREMENT,
+  `post_id` bigint NOT NULL,
+  `user_id` bigint NOT NULL,
+  `like_type` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'LIKE or DISLIKE',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`like_id`),
+  UNIQUE KEY `unique_post_user_like` (`post_id`,`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `post_likes_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE,
+  CONSTRAINT `post_likes_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `post_likes`
+--
+
+LOCK TABLES `post_likes` WRITE;
+/*!40000 ALTER TABLE `post_likes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `post_likes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `post_reports`
+--
+
+DROP TABLE IF EXISTS `post_reports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `post_reports` (
+  `report_id` bigint NOT NULL AUTO_INCREMENT,
+  `post_id` bigint NOT NULL,
+  `reporter_id` bigint NOT NULL,
+  `reason` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '신고 사유',
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'PENDING' COMMENT 'PENDING, PROCESSED, REJECTED',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `processed_at` datetime DEFAULT NULL,
+  PRIMARY KEY (`report_id`),
+  KEY `post_id` (`post_id`),
+  KEY `reporter_id` (`reporter_id`),
+  KEY `idx_status` (`status`),
+  KEY `idx_created_at` (`created_at`),
+  CONSTRAINT `post_reports_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE,
+  CONSTRAINT `post_reports_ibfk_2` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `post_reports`
+--
+
+LOCK TABLES `post_reports` WRITE;
+/*!40000 ALTER TABLE `post_reports` DISABLE KEYS */;
+/*!40000 ALTER TABLE `post_reports` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `post_scraps`
+--
+
+DROP TABLE IF EXISTS `post_scraps`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `post_scraps` (
+  `scrap_id` bigint NOT NULL AUTO_INCREMENT,
+  `post_id` bigint NOT NULL COMMENT '게시글 ID',
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`scrap_id`),
+  UNIQUE KEY `unique_scrap` (`post_id`,`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `post_scraps_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE,
+  CONSTRAINT `post_scraps_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시글 스크랩';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `post_scraps`
+--
+
+LOCK TABLES `post_scraps` WRITE;
+/*!40000 ALTER TABLE `post_scraps` DISABLE KEYS */;
+/*!40000 ALTER TABLE `post_scraps` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `post_votes`
+--
+
+DROP TABLE IF EXISTS `post_votes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `post_votes` (
+  `vote_id` bigint NOT NULL AUTO_INCREMENT,
+  `post_id` bigint NOT NULL COMMENT '게시글 ID',
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `vote_type` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '투표 타입 (LIKE, DISLIKE)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`vote_id`),
+  UNIQUE KEY `unique_vote` (`post_id`,`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `post_votes_ibfk_1` FOREIGN KEY (`post_id`) REFERENCES `posts` (`post_id`) ON DELETE CASCADE,
+  CONSTRAINT `post_votes_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시글 추천/비추천';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `post_votes`
+--
+
+LOCK TABLES `post_votes` WRITE;
+/*!40000 ALTER TABLE `post_votes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `post_votes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `posts`
+--
+
+DROP TABLE IF EXISTS `posts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `posts` (
+  `post_id` bigint NOT NULL AUTO_INCREMENT,
+  `category_id` bigint NOT NULL COMMENT '카테고리 ID',
+  `user_id` bigint NOT NULL COMMENT '작성자 ID',
+  `title` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '게시글 제목',
+  `content` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '게시글 내용',
+  `view_count` int DEFAULT '0' COMMENT '조회수',
+  `like_count` int DEFAULT '0' COMMENT '추천수',
+  `dislike_count` int DEFAULT '0' COMMENT '비추천수',
+  `comment_count` int DEFAULT '0' COMMENT '댓글 수',
+  `is_notice` tinyint(1) DEFAULT '0' COMMENT '공지사항 여부',
+  `is_popular` tinyint(1) DEFAULT '0' COMMENT '인기글 여부',
+  `is_best` tinyint(1) DEFAULT '0' COMMENT '베스트 게시글 여부',
+  `is_blinded` tinyint(1) DEFAULT '0' COMMENT '관리자 블라인드 처리 여부',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '작성일',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '수정일',
+  PRIMARY KEY (`post_id`),
+  KEY `idx_category` (`category_id`),
+  KEY `idx_user` (`user_id`),
+  KEY `idx_popular` (`is_popular`,`like_count`),
+  KEY `idx_created` (`created_at`),
+  KEY `idx_posts_category_created` (`category_id`,`created_at` DESC),
+  KEY `idx_posts_popular_likes` (`is_popular`,`like_count` DESC),
+  KEY `idx_posts_blinded` (`is_blinded`),
+  FULLTEXT KEY `idx_search` (`title`,`content`),
+  CONSTRAINT `posts_ibfk_1` FOREIGN KEY (`category_id`) REFERENCES `board_categories` (`category_id`) ON DELETE CASCADE,
+  CONSTRAINT `posts_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='게시글';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `posts`
+--
+
+LOCK TABLES `posts` WRITE;
+/*!40000 ALTER TABLE `posts` DISABLE KEYS */;
+/*!40000 ALTER TABLE `posts` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `prediction_statistics`
+--
+
+DROP TABLE IF EXISTS `prediction_statistics`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `prediction_statistics` (
+  `stat_id` bigint NOT NULL AUTO_INCREMENT,
+  `match_id` bigint NOT NULL COMMENT '경기 ID',
+  `home_votes` int DEFAULT '0' COMMENT '홈팀 승 예측 수',
+  `draw_votes` int DEFAULT '0' COMMENT '무승부 예측 수',
+  `away_votes` int DEFAULT '0' COMMENT '원정팀 승 예측 수',
+  `total_votes` int DEFAULT '0' COMMENT '전체 예측 수',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`stat_id`),
+  UNIQUE KEY `unique_match_stat` (`match_id`),
+  CONSTRAINT `prediction_statistics_ibfk_1` FOREIGN KEY (`match_id`) REFERENCES `matches` (`match_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='예측 통계';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `prediction_statistics`
+--
+
+LOCK TABLES `prediction_statistics` WRITE;
+/*!40000 ALTER TABLE `prediction_statistics` DISABLE KEYS */;
+/*!40000 ALTER TABLE `prediction_statistics` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `prediction_votes`
+--
+
+DROP TABLE IF EXISTS `prediction_votes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `prediction_votes` (
+  `vote_id` bigint NOT NULL AUTO_INCREMENT,
+  `prediction_id` bigint NOT NULL COMMENT '예측 ID',
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `vote_type` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '투표 타입 (LIKE, DISLIKE)',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`vote_id`),
+  UNIQUE KEY `unique_vote` (`prediction_id`,`user_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `prediction_votes_ibfk_1` FOREIGN KEY (`prediction_id`) REFERENCES `predictions` (`prediction_id`) ON DELETE CASCADE,
+  CONSTRAINT `prediction_votes_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='예측 코멘트 투표';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `prediction_votes`
+--
+
+LOCK TABLES `prediction_votes` WRITE;
+/*!40000 ALTER TABLE `prediction_votes` DISABLE KEYS */;
+/*!40000 ALTER TABLE `prediction_votes` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `predictions`
+--
+
+DROP TABLE IF EXISTS `predictions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `predictions` (
+  `prediction_id` bigint NOT NULL AUTO_INCREMENT,
+  `match_id` bigint NOT NULL COMMENT '경기 ID',
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `predicted_result` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '예측 결과 (HOME, DRAW, AWAY)',
+  `comment` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '예측 코멘트',
+  `is_correct` tinyint(1) DEFAULT NULL COMMENT '예측 정답 여부',
+  `like_count` int DEFAULT '0' COMMENT '코멘트 추천수',
+  `dislike_count` int DEFAULT '0' COMMENT '코멘트 비추천수',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`prediction_id`),
+  UNIQUE KEY `unique_prediction` (`match_id`,`user_id`),
+  KEY `idx_match` (`match_id`),
+  KEY `idx_user` (`user_id`),
+  CONSTRAINT `predictions_ibfk_1` FOREIGN KEY (`match_id`) REFERENCES `matches` (`match_id`) ON DELETE CASCADE,
+  CONSTRAINT `predictions_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자 승부예측';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `predictions`
+--
+
+LOCK TABLES `predictions` WRITE;
+/*!40000 ALTER TABLE `predictions` DISABLE KEYS */;
+INSERT INTO `predictions` VALUES (1,81,2,'HOME','',NULL,0,0,'2025-10-23 05:46:04'),(2,82,2,'HOME','',NULL,0,0,'2025-10-23 05:48:09');
+/*!40000 ALTER TABLE `predictions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `reports`
+--
+
+DROP TABLE IF EXISTS `reports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reports` (
+  `report_id` bigint NOT NULL AUTO_INCREMENT,
+  `reporter_id` bigint NOT NULL COMMENT '신고자 ID',
+  `target_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '신고 대상 타입',
+  `target_id` bigint NOT NULL COMMENT '신고 대상 ID',
+  `reason` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '신고 사유',
+  `description` text COLLATE utf8mb4_unicode_ci COMMENT '상세 설명',
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'PENDING' COMMENT '처리 상태',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`report_id`),
+  KEY `reporter_id` (`reporter_id`),
+  KEY `idx_target` (`target_type`,`target_id`),
+  KEY `idx_status` (`status`),
+  CONSTRAINT `reports_ibfk_1` FOREIGN KEY (`reporter_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='신고';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `reports`
+--
+
+LOCK TABLES `reports` WRITE;
+/*!40000 ALTER TABLE `reports` DISABLE KEYS */;
+/*!40000 ALTER TABLE `reports` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `sports`
+--
+
+DROP TABLE IF EXISTS `sports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `sports` (
+  `sport_id` bigint NOT NULL AUTO_INCREMENT,
+  `sport_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '종목 이름 (FOOTBALL, BASKETBALL, BASEBALL, LOL, MMA)',
+  `display_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '화면 표시 이름 (축구, 농구, 야구, 롤, UFC)',
+  `display_order` int DEFAULT '0' COMMENT '표시 순서',
+  `is_active` tinyint(1) DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`sport_id`),
+  UNIQUE KEY `sport_name` (`sport_name`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='스포츠 종목';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `sports`
+--
+
+LOCK TABLES `sports` WRITE;
+/*!40000 ALTER TABLE `sports` DISABLE KEYS */;
+INSERT INTO `sports` VALUES (1,'FOOTBALL','축구',1,1,'2025-10-15 10:30:28'),(2,'BASKETBALL','농구',2,1,'2025-10-15 10:30:28'),(3,'BASEBALL','야구',3,1,'2025-10-15 10:30:28'),(4,'LOL','롤',4,1,'2025-10-15 10:30:28'),(5,'MMA','UFC',5,1,'2025-10-15 10:30:28');
+/*!40000 ALTER TABLE `sports` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `teams`
+--
+
+DROP TABLE IF EXISTS `teams`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `teams` (
+  `team_id` bigint NOT NULL AUTO_INCREMENT,
+  `league_id` bigint NOT NULL COMMENT '리그 ID',
+  `team_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '팀 이름',
+  `team_logo` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '팀 로고 URL',
+  `country` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '국가',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`team_id`),
+  KEY `idx_league` (`league_id`),
+  CONSTRAINT `teams_ibfk_1` FOREIGN KEY (`league_id`) REFERENCES `leagues` (`league_id`) ON DELETE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=71 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='팀 정보';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `teams`
+--
+
+LOCK TABLES `teams` WRITE;
+/*!40000 ALTER TABLE `teams` DISABLE KEYS */;
+INSERT INTO `teams` VALUES (1,1,'노팅엄 포레스트','http://localhost:8080/images/teams/nottingham_forest.svg','England','2025-10-16 00:09:43'),(2,1,'뉴캐슬 유나이티드','http://localhost:8080/images/teams/newcastle.svg','England','2025-10-16 00:09:43'),(3,1,'리버풀','http://localhost:8080/images/teams/liverpool.svg','England','2025-10-16 00:09:43'),(4,1,'리즈 유나이티드','http://localhost:8080/images/teams/leeds.svg','England','2025-10-16 00:09:43'),(5,1,'맨체스터 시티','http://localhost:8080/images/teams/man_city.svg','England','2025-10-16 00:09:43'),(6,1,'맨체스터 유나이티드','http://localhost:8080/images/teams/man_united.svg','England','2025-10-16 00:09:43'),(7,1,'번리','http://localhost:8080/images/teams/burnley.svg','England','2025-10-16 00:09:43'),(8,1,'본머스','http://localhost:8080/images/teams/bournemouth.svg','England','2025-10-16 00:09:43'),(9,1,'브라이튼','http://localhost:8080/images/teams/brighton.svg','England','2025-10-16 00:09:43'),(10,1,'브렌트포드','http://localhost:8080/images/teams/brentford.svg','England','2025-10-16 00:09:43'),(11,1,'선덜랜드','http://localhost:8080/images/teams/sunderland.svg','England','2025-10-16 00:09:43'),(12,1,'아스날','http://localhost:8080/images/teams/arsenal.svg','England','2025-10-16 00:09:43'),(13,1,'아스톤 빌라','http://localhost:8080/images/teams/aston_villa.svg','England','2025-10-16 00:09:43'),(14,1,'에버턴','http://localhost:8080/images/teams/everton.svg','England','2025-10-16 00:09:43'),(15,1,'울버햄튼','http://localhost:8080/images/teams/wolverhampton.svg','England','2025-10-16 00:09:43'),(16,1,'웨스트햄','http://localhost:8080/images/teams/west_ham.svg','England','2025-10-16 00:09:43'),(17,1,'첼시','http://localhost:8080/images/teams/chelsea.svg','England','2025-10-16 00:09:43'),(18,1,'토트넘','http://localhost:8080/images/teams/tottenham.svg','England','2025-10-16 00:09:43'),(19,1,'크리스탈 팰리스','http://localhost:8080/images/teams/crystal_palace.svg','England','2025-10-16 00:09:43'),(20,1,'풀럼','http://localhost:8080/images/teams/fulham.svg','England','2025-10-16 00:09:43'),(21,2,'보스턴 셀틱스','http://localhost:8080/images/teams/boston_celtics.svg','USA','2025-10-16 00:09:43'),(22,2,'브루클린 네츠','http://localhost:8080/images/teams/brooklyn_nets.svg','USA','2025-10-16 00:09:43'),(23,2,'뉴욕 닉스','http://localhost:8080/images/teams/new_york_knicks.svg','USA','2025-10-16 00:09:43'),(24,2,'필라델피아 76ers','http://localhost:8080/images/teams/philadelphia_76ers.svg','USA','2025-10-16 00:09:43'),(25,2,'토론토 랩터스','http://localhost:8080/images/teams/toronto_raptors.svg','USA','2025-10-16 00:09:43'),(26,2,'시카고 불스','http://localhost:8080/images/teams/chicago_bulls.svg','USA','2025-10-16 00:09:43'),(27,2,'클리블랜드 캐벌리어스','http://localhost:8080/images/teams/cleveland_cavaliers.svg','USA','2025-10-16 00:09:43'),(28,2,'디트로이트 피스톤즈','http://localhost:8080/images/teams/detroit_pistons.svg','USA','2025-10-16 00:09:43'),(29,2,'인디애나 페이서스','http://localhost:8080/images/teams/indiana_pacers.svg','USA','2025-10-16 00:09:43'),(30,2,'밀워키 벅스','http://localhost:8080/images/teams/milwaukee_bucks.svg','USA','2025-10-16 00:09:43'),(31,2,'애틀랜타 호크스','http://localhost:8080/images/teams/atlanta_hawks.svg','USA','2025-10-16 00:09:43'),(32,2,'샬럿 호넷츠','http://localhost:8080/images/teams/charlotte_hornets.svg','USA','2025-10-16 00:09:43'),(33,2,'마이애미 히트','http://localhost:8080/images/teams/miami_heat.svg','USA','2025-10-16 00:09:43'),(34,2,'올랜도 매직','http://localhost:8080/images/teams/orlando_magic.svg','USA','2025-10-16 00:09:43'),(35,2,'워싱턴 위저즈','http://localhost:8080/images/teams/washington_wizards.svg','USA','2025-10-16 00:09:43'),(36,2,'덴버 너기츠','http://localhost:8080/images/teams/denver_nuggets.svg','USA','2025-10-16 00:09:43'),(37,2,'미네소타 팀버울브스','http://localhost:8080/images/teams/minnesota_timberwolves.svg','USA','2025-10-16 00:09:43'),(38,2,'오클라호마시티 썬더','http://localhost:8080/images/teams/oklahoma_city_thunder.svg','USA','2025-10-16 00:09:43'),(39,2,'포틀랜드 트레일블레이저스','http://localhost:8080/images/teams/portland_trail_blazers.svg','USA','2025-10-16 00:09:43'),(40,2,'유타 재즈','http://localhost:8080/images/teams/utah_jazz.svg','USA','2025-10-16 00:09:43'),(41,2,'골든스테이트 워리어스','http://localhost:8080/images/teams/golden_state_warriors.svg','USA','2025-10-16 00:09:43'),(42,2,'LA 클리퍼스','http://localhost:8080/images/teams/la_clippers.svg','USA','2025-10-16 00:09:43'),(43,2,'로스앤젤레스 레이커스','http://localhost:8080/images/teams/los_angeles_lakers.svg','USA','2025-10-16 00:09:43'),(44,2,'피닉스 선스','http://localhost:8080/images/teams/phoenix_suns.svg','USA','2025-10-16 00:09:43'),(45,2,'새크라멘토 킹스','http://localhost:8080/images/teams/sacramento_kings.svg','USA','2025-10-16 00:09:43'),(46,2,'댈러스 매버릭스','http://localhost:8080/images/teams/dallas_mavericks.svg','USA','2025-10-16 00:09:43'),(47,2,'휴스턴 로키츠','http://localhost:8080/images/teams/houston_rockets.svg','USA','2025-10-16 00:09:43'),(48,2,'멤피스 그리즐리스','http://localhost:8080/images/teams/memphis_grizzlies.svg','USA','2025-10-16 00:09:43'),(49,2,'뉴올리언스 펠리컨스','http://localhost:8080/images/teams/new_orleans_pelicans.svg','USA','2025-10-16 00:09:43'),(50,2,'샌안토니오 스퍼스','http://localhost:8080/images/teams/san_antonio_spurs.svg','USA','2025-10-16 00:09:43'),(51,3,'기아 타이거즈','http://localhost:8080/images/teams/kia_tigers.png','Korea','2025-10-16 00:09:43'),(52,3,'삼성 라이온즈','http://localhost:8080/images/teams/samsung_lions.png','Korea','2025-10-16 00:09:43'),(53,3,'LG 트윈스','http://localhost:8080/images/teams/lg_twins.png','Korea','2025-10-16 00:09:43'),(54,3,'두산 베어스','http://localhost:8080/images/teams/doosan_bears.png','Korea','2025-10-16 00:09:43'),(55,3,'KT 위즈','http://localhost:8080/images/teams/kt_wiz.png','Korea','2025-10-16 00:09:43'),(56,3,'SSG 랜더스','http://localhost:8080/images/teams/ssg_landers.png','Korea','2025-10-16 00:09:43'),(57,3,'롯데 자이언츠','http://localhost:8080/images/teams/lotte_giants.png','Korea','2025-10-16 00:09:43'),(58,3,'한화 이글스','http://localhost:8080/images/teams/hanwha_eagles.png','Korea','2025-10-16 00:09:43'),(59,3,'NC 다이노스','http://localhost:8080/images/teams/nc_dinos.png','Korea','2025-10-16 00:09:43'),(60,3,'키움 히어로즈','http://localhost:8080/images/teams/kiwoom_heroes.png','Korea','2025-10-16 00:09:43'),(61,4,'Gen.G','http://localhost:8080/images/teams/geng.svg','Korea','2025-10-16 00:09:43'),(62,4,'한화생명 e스포츠','http://localhost:8080/images/teams/hanwha_life.svg','Korea','2025-10-16 00:09:43'),(63,4,'kt 롤스터','http://localhost:8080/images/teams/kt_rolster.svg','Korea','2025-10-16 00:09:43'),(64,4,'T1','http://localhost:8080/images/teams/t1.svg','Korea','2025-10-16 00:09:43'),(65,4,'Dplus KIA','http://localhost:8080/images/teams/dplus_kia.svg','Korea','2025-10-16 00:09:43'),(66,4,'BNK FEARX','http://localhost:8080/images/teams/bnk_fearx.svg','Korea','2025-10-16 00:09:43'),(67,4,'농심 레드포스','http://localhost:8080/images/teams/nongshim_redforce.svg','Korea','2025-10-16 00:09:43'),(68,4,'OK저축은행 브리온','http://localhost:8080/images/teams/ok_savingsbank_brion.svg','Korea','2025-10-16 00:09:43'),(69,4,'DRX','http://localhost:8080/images/teams/drx.svg','Korea','2025-10-16 00:09:43'),(70,4,'DN 프릭스','http://localhost:8080/images/teams/dn_freecs.svg','Korea','2025-10-16 00:09:43');
+/*!40000 ALTER TABLE `teams` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_blocks`
+--
+
+DROP TABLE IF EXISTS `user_blocks`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_blocks` (
+  `block_id` bigint NOT NULL AUTO_INCREMENT,
+  `blocker_id` bigint NOT NULL COMMENT '차단한 사용자 ID',
+  `blocked_id` bigint NOT NULL COMMENT '차단된 사용자 ID',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`block_id`),
+  UNIQUE KEY `unique_block` (`blocker_id`,`blocked_id`),
+  KEY `blocked_id` (`blocked_id`),
+  CONSTRAINT `user_blocks_ibfk_1` FOREIGN KEY (`blocker_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `user_blocks_ibfk_2` FOREIGN KEY (`blocked_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자 차단';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_blocks`
+--
+
+LOCK TABLES `user_blocks` WRITE;
+/*!40000 ALTER TABLE `user_blocks` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_blocks` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `user_settings`
+--
+
+DROP TABLE IF EXISTS `user_settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_settings` (
+  `setting_id` bigint NOT NULL AUTO_INCREMENT,
+  `user_id` bigint NOT NULL COMMENT '사용자 ID',
+  `comment_notification` tinyint(1) DEFAULT '1' COMMENT '댓글 알림',
+  `reply_notification` tinyint(1) DEFAULT '1' COMMENT '대댓글 알림',
+  `popular_post_notification` tinyint(1) DEFAULT '1' COMMENT '인기글 진입 알림',
+  `prediction_result_notification` tinyint(1) DEFAULT '1' COMMENT '예측 결과 알림',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`setting_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `user_settings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자 설정';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `user_settings`
+--
+
+LOCK TABLES `user_settings` WRITE;
+/*!40000 ALTER TABLE `user_settings` DISABLE KEYS */;
+/*!40000 ALTER TABLE `user_settings` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `user_id` bigint NOT NULL AUTO_INCREMENT COMMENT '사용자 고유 ID',
+  `username` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '로그인 아이디',
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '암호화된 비밀번호',
+  `nickname` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '커뮤니티 활동 닉네임',
+  `email` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '이메일 주소',
+  `profile_image` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT '/images/default-profile.png' COMMENT '프로필 이미지 URL',
+  `tier` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT 'BRONZE' COMMENT '티어 등급',
+  `tier_score` int DEFAULT '0' COMMENT '티어 점수',
+  `is_active` tinyint(1) DEFAULT '1' COMMENT '계정 활성화 상태',
+  `is_admin` tinyint(1) DEFAULT '0' COMMENT '관리자 여부',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP COMMENT '가입일',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '정보 수정일',
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `username` (`username`),
+  UNIQUE KEY `nickname` (`nickname`),
+  UNIQUE KEY `email` (`email`),
+  KEY `idx_username` (`username`),
+  KEY `idx_nickname` (`nickname`),
+  KEY `idx_tier` (`tier`,`tier_score`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='사용자 기본 정보';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'admin','$2a$10$ExampleHashedPassword','관리자','admin@sports.com','/images/default-profile.png','BRONZE',0,1,1,'2025-10-15 10:30:28','2025-10-15 10:30:28'),(2,'rokmc1292','$2a$10$lV0QRsZqKvU39eUH.6cAceV4pmr8PnP8xyLdgQUA6BKN81Gbe5nQC','김태욱','modk2400@gmail.com','/images/default-profile.png','BRONZE',0,1,0,'2025-10-23 05:05:40','2025-10-23 05:05:40');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2025-10-25  0:50:58
