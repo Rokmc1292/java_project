@@ -92,7 +92,8 @@ CREATE INDEX idx_comments_parent ON comments(parent_comment_id);
 INSERT INTO board_categories (category_name, display_order, is_active, created_at)
 VALUES
     ('축구', 1, TRUE, NOW()),
-    ('야구', 2, TRUE, NOW()),
-    ('농구', 3, TRUE, NOW()),
-    ('기타', 4, TRUE, NOW())
+    ('농구', 2, TRUE, NOW()),
+    ('야구', 3, TRUE, NOW()),
+    ('롤', 4, TRUE, NOW()),
+    ('UFC', 5, TRUE, NOW())
 ON DUPLICATE KEY UPDATE display_order = VALUES(display_order);

@@ -16,7 +16,7 @@ function Community() {
   const [totalPages, setTotalPages] = useState(0);
   const navigate = useNavigate();
 
-  const categories = ['전체글', '축구', '야구', '농구', '기타'];
+  const categories = ['전체글', '축구', '농구', '야구', '롤', 'UFC'];
 
   // 로그인 상태 확인
   useEffect(() => {

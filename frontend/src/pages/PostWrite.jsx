@@ -39,9 +39,10 @@ function PostWrite() {
     // 임시로 하드코딩 (실제로는 API에서 가져와야 함)
     setCategories([
       { categoryId: 1, categoryName: '축구' },
-      { categoryId: 2, categoryName: '야구' },
-      { categoryId: 3, categoryName: '농구' },
-      { categoryId: 4, categoryName: '기타' }
+      { categoryId: 2, categoryName: '농구' },
+      { categoryId: 3, categoryName: '야구' },
+      { categoryId: 4, categoryName: '롤' },
+      { categoryId: 5, categoryName: 'UFC' }
     ]);
   }, []);
 
