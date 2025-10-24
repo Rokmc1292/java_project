@@ -5,6 +5,7 @@ import java.util.List;
 
 @Data
 public class CreatePostRequest {
+    private String username;
     private Long categoryId;
     private String title;
     private String content;
