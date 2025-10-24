@@ -4,6 +4,9 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Fixtures from './pages/Fixtures';
 import Community from './pages/Community';
+import PostDetail from './pages/PostDetail';
+import PostWrite from './pages/PostWrite';
+import PostEdit from './pages/PostEdit';
 import Predictions from './pages/Predictions';
 import Live from './pages/Live';
 import News from './pages/News';
@@ -57,6 +60,9 @@ function App() {
 
           {/* 커뮤니티 */}
           <Route path="/community" element={<Community />} />
+          <Route path="/community/post/:postId" element={<PostDetail />} />
+          <Route path="/community/write" element={<PostWrite />} />
+          <Route path="/community/edit/:postId" element={<PostEdit />} />
 
           {/* 승부예측 */}
           <Route path="/predictions" element={<Predictions />} />
