@@ -121,7 +121,7 @@ public class CommunityController {
      */
     @PostMapping("/posts")
     public ResponseEntity<PostDto> createPost(@RequestBody CreatePostRequest request) {
-        PostDto post = communityService.createPost(request, request.getTitle()); // username은 요청에서 추출
+        PostDto post = communityService.createPost(request, request.getUsername());
         return ResponseEntity.ok(post);
     }
 
