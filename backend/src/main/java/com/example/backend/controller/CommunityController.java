@@ -25,6 +25,18 @@ public class CommunityController {
     private final CommunityService communityService;
     private final StatisticsService statisticsService;
 
+    // ==================== 카테고리 ====================
+
+    /**
+     * 카테고리 목록 조회
+     * GET /api/community/categories
+     */
+    @GetMapping("/categories")
+    public ResponseEntity<List<BoardCategoryDto>> getAllCategories() {
+        List<BoardCategoryDto> categories = communityService.getAllCategories();
+        return ResponseEntity.ok(categories);
+    }
+
     // ==================== 게시글 조회 ====================
 
     /**

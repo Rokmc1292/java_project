@@ -547,6 +547,27 @@ public class CommunityService {
         return dto;
     }
 
+    /**
+     * 카테고리 목록 조회
+     */
+    @Transactional(readOnly = true)
+    public List<BoardCategoryDto> getAllCategories() {
+        List<BoardCategory> categories = boardCategoryRepository.findAllByIsActiveTrueOrderByDisplayOrderAsc();
+        return categories.stream()
+                .map(this::convertToCategoryDto)
+                .collect(Collectors.toList());
+    }
+
+    private BoardCategoryDto convertToCategoryDto(BoardCategory category) {
+        BoardCategoryDto dto = new BoardCategoryDto();
+        dto.setCategoryId(category.getCategoryId());
+        dto.setCategoryName(category.getCategoryName());
+        dto.setDisplayOrder(category.getDisplayOrder());
+        dto.setIsActive(category.getIsActive());
+        dto.setCreatedAt(category.getCreatedAt());
+        return dto;
+    }
+
     private CommentDto convertToCommentDto(Comment comment) {
         CommentDto dto = new CommentDto();
         dto.setCommentId(comment.getCommentId());

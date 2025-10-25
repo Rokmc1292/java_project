@@ -14,9 +14,8 @@ function Community() {
   const [user, setUser] = useState(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [categories, setCategories] = useState(['전체글', '축구', '야구', '농구', '롤', 'UFC']);
   const navigate = useNavigate();
-
-  const categories = ['전체글', '축구', '야구', '농구', '기타'];
 
   // 로그인 상태 확인
   useEffect(() => {
@@ -28,6 +27,24 @@ function Community() {
         console.error('사용자 정보 파싱 오류:', e);
       }
     }
+  }, []);
+
+  // 카테고리 목록 조회
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/community/categories');
+        if (response.ok) {
+          const data = await response.json();
+          const categoryNames = ['전체글', ...data.map(cat => cat.categoryName)];
+          setCategories(categoryNames);
+        }
+      } catch (error) {
+        console.error('카테고리 조회 오류:', error);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   // 게시글 목록 조회

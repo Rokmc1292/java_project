@@ -36,13 +36,37 @@ function PostWrite() {
 
   // 카테고리 목록 조회
   useEffect(() => {
-    // 임시로 하드코딩 (실제로는 API에서 가져와야 함)
-    setCategories([
-      { categoryId: 1, categoryName: '축구' },
-      { categoryId: 2, categoryName: '야구' },
-      { categoryId: 3, categoryName: '농구' },
-      { categoryId: 4, categoryName: '기타' }
-    ]);
+    const fetchCategories = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/community/categories');
+        if (response.ok) {
+          const data = await response.json();
+          setCategories(data);
+        } else {
+          console.error('카테고리 조회 실패');
+          // 실패 시 기본 카테고리 설정
+          setCategories([
+            { categoryId: 1, categoryName: '축구' },
+            { categoryId: 2, categoryName: '야구' },
+            { categoryId: 3, categoryName: '농구' },
+            { categoryId: 4, categoryName: '롤' },
+            { categoryId: 5, categoryName: 'UFC' }
+          ]);
+        }
+      } catch (error) {
+        console.error('카테고리 조회 오류:', error);
+        // 오류 시 기본 카테고리 설정
+        setCategories([
+          { categoryId: 1, categoryName: '축구' },
+          { categoryId: 2, categoryName: '야구' },
+          { categoryId: 3, categoryName: '농구' },
+          { categoryId: 4, categoryName: '롤' },
+          { categoryId: 5, categoryName: 'UFC' }
+        ]);
+      }
+    };
+
+    fetchCategories();
   }, []);
 
   // 폼 입력 핸들러
@@ -107,6 +131,7 @@ function PostWrite() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          username: user.username,
           categoryId: parseInt(formData.categoryId),
           title: formData.title,
           content: formData.content,
