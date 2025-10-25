@@ -129,8 +129,6 @@ public class CommunityService {
                 attachment.setFileType(attachmentDto.getFileType());
                 attachment.setFileUrl(attachmentDto.getFileUrl());
                 attachment.setFileName(attachmentDto.getFileName());
-                attachment.setFileSize(attachmentDto.getFileSize());
-                attachment.setDisplayOrder(attachmentDto.getDisplayOrder());
                 postAttachmentRepository.save(attachment);
             }
         }
@@ -164,8 +162,6 @@ public class CommunityService {
                 attachment.setFileType(attachmentDto.getFileType());
                 attachment.setFileUrl(attachmentDto.getFileUrl());
                 attachment.setFileName(attachmentDto.getFileName());
-                attachment.setFileSize(attachmentDto.getFileSize());
-                attachment.setDisplayOrder(attachmentDto.getDisplayOrder());
                 postAttachmentRepository.save(attachment);
             }
         }
@@ -541,8 +537,6 @@ public class CommunityService {
         dto.setFileType(attachment.getFileType());
         dto.setFileUrl(attachment.getFileUrl());
         dto.setFileName(attachment.getFileName());
-        dto.setFileSize(attachment.getFileSize());
-        dto.setDisplayOrder(attachment.getDisplayOrder());
         dto.setCreatedAt(attachment.getCreatedAt());
         return dto;
     }

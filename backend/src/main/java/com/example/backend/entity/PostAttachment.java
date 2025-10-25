@@ -30,14 +30,8 @@ public class PostAttachment {
     @Column(name = "file_url", nullable = false, length = 500)
     private String fileUrl;
 
-    @Column(name = "file_name", length = 200)
+    @Column(name = "file_name", length = 255)
     private String fileName;
-
-    @Column(name = "file_size")
-    private Long fileSize;
-
-    @Column(name = "display_order")
-    private Integer displayOrder = 0;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

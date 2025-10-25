@@ -9,7 +9,5 @@ public class PostAttachmentDto {
     private String fileType; // IMAGE, VIDEO, LINK
     private String fileUrl;
     private String fileName;
-    private Long fileSize;
-    private Integer displayOrder;
     private LocalDateTime createdAt;
 }

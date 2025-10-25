@@ -93,8 +93,7 @@ function PostWrite() {
         {
           fileType: type,
           fileUrl: url,
-          fileName: url.split('/').pop() || url,
-          displayOrder: prev.length
+          fileName: url.split('/').pop() || url
         }
       ]);
     }
