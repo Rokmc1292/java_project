@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.config.JwtUtil;
 import com.example.backend.dto.LoginRequest;
 import com.example.backend.dto.SignupRequest;
 import com.example.backend.dto.UserResponse;
@@ -14,6 +15,7 @@ import java.util.Map;
 /**
  * 인증 관련 API Controller
  * 회원가입, 로그인, 중복 체크 엔드포인트 제공
+ * JWT 토큰 기반 인증 시스템
  */
 @RestController
 @RequestMapping("/api/auth")
@@ -21,6 +23,7 @@ import java.util.Map;
 public class AuthController {
 
     private final UserService userService;
+    private final JwtUtil jwtUtil;
 
     /**
      * 회원가입 API
@@ -30,34 +33,30 @@ public class AuthController {
      */
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody SignupRequest request) {
-        try {
-            UserResponse userResponse = userService.signup(request);
-            return ResponseEntity.ok(userResponse);
-        } catch (IllegalArgumentException e) {
-            // 중복 체크 실패, 비밀번호 불일치 등의 에러 처리
-            Map<String, String> error = new HashMap<>();
-            error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        UserResponse userResponse = userService.signup(request);
+        return ResponseEntity.ok(userResponse);
     }
 
     /**
-     * 로그인 API
+     * 로그인 API (JWT 토큰 발급)
      * POST /api/auth/login
      * 요청 본문: LoginRequest (username, password)
-     * 응답: 로그인한 사용자 정보 (UserResponse)
+     * 응답: 사용자 정보 + JWT 토큰
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
-        try {
-            UserResponse userResponse = userService.login(request);
-            return ResponseEntity.ok(userResponse);
-        } catch (IllegalArgumentException e) {
-            // 로그인 실패 에러 처리
-            Map<String, String> error = new HashMap<>();
-            error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+        // 로그인 검증
+        UserResponse userResponse = userService.login(request);
+
+        // JWT 토큰 생성
+        String token = jwtUtil.generateToken(request.getUsername());
+
+        // 응답 데이터 구성
+        Map<String, Object> response = new HashMap<>();
+        response.put("user", userResponse);
+        response.put("token", token);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
@@ -88,7 +87,7 @@ public class AuthController {
 
     /**
      * 닉네임 중복 체크 API
-     * GET /api/auth/check-nickname?nickname=테스트
+     * GET /api/auth/check-nickname?nickname=테스터
      * 응답: { "isDuplicate": true/false }
      */
     @GetMapping("/check-nickname")
@@ -100,19 +99,18 @@ public class AuthController {
     }
 
     /**
-     * 사용자 정보 조회 API
-     * GET /api/auth/user/{userId}
-     * 응답: 사용자 정보 (UserResponse)
+     * 현재 로그인한 사용자 정보 조회
+     * GET /api/auth/me
+     * 헤더: Authorization: Bearer {token}
+     * 응답: 사용자 정보
      */
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<?> getUserInfo(@PathVariable Long userId) {
-        try {
-            UserResponse userResponse = userService.getUserInfo(userId);
-            return ResponseEntity.ok(userResponse);
-        } catch (IllegalArgumentException e) {
-            Map<String, String> error = new HashMap<>();
-            error.put("message", e.getMessage());
-            return ResponseEntity.badRequest().body(error);
-        }
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> getCurrentUser(@RequestHeader("Authorization") String authHeader) {
+        // Bearer 토큰에서 실제 토큰 추출
+        String token = authHeader.substring(7);
+        String username = jwtUtil.getUsernameFromToken(token);
+
+        UserResponse userResponse = userService.getUserByUsername(username);
+        return ResponseEntity.ok(userResponse);
     }
 }

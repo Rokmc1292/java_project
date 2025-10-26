@@ -1,72 +1,59 @@
-// 백엔드 API 기본 URL
-const API_BASE_URL = 'http://localhost:8080/api';
+/**
+ * 인증 관련 API 함수들
+ * 회원가입, 로그인, 중복 체크
+ * 
+ * 파일 위치: frontend/src/api/auth.js
+ */
+
+import { apiPost, apiGet, saveUserData } from './api';
 
 /**
- * 회원가입 API 호출
- * @param {Object} signupData - 회원가입 데이터 (username, password, passwordConfirm, nickname, email)
- * @returns {Promise} - 회원가입 결과
+ * 회원가입
+ * @param {object} signupData - 회원가입 데이터 (username, password, passwordConfirm, nickname, email)
+ * @returns {Promise} - 생성된 사용자 정보
  */
 export const signup = async (signupData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/signup`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(signupData),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      // 에러 응답 처리
-      throw new Error(data.message || '회원가입에 실패했습니다.');
-    }
-
-    return data;
+    const response = await apiPost('/api/auth/signup', signupData);
+    return response;
   } catch (error) {
     throw error;
   }
 };
 
 /**
- * 로그인 API 호출
- * @param {Object} loginData - 로그인 데이터 (username, password)
- * @returns {Promise} - 로그인 결과
+ * 로그인 (JWT 토큰 발급)
+ * @param {object} loginData - 로그인 데이터 (username, password)
+ * @returns {Promise} - 사용자 정보 + JWT 토큰
  */
 export const login = async (loginData) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/login`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(loginData),
-    });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      // 에러 응답 처리
-      throw new Error(data.message || '로그인에 실패했습니다.');
-    }
-
-    return data;
+    const response = await apiPost('/api/auth/login', loginData);
+    
+    // 응답에서 user와 token을 합쳐서 저장
+    const userData = {
+      ...response.user,
+      token: response.token
+    };
+    
+    // 로컬 스토리지에 저장
+    saveUserData(userData);
+    
+    return userData;
   } catch (error) {
     throw error;
   }
 };
 
 /**
- * 아이디 중복 체크 API 호출
- * @param {string} username - 체크할 아이디
- * @returns {Promise<boolean>} - 중복 여부
+ * 아이디 중복 체크
+ * @param {string} username - 확인할 아이디
+ * @returns {Promise<boolean>} - 중복 여부 (true: 중복, false: 사용 가능)
  */
 export const checkUsernameDuplicate = async (username) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/check-username?username=${username}`);
-    const data = await response.json();
-    return data.isDuplicate;
+    const response = await apiGet(`/api/auth/check-username?username=${username}`);
+    return response.isDuplicate;
   } catch (error) {
     console.error('아이디 중복 체크 오류:', error);
     return false;
@@ -74,15 +61,14 @@ export const checkUsernameDuplicate = async (username) => {
 };
 
 /**
- * 이메일 중복 체크 API 호출
- * @param {string} email - 체크할 이메일
- * @returns {Promise<boolean>} - 중복 여부
+ * 이메일 중복 체크
+ * @param {string} email - 확인할 이메일
+ * @returns {Promise<boolean>} - 중복 여부 (true: 중복, false: 사용 가능)
  */
 export const checkEmailDuplicate = async (email) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/check-email?email=${email}`);
-    const data = await response.json();
-    return data.isDuplicate;
+    const response = await apiGet(`/api/auth/check-email?email=${email}`);
+    return response.isDuplicate;
   } catch (error) {
     console.error('이메일 중복 체크 오류:', error);
     return false;
@@ -90,17 +76,29 @@ export const checkEmailDuplicate = async (email) => {
 };
 
 /**
- * 닉네임 중복 체크 API 호출
- * @param {string} nickname - 체크할 닉네임
- * @returns {Promise<boolean>} - 중복 여부
+ * 닉네임 중복 체크
+ * @param {string} nickname - 확인할 닉네임
+ * @returns {Promise<boolean>} - 중복 여부 (true: 중복, false: 사용 가능)
  */
 export const checkNicknameDuplicate = async (nickname) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/auth/check-nickname?nickname=${nickname}`);
-    const data = await response.json();
-    return data.isDuplicate;
+    const response = await apiGet(`/api/auth/check-nickname?nickname=${nickname}`);
+    return response.isDuplicate;
   } catch (error) {
     console.error('닉네임 중복 체크 오류:', error);
     return false;
+  }
+};
+
+/**
+ * 현재 로그인한 사용자 정보 조회
+ * @returns {Promise} - 사용자 정보
+ */
+export const getCurrentUser = async () => {
+  try {
+    const response = await apiGet('/api/auth/me');
+    return response;
+  } catch (error) {
+    throw error;
   }
 };

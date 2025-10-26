@@ -13,6 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 사용자 관련 비즈니스 로직을 처리하는 Service
  * 회원가입, 로그인, 중복 체크 등의 기능 제공
+ *
+ * 파일 위치: backend/src/main/java/com/example/backend/service/UserService.java
  */
 @Service
 @RequiredArgsConstructor
@@ -92,6 +94,7 @@ public class UserService {
     /**
      * 아이디 중복 체크
      */
+    @Transactional(readOnly = true)
     public boolean checkUsernameDuplicate(String username) {
         return userRepository.existsByUsername(username);
     }
@@ -99,6 +102,7 @@ public class UserService {
     /**
      * 이메일 중복 체크
      */
+    @Transactional(readOnly = true)
     public boolean checkEmailDuplicate(String email) {
         return userRepository.existsByEmail(email);
     }
@@ -106,35 +110,36 @@ public class UserService {
     /**
      * 닉네임 중복 체크
      */
+    @Transactional(readOnly = true)
     public boolean checkNicknameDuplicate(String nickname) {
         return userRepository.existsByNickname(nickname);
     }
 
     /**
-     * 사용자 정보 조회
+     * 사용자명으로 사용자 정보 조회 (JWT 토큰 검증 후 사용)
      */
     @Transactional(readOnly = true)
-    public UserResponse getUserInfo(Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+    public UserResponse getUserByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
         return convertToUserResponse(user);
     }
 
     /**
      * User 엔티티를 UserResponse DTO로 변환
-     * 비밀번호 등 민감한 정보는 제외
      */
     private UserResponse convertToUserResponse(User user) {
-        return UserResponse.builder()
-                .userId(user.getUserId())
-                .username(user.getUsername())
-                .nickname(user.getNickname())
-                .email(user.getEmail())
-                .profileImage(user.getProfileImage())
-                .tier(user.getTier())
-                .tierScore(user.getTierScore())
-                .isAdmin(user.getIsAdmin())
-                .createdAt(user.getCreatedAt())
-                .build();
+        UserResponse response = new UserResponse();
+        response.setUserId(user.getUserId());
+        response.setUsername(user.getUsername());
+        response.setNickname(user.getNickname());
+        response.setEmail(user.getEmail());
+        response.setProfileImage(user.getProfileImage());
+        response.setTier(user.getTier());
+        response.setTierScore(user.getTierScore());
+        response.setIsAdmin(user.getIsAdmin());
+        response.setCreatedAt(user.getCreatedAt());
+        return response;
     }
 }

@@ -1,21 +1,24 @@
+/**
+ * 메인 App 컴포넌트
+ * React Router를 사용하여 페이지 라우팅 설정
+ * 
+ * 파일 위치: frontend/src/App.jsx
+ */
+
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Fixtures from './pages/Fixtures';
 import Community from './pages/Community';
+import PostDetail from './pages/PostDetail';
 import Predictions from './pages/Predictions';
 import Live from './pages/Live';
 import News from './pages/News';
 import MyPage from './pages/MyPage';
-import Navbar from './components/Navbar';
 import SplashScreen from './components/SplashScreen';
 import './App.css';
 
-/**
- * 메인 App 컴포넌트
- * React Router를 사용하여 페이지 라우팅 설정
- */
 function App() {
   const [showSplash, setShowSplash] = useState(true);
 
@@ -57,6 +60,9 @@ function App() {
 
           {/* 커뮤니티 */}
           <Route path="/community" element={<Community />} />
+          
+          {/* 게시글 상세 페이지 */}
+          <Route path="/community/post/:postId" element={<PostDetail />} />
 
           {/* 승부예측 */}
           <Route path="/predictions" element={<Predictions />} />
