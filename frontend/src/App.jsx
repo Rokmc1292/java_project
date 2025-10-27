@@ -12,11 +12,13 @@ import Signup from './pages/Signup';
 import Fixtures from './pages/Fixtures';
 import Community from './pages/Community';
 import PostDetail from './pages/PostDetail';
-import Predictions from './pages/Predictions';
 import Live from './pages/Live';
 import News from './pages/News';
 import MyPage from './pages/MyPage';
 import SplashScreen from './components/SplashScreen';
+import Predictions from './pages/Predictions';
+import PredictionDetail from './pages/PredictionDetail';
+import PredictionRanking from './pages/PredictionRanking';
 import './App.css';
 
 function App() {
@@ -63,9 +65,11 @@ function App() {
           
           {/* 게시글 상세 페이지 */}
           <Route path="/community/post/:postId" element={<PostDetail />} />
-
-          {/* 승부예측 */}
+          
+          {/* 예측 */}
           <Route path="/predictions" element={<Predictions />} />
+          <Route path="/predictions/match/:matchId" element={<PredictionDetail />} />
+          <Route path="/predictions/ranking" element={<PredictionRanking />} />
 
           {/* 실시간 */}
           <Route path="/live" element={<Live />} />

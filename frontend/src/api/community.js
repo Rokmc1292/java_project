@@ -1,70 +1,16 @@
 /**
  * 커뮤니티 관련 API 함수들
- * 게시글 CRUD, 댓글, 추천, 스크랩, 신고 등
- * 
- * 파일 위치: frontend/src/api/community.js
  */
 
 import { apiGet, apiPost, apiPut, apiDelete } from './api';
 
-// ========== 통계 및 랭킹 ==========
-
-/**
- * 주간 베스트 게시글
- */
-export const getWeeklyBestPosts = async () => {
-  return await apiGet('/api/community/posts/weekly-best');
-};
-
-/**
- * 월간 베스트 게시글
- */
-export const getMonthlyBestPosts = async () => {
-  return await apiGet('/api/community/posts/monthly-best');
-};
-
-/**
- * 활동 왕성 유저 조회
- */
-export const getTopActiveUsers = async () => {
-  return await apiGet('/api/community/users/top-active');
-};
-
-/**
- * 내가 작성한 게시글 목록
- */
-export const getMyPosts = async (page = 0, size = 20) => {
-  return await apiGet(`/api/community/my-posts?page=${page}&size=${size}`);
-};
-
-/**
- * 내가 작성한 댓글 목록
- */
-export const getMyComments = async (page = 0, size = 20) => {
-  return await apiGet(`/api/community/my-comments?page=${page}&size=${size}`);
-};
-
-// ========== 관리자 기능 ==========
-
-/**
- * 게시글 블라인드 처리 (관리자만)
- */
-export const blindPost = async (postId) => {
-  return await apiPost(`/api/community/posts/${postId}/blind`);
-};
-
-/**
- * 게시글 블라인드 해제 (관리자만)
- */
-export const unblindPost = async (postId) => {
-  return await apiDelete(`/api/community/posts/${postId}/blind`);
-};//게시글 조회 ==========
+// ========== 게시글 조회 ==========
 
 /**
  * 전체 게시글 조회 (페이징, 검색)
  */
 export const getPosts = async (page = 0, size = 20, search = '') => {
-  const searchParam = search ? `&search=${encodeURIComponent(search)}` : '';
+  const searchParam = search ? `&keyword=${encodeURIComponent(search)}` : '';
   return await apiGet(`/api/community/posts?page=${page}&size=${size}${searchParam}`);
 };
 
@@ -72,21 +18,21 @@ export const getPosts = async (page = 0, size = 20, search = '') => {
  * 카테고리별 게시글 조회
  */
 export const getPostsByCategory = async (categoryName, page = 0, size = 20) => {
-  return await apiGet(`/api/community/posts/category/${encodeURIComponent(categoryName)}?page=${page}&size=${size}`);
+  return await apiGet(`/api/community/posts?categoryName=${encodeURIComponent(categoryName)}&type=all&page=${page}&size=${size}`);
 };
 
 /**
  * 인기 게시글 조회 (전체)
  */
 export const getPopularPosts = async (page = 0, size = 20) => {
-  return await apiGet(`/api/community/posts/popular?page=${page}&size=${size}`);
+  return await apiGet(`/api/community/posts?type=popular&page=${page}&size=${size}`);
 };
 
 /**
  * 카테고리별 인기 게시글 조회
  */
 export const getPopularPostsByCategory = async (categoryName, page = 0, size = 20) => {
-  return await apiGet(`/api/community/posts/category/${encodeURIComponent(categoryName)}/popular?page=${page}&size=${size}`);
+  return await apiGet(`/api/community/posts?categoryName=${encodeURIComponent(categoryName)}&type=popular&page=${page}&size=${size}`);
 };
 
 /**
@@ -142,13 +88,6 @@ export const dislikePost = async (postId) => {
   return await apiPost(`/api/community/posts/${postId}/dislike`);
 };
 
-/**
- * 게시글 추천/비추천 취소
- */
-export const cancelPostVote = async (postId) => {
-  return await apiDelete(`/api/community/posts/${postId}/vote`);
-};
-
 // ========== 댓글 기능 ==========
 
 /**
@@ -160,9 +99,6 @@ export const getComments = async (postId) => {
 
 /**
  * 댓글 작성
- * @param {number} postId - 게시글 ID
- * @param {string} content - 댓글 내용
- * @param {number|null} parentCommentId - 부모 댓글 ID (대댓글인 경우)
  */
 export const createComment = async (postId, content, parentCommentId = null) => {
   return await apiPost(`/api/community/posts/${postId}/comments`, {
@@ -217,13 +153,6 @@ export const unscrapPost = async (postId) => {
   return await apiDelete(`/api/community/posts/${postId}/scrap`);
 };
 
-/**
- * 내 스크랩 목록 조회
- */
-export const getMyScraps = async (page = 0, size = 20) => {
-  return await apiGet(`/api/community/scraps?page=${page}&size=${size}`);
-};
-
 // ========== 신고 기능 ==========
 
 /**
@@ -252,16 +181,12 @@ export const reportComment = async (commentId, reason, description) => {
  * 사용자 차단
  */
 export const blockUser = async (blockedUsername) => {
-  return await apiPost('/api/community/block', {
-    blockedUsername
-  });
+  return await apiPost(`/api/community/users/${blockedUsername}/block`);
 };
 
 /**
  * 사용자 차단 해제
  */
 export const unblockUser = async (blockedUsername) => {
-  return await apiDelete(`/api/community/block/${blockedUsername}`);
+  return await apiDelete(`/api/community/users/${blockedUsername}/block`);
 };
-
-// ==========

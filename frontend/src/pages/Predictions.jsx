@@ -1,239 +1,236 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import { getPredictableMatches } from '../api/prediction';
+import { isLoggedIn } from '../api/api';
+import '../styles/Predictions.css';
 
 /**
- * 승부예측 페이지
- * 경기별 예측 참여 및 통계 확인
+ * 승부예측 메인 페이지
+ * - 예측 가능한 경기 목록 (D-2 경기)
+ * - 종목별 필터링
+ * - 마감 시간 카운트다운
+ * 
+ * 파일 위치: frontend/src/pages/Predictions.jsx
  */
 function Predictions() {
-  const [matches, setMatches] = useState([]);
-  const [selectedSport, setSelectedSport] = useState('ALL');
-  const [loading, setLoading] = useState(false);
-  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const [matches, setMatches] = useState([]); // 경기 목록
+  const [selectedSport, setSelectedSport] = useState('ALL'); // 선택된 종목
+  const [loading, setLoading] = useState(true); // 로딩 상태
+  const [error, setError] = useState(null); // 에러 메시지
+  const [page, setPage] = useState(0); // 현재 페이지
+  const [totalPages, setTotalPages] = useState(0); // 전체 페이지 수
 
-  // 로그인 상태 확인
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      try {
-        setUser(JSON.parse(userData));
-      } catch (e) {
-        console.error('사용자 정보 파싱 오류:', e);
-      }
-    }
-  }, []);
-
+  // 종목 목록
   const sports = [
-    { value: 'ALL', label: '전체' },
-    { value: 'FOOTBALL', label: '축구' },
-    { value: 'BASKETBALL', label: '농구' },
-    { value: 'BASEBALL', label: '야구' },
-    { value: 'LOL', label: '롤' },
-    { value: 'MMA', label: 'UFC' }
+    { value: 'ALL', label: '전체', icon: '⚽🏀⚾🎮🥊' },
+    { value: 'FOOTBALL', label: '축구', icon: '⚽' },
+    { value: 'BASKETBALL', label: '농구', icon: '🏀' },
+    { value: 'BASEBALL', label: '야구', icon: '⚾' },
+    { value: 'LOL', label: '롤', icon: '🎮' },
+    { value: 'MMA', label: 'UFC', icon: '🥊' }
   ];
 
-  // 이틀 후 경기 조회
-  const fetchMatches = async () => {
-    setLoading(true);
-    try {
-      const twoDaysLater = new Date();
-      twoDaysLater.setDate(twoDaysLater.getDate() + 2);
-      const dateStr = twoDaysLater.toISOString().split('T')[0];
+  // 경기 목록 로드
+  useEffect(() => {
+    loadMatches();
+  }, [selectedSport, page]);
 
-      const response = await fetch(
-        `http://localhost:8080/api/matches?date=${dateStr}&sport=${selectedSport}`
-      );
-      const data = await response.json();
-      setMatches(data || []);
-    } catch (error) {
-      console.error('경기 조회 실패:', error);
-      setMatches([]);
+  const loadMatches = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await getPredictableMatches(selectedSport, page, 20);
+      setMatches(response.content || []);
+      setTotalPages(response.totalPages || 0);
+    } catch (err) {
+      console.error('경기 목록 로드 실패:', err);
+      setError('경기 목록을 불러오는데 실패했습니다.');
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchMatches();
-  }, [selectedSport]);
-
-  // 예측 제출 핸들러
-  const handlePrediction = async (matchId, predictionType) => {
-    if (!user) {
-      alert('로그인 후 예측에 참여할 수 있습니다.');
+  // 경기 클릭 - 예측 페이지로 이동
+  const handleMatchClick = (matchId) => {
+    if (!isLoggedIn()) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
       return;
     }
+    navigate(`/predictions/match/${matchId}`);
+  };
 
-    try {
-      const response = await fetch('http://localhost:8080/api/predictions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          matchId: matchId.toString(),
-          username: user.username,
-          predictedResult: predictionType, // 'HOME', 'DRAW', 'AWAY'
-          comment: ''
-        })
-      });
+  // 경기 시작까지 남은 시간 계산
+  const getTimeUntilMatch = (matchDate) => {
+    const now = new Date();
+    const match = new Date(matchDate);
+    const diff = match - now;
 
-      if (response.ok) {
-        alert('예측이 등록되었습니다!');
-      } else {
-        const error = await response.json();
-        alert(error.message || '예측 등록에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('예측 등록 오류:', error);
-      alert('예측 등록 중 오류가 발생했습니다.');
-    }
+    if (diff < 0) return '경기 시작';
+
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+
+    return `${days}일 ${hours}시간 ${minutes}분`;
+  };
+
+  // 날짜 포맷팅
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
   return (
     <div>
       <Navbar />
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px' }}>
-          🎯 승부예측
-        </h1>
-
-        <div style={{
-          backgroundColor: '#f0f8ff',
-          padding: '15px',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          border: '1px solid #b0d4f1'
-        }}>
-          <p style={{ margin: 0, color: '#0066cc', fontWeight: 'bold' }}>
-            ℹ️ 경기 이틀 전(D-2)부터 예측에 참여할 수 있습니다!
-          </p>
-          <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#666' }}>
-            예측 성공 시 +10점, 실패 시 -10점이 반영됩니다.
-          </p>
+      <div className="predictions-container">
+        {/* 페이지 헤더 */}
+        <div className="predictions-header">
+          <h1>⚽ 승부예측</h1>
+          <p>경기 이틀 전부터 예측 가능합니다. 코멘트와 함께 예측해보세요!</p>
         </div>
 
-        {/* 종목 필터 */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '30px' }}>
+        {/* 안내 메시지 */}
+        <div className="info-box">
+          <p className="info-title">💡 승부예측 안내</p>
+          <ul className="info-list">
+            <li>경기 이틀 전(D-2)부터 예측 가능합니다</li>
+            <li>예측 성공 시 +10점, 실패 시 -10점</li>
+            <li>코멘트 작성은 필수입니다 (최소 10자)</li>
+            <li>제출 후 수정할 수 없으니 신중하게 선택하세요</li>
+          </ul>
+        </div>
+
+        {/* 종목 필터 탭 */}
+        <div className="sport-tabs">
           {sports.map((sport) => (
             <button
               key={sport.value}
-              onClick={() => setSelectedSport(sport.value)}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: selectedSport === sport.value ? '#646cff' : '#f5f5f5',
-                color: selectedSport === sport.value ? 'white' : '#333',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontWeight: selectedSport === sport.value ? 'bold' : 'normal'
+              className={`sport-tab ${selectedSport === sport.value ? 'active' : ''}`}
+              onClick={() => {
+                setSelectedSport(sport.value);
+                setPage(0);
               }}
             >
-              {sport.label}
+              <span className="sport-icon">{sport.icon}</span>
+              <span className="sport-label">{sport.label}</span>
             </button>
           ))}
         </div>
 
+        {/* 로딩 상태 */}
+        {loading && (
+          <div className="loading">
+            <div className="spinner"></div>
+            <p>로딩 중...</p>
+          </div>
+        )}
+
+        {/* 에러 메시지 */}
+        {error && (
+          <div className="error">
+            ❌ {error}
+          </div>
+        )}
+
         {/* 경기 목록 */}
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
-            로딩 중...
+        {!loading && !error && matches.length === 0 && (
+          <div className="no-matches">
+            📭 예측 가능한 경기가 없습니다.
           </div>
-        ) : matches.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
-            예측 가능한 경기가 없습니다.
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gap: '20px' }}>
+        )}
+
+        {!loading && !error && matches.length > 0 && (
+          <div className="matches-list">
             {matches.map((match) => (
               <div
                 key={match.matchId}
-                style={{
-                  padding: '25px',
-                  backgroundColor: 'white',
-                  border: '2px solid #e0e0e0',
-                  borderRadius: '10px',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                }}
+                className="match-card"
+                onClick={() => handleMatchClick(match.matchId)}
               >
-                <div style={{ fontSize: '14px', color: '#888', marginBottom: '10px' }}>
-                  {match.league?.name} | {match.detail?.matchDate}
+                {/* 경기 정보 헤더 */}
+                <div className="match-header">
+                  <span className="league-badge">
+                    {match.league?.sport?.displayName || '종목'}
+                  </span>
+                  <span className="match-date">
+                    {formatDate(match.matchDate)}
+                  </span>
                 </div>
 
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-around',
-                  alignItems: 'center',
-                  marginBottom: '20px'
-                }}>
-                  <div style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
-                      {match.teams?.home?.name}
+                {/* 팀 대진 정보 */}
+                <div className="match-teams">
+                  {/* 홈팀 */}
+                  <div className="team home-team">
+                    <div className="team-logo">🏠</div>
+                    <div className="team-name">
+                      {match.homeTeam?.teamName || '홈팀'}
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '24px', fontWeight: 'bold', color: '#666', padding: '0 30px' }}>
-                    VS
-                  </div>
+                  {/* VS */}
+                  <div className="vs">VS</div>
 
-                  <div style={{ textAlign: 'center', flex: 1 }}>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold' }}>
-                      {match.teams?.away?.name}
+                  {/* 원정팀 */}
+                  <div className="team away-team">
+                    <div className="team-logo">✈️</div>
+                    <div className="team-name">
+                      {match.awayTeam?.teamName || '원정팀'}
                     </div>
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-                  <button
-                    style={{
-                      padding: '12px 30px',
-                      backgroundColor: '#4CAF50',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      flex: 1
-                    }}
-                    onClick={() => handlePrediction(match.matchId, 'HOME')}
-                  >
-                    홈 승리
-                  </button>
-                  <button
-                    style={{
-                      padding: '12px 30px',
-                      backgroundColor: '#FFC107',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      flex: 1
-                    }}
-                    onClick={() => handlePrediction(match.matchId, 'DRAW')}
-                  >
-                    무승부
-                  </button>
-                  <button
-                    style={{
-                      padding: '12px 30px',
-                      backgroundColor: '#2196F3',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '5px',
-                      cursor: 'pointer',
-                      fontWeight: 'bold',
-                      flex: 1
-                    }}
-                    onClick={() => handlePrediction(match.matchId, 'AWAY')}
-                  >
-                    원정 승리
-                  </button>
+                {/* 경기 상세 정보 */}
+                <div className="match-info">
+                  <span className="venue">
+                    📍 {match.venue || '경기장 정보 없음'}
+                  </span>
+                  <span className="countdown">
+                    ⏰ 마감까지 {getTimeUntilMatch(match.matchDate)}
+                  </span>
                 </div>
               </div>
             ))}
           </div>
         )}
+
+        {/* 페이지네이션 */}
+        {!loading && !error && totalPages > 1 && (
+          <div className="pagination">
+            <button
+              onClick={() => setPage(Math.max(0, page - 1))}
+              disabled={page === 0}
+              className="pagination-btn"
+            >
+              이전
+            </button>
+
+            <span className="pagination-info">
+              {page + 1} / {totalPages}
+            </span>
+
+            <button
+              onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+              disabled={page >= totalPages - 1}
+              className="pagination-btn"
+            >
+              다음
+            </button>
+          </div>
+        )}
+
+        {/* 랭킹 바로가기 버튼 */}
+        <div className="ranking-link">
+          <button
+            onClick={() => navigate('/predictions/ranking')}
+            className="ranking-btn"
+          >
+            🏆 예측 랭킹 보기
+          </button>
+        </div>
       </div>
     </div>
   );

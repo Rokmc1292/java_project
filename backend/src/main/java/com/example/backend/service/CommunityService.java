@@ -51,34 +51,69 @@ public class CommunityService {
     /**
      * 카테고리별 게시글 조회
      */
+    // ========== 게시글 조회 (카테고리별) ==========
+
     @Transactional(readOnly = true)
     public Page<PostDto> getPostsByCategory(String categoryName, Pageable pageable) {
-        BoardCategory category = boardCategoryRepository.findByCategoryName(categoryName)
-                .orElseThrow(() -> new RuntimeException("카테고리를 찾을 수 없습니다."));
+        try {
+            Page<Post> posts;
 
-        return postRepository.findByCategoryAndIsBlindedFalseOrderByIsNoticeDescCreatedAtDesc(category, pageable)
-                .map(this::convertToDto);
+            if (categoryName == null || categoryName.isEmpty() || categoryName.equals("전체") || categoryName.equals("all")) {
+                // 전체 게시글 조회
+                posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+            } else {
+                // 특정 카테고리 게시글 조회
+                BoardCategory category = boardCategoryRepository.findByCategoryName(categoryName).orElse(null);
+                if (category == null) {
+                    // 카테고리가 없으면 빈 페이지 반환
+                    return Page.empty(pageable);
+                }
+                posts = postRepository.findByCategoryOrderByCreatedAtDesc(category, pageable);
+            }
+
+            return posts.map(this::convertToDto);
+        } catch (Exception e) {
+            System.err.println("게시글 조회 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return Page.empty(pageable);
+        }
     }
 
-    /**
-     * 인기 게시글 조회 (전체)
-     */
+// ========== 인기글 조회 ==========
+
     @Transactional(readOnly = true)
     public Page<PostDto> getPopularPosts(Pageable pageable) {
-        return postRepository.findByIsPopularTrueAndIsBlindedFalseOrderByLikeCountDescCreatedAtDesc(pageable)
-                .map(this::convertToDto);
+        try {
+            Page<Post> posts = postRepository.findByIsPopularTrueOrderByLikeCountDescCreatedAtDesc(pageable);
+            return posts.map(this::convertToDto);
+        } catch (Exception e) {
+            System.err.println("인기글 조회 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return Page.empty(pageable);
+        }
     }
 
-    /**
-     * 카테고리별 인기 게시글 조회
-     */
     @Transactional(readOnly = true)
     public Page<PostDto> getPopularPostsByCategory(String categoryName, Pageable pageable) {
-        BoardCategory category = boardCategoryRepository.findByCategoryName(categoryName)
-                .orElseThrow(() -> new RuntimeException("카테고리를 찾을 수 없습니다."));
+        try {
+            if (categoryName == null || categoryName.isEmpty() || categoryName.equals("전체") || categoryName.equals("all")) {
+                // 전체 인기글
+                Page<Post> posts = postRepository.findByIsPopularTrueOrderByLikeCountDescCreatedAtDesc(pageable);
+                return posts.map(this::convertToDto);
+            }
 
-        return postRepository.findByCategoryAndIsPopularTrueAndIsBlindedFalseOrderByLikeCountDescCreatedAtDesc(category, pageable)
-                .map(this::convertToDto);
+            BoardCategory category = boardCategoryRepository.findByCategoryName(categoryName).orElse(null);
+            if (category == null) {
+                return Page.empty(pageable);
+            }
+
+            Page<Post> posts = postRepository.findByCategoryAndIsPopularTrueOrderByLikeCountDescCreatedAtDesc(category, pageable);
+            return posts.map(this::convertToDto);
+        } catch (Exception e) {
+            System.err.println("카테고리별 인기글 조회 중 에러 발생: " + e.getMessage());
+            e.printStackTrace();
+            return Page.empty(pageable);
+        }
     }
 
     /**
@@ -116,12 +151,20 @@ public class CommunityService {
      * 게시글 작성
      */
     @Transactional
-    public PostDto createPost(String categoryName, String username, String title, String content) {
-        BoardCategory category = boardCategoryRepository.findByCategoryName(categoryName)
-                .orElseThrow(() -> new RuntimeException("카테고리를 찾을 수 없습니다."));
-
+    public PostDto createPost(String username, String categoryName, String title, String content) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // categoryName이 null이거나 비어있으면 기본값 설정
+        final String finalCategoryName;  // ⭐ final 변수로 선언
+        if (categoryName == null || categoryName.isEmpty()) {
+            finalCategoryName = "자유게시판";
+        } else {
+            finalCategoryName = categoryName;
+        }
+
+        BoardCategory category = boardCategoryRepository.findByCategoryName(finalCategoryName)
+                .orElseThrow(() -> new RuntimeException("카테고리를 찾을 수 없습니다: " + finalCategoryName));
 
         Post post = new Post();
         post.setCategory(category);
@@ -701,9 +744,23 @@ public class CommunityService {
     private PostDto convertToDto(Post post) {
         PostDto dto = new PostDto();
         dto.setPostId(post.getPostId());
-        dto.setCategoryName(post.getCategory().getCategoryName());
-        dto.setUsername(post.getUser().getUsername());
-        dto.setNickname(post.getUser().getNickname());
+
+        // 카테고리 null 체크
+        if (post.getCategory() != null) {
+            dto.setCategoryName(post.getCategory().getCategoryName());
+        } else {
+            dto.setCategoryName("미분류");
+        }
+
+        // 사용자 null 체크
+        if (post.getUser() != null) {
+            dto.setUsername(post.getUser().getUsername());
+            dto.setNickname(post.getUser().getNickname());
+        } else {
+            dto.setUsername("알 수 없음");
+            dto.setNickname("알 수 없음");
+        }
+
         dto.setTitle(post.getTitle());
         dto.setContent(post.getContent());
         dto.setViewCount(post.getViewCount());
@@ -715,6 +772,7 @@ public class CommunityService {
         dto.setIsBest(post.getIsBest());
         dto.setCreatedAt(post.getCreatedAt());
         dto.setUpdatedAt(post.getUpdatedAt());
+
         return dto;
     }
 

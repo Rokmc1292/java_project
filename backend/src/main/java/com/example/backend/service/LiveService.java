@@ -8,10 +8,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 실시간 경기 및 채팅 Service
+ */
 @Service
 @RequiredArgsConstructor
 public class LiveService {
@@ -23,34 +25,33 @@ public class LiveService {
     private final MatchService matchService;
 
     /**
-     * 현재 진행 중인 경기 조회
+     * 진행 중인 경기 조회 (LIVE 상태)
      */
     @Transactional(readOnly = true)
     public List<MatchDto> getLiveMatches() {
         List<Match> liveMatches = matchRepository.findByStatusOrderByMatchDateDesc("LIVE");
+
         return liveMatches.stream()
-                .map(matchService::convertToDto)
+                .map(matchService::convertToDto)  // ⭐ 이제 정상 작동
                 .collect(Collectors.toList());
     }
 
     /**
-     * 경기의 채팅방 조회 또는 생성
+     * 채팅방 조회 또는 생성
      */
     @Transactional
-    public Long getOrCreateChatroom(Long matchId) {
+    public Chatroom getOrCreateChatroom(Long matchId) {
         Match match = matchRepository.findById(matchId)
                 .orElseThrow(() -> new RuntimeException("경기를 찾을 수 없습니다."));
 
-        Chatroom chatroom = chatroomRepository.findByMatch(match)
+        return chatroomRepository.findByMatch(match)
                 .orElseGet(() -> {
-                    Chatroom newChatroom = new Chatroom();
-                    newChatroom.setMatch(match);
-                    newChatroom.setIsActive(true);
-                    newChatroom.setViewerCount(0);
-                    return chatroomRepository.save(newChatroom);
+                    Chatroom chatroom = new Chatroom();
+                    chatroom.setMatch(match);
+                    chatroom.setIsActive(true);
+                    chatroom.setViewerCount(0);
+                    return chatroomRepository.save(chatroom);
                 });
-
-        return chatroom.getChatroomId();
     }
 
     /**
@@ -61,8 +62,9 @@ public class LiveService {
         Chatroom chatroom = chatroomRepository.findById(chatroomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
 
-        return chatMessageRepository.findByChatroomOrderByCreatedAtDesc(chatroom)
-                .stream()
+        List<ChatMessage> messages = chatMessageRepository.findByChatroomOrderByCreatedAtDesc(chatroom);
+
+        return messages.stream()
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
@@ -74,6 +76,7 @@ public class LiveService {
     public ChatMessageDto sendMessage(Long chatroomId, String username, String message) {
         Chatroom chatroom = chatroomRepository.findById(chatroomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
@@ -88,7 +91,7 @@ public class LiveService {
     }
 
     /**
-     * Entity를 DTO로 변환
+     * ChatMessage를 DTO로 변환
      */
     private ChatMessageDto convertToDto(ChatMessage chatMessage) {
         ChatMessageDto dto = new ChatMessageDto();

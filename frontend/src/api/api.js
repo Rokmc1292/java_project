@@ -1,7 +1,7 @@
 /**
  * API 유틸리티
  * - 백엔드 API 호출 공통 함수
- * - JWT 토큰 자동 포함
+ * - 세션 기반 인증 (쿠키 자동 전송)
  * - 에러 처리
  * 
  * 파일 위치: frontend/src/api/api.js
@@ -23,17 +23,12 @@ export const apiRequest = async (endpoint, options = {}) => {
     ...options.headers,
   };
 
-  // JWT 토큰이 있으면 Authorization 헤더에 추가
-  const token = getToken();
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
-  // API 요청 실행
+  // API 요청 실행 (credentials: 'include'로 쿠키 자동 전송)
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
+      credentials: 'include', // ⭐ 세션 쿠키 자동 전송
     });
 
     // 응답이 JSON이 아닌 경우 처리
@@ -94,26 +89,10 @@ export const apiDelete = (endpoint) => {
   return apiRequest(endpoint, { method: 'DELETE' });
 };
 
-// ========== 토큰 관리 함수 ==========
+// ========== 사용자 관리 함수 (세션 기반) ==========
 
 /**
- * 로컬 스토리지에서 JWT 토큰 가져오기
- */
-export const getToken = () => {
-  const user = localStorage.getItem('user');
-  if (user) {
-    try {
-      const userData = JSON.parse(user);
-      return userData.token;
-    } catch (e) {
-      return null;
-    }
-  }
-  return null;
-};
-
-/**
- * 로컬 스토리지에 사용자 정보 및 토큰 저장
+ * 로컬 스토리지에 사용자 정보 저장
  */
 export const saveUserData = (userData) => {
   localStorage.setItem('user', JSON.stringify(userData));
@@ -145,5 +124,5 @@ export const clearUserData = () => {
  * 로그인 여부 확인
  */
 export const isLoggedIn = () => {
-  return getToken() !== null;
+  return getUserData() !== null;
 };

@@ -10,5 +10,5 @@ import java.util.Optional;
 @Repository
 public interface BoardCategoryRepository extends JpaRepository<BoardCategory, Long> {
     Optional<BoardCategory> findByCategoryName(String categoryName);
-    List<BoardCategory> findByIsActiveTrueOrderByDisplayOrder();
+    List<BoardCategory> findAllByOrderByDisplayOrderAsc();
 }
