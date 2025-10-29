@@ -55,7 +55,6 @@ function Community() {
         }
       }
 
-      console.log('API 응답:', response);
       setPosts(response.content || []);
       setTotalPages(response.totalPages || 0);
       setCurrentPage(page);
@@ -95,8 +94,6 @@ function Community() {
     alert('카테고리를 선택해주세요.');
     return;
   }
-
-  console.log('전송할 데이터:', newPost); // ⭐ 디버깅용
 
   try {
     await createPost(newPost.categoryName, newPost.title, newPost.content);

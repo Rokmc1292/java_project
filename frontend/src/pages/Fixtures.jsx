@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 import '../styles/Fixtures.css';
 
+// 환경변수에서 API Base URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 /**
  * 경기 일정 페이지
  * 종목별 경기 일정을 날짜별로 조회
@@ -31,16 +34,15 @@ function Fixtures() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/matches?date=${selectedDate}&sport=${selectedSport}`
+        `${API_BASE_URL}/api/matches?date=${selectedDate}&sport=${selectedSport}`
       );
 
-      if (!response.ok) { 
+      if (!response.ok) {
         throw new Error('경기 데이터를 불러오는데 실패했습니다.');
       }
 
       const data = await response.json();
       setMatches(data);
-      console.log('조회된 경기:', data);
     } catch (err) {
       console.error('경기 조회 에러:', err);
       setError(err.message);

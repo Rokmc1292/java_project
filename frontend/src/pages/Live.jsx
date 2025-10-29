@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 
+// 환경변수에서 API Base URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 /**
  * 실시간 페이지
  * 진행 중인 경기 및 실시간 채팅
@@ -30,7 +33,7 @@ function Live() {
   const fetchLiveMatches = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8080/api/live/matches');
+      const response = await fetch(`${API_BASE_URL}/api/live/matches`);
       const data = await response.json();
       setLiveMatches(data || []);
     } catch (error) {
@@ -46,7 +49,7 @@ function Live() {
     setSelectedMatch(match);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/live/chatroom/match/${match.matchId}`
+        `${API_BASE_URL}/api/live/chatroom/match/${match.matchId}`
       );
       const data = await response.json();
       const chatroomId = data.chatroomId;
@@ -54,7 +57,7 @@ function Live() {
 
       // 채팅 메시지 조회
       const messagesResponse = await fetch(
-        `http://localhost:8080/api/live/chatroom/${chatroomId}/messages`
+        `${API_BASE_URL}/api/live/chatroom/${chatroomId}/messages`
       );
       const messagesData = await messagesResponse.json();
       setMessages(messagesData || []);
@@ -77,7 +80,7 @@ function Live() {
 
     try {
       const response = await fetch(
-        `http://localhost:8080/api/live/chatroom/${currentChatroomId}/messages`,
+        `${API_BASE_URL}/api/live/chatroom/${currentChatroomId}/messages`,
         {
           method: 'POST',
           headers: {
@@ -93,7 +96,7 @@ function Live() {
       if (response.ok) {
         // 메시지 전송 성공 후 목록 새로고침
         const messagesResponse = await fetch(
-          `http://localhost:8080/api/live/chatroom/${currentChatroomId}/messages`
+          `${API_BASE_URL}/api/live/chatroom/${currentChatroomId}/messages`
         );
         const messagesData = await messagesResponse.json();
         setMessages(messagesData || []);
