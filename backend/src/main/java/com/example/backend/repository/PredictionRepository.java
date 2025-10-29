@@ -69,4 +69,8 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
      * 특정 경기의 판정되지 않은 예측 개수 조회 (스케줄러용)
      */
     long countByMatchAndIsCorrectIsNull(Match match);
+
+    List<Prediction> findByUser(User user);
+    Page<Prediction> findByUser(User user, Pageable pageable);
+    List<Prediction> findByUserAndIsCorrectNotNull(User user, Pageable pageable);
 }

@@ -1,19 +1,18 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
-/**
- * 알림 Entity
- */
 @Entity
 @Table(name = "notifications")
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder  // 이거 추가
 public class Notification {
 
     @Id
@@ -26,18 +25,18 @@ public class Notification {
     private User user;
 
     @Column(name = "notification_type", nullable = false, length = 50)
-    private String notificationType; // COMMENT, REPLY, POPULAR_POST, PREDICTION_RESULT
+    private String notificationType;
 
     @Column(name = "content", nullable = false, length = 500)
     private String content;
 
     @Column(name = "related_type", length = 20)
-    private String relatedType; // POST, COMMENT
+    private String relatedType;
 
     @Column(name = "related_id")
     private Long relatedId;
 
-    @Column(name = "is_read")
+    @Column(name = "is_read", nullable = false)
     private Boolean isRead = false;
 
     @CreationTimestamp

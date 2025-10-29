@@ -7,18 +7,14 @@ import org.springframework.web.client.RestTemplate;
 
 import java.time.Duration;
 
-/**
- * RestTemplate 설정
- * 외부 API 호출을 위한 HTTP 클라이언트
- */
 @Configuration
 public class RestTemplateConfig {
 
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
-                .setConnectTimeout(Duration.ofSeconds(10))
-                .setReadTimeout(Duration.ofSeconds(10))
+                .connectTimeout(Duration.ofSeconds(10))  // setConnectTimeout → connectTimeout
+                .readTimeout(Duration.ofSeconds(10))     // setReadTimeout → readTimeout
                 .build();
     }
 }

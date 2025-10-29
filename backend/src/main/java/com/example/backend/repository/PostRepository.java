@@ -62,4 +62,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user = :user AND p.createdAt >= :startDate")
     long countByUserAndCreatedAtAfter(@Param("user") User user, @Param("startDate") LocalDateTime startDate);
+
+    Page<Post> findByUser(User user, Pageable pageable);
 }

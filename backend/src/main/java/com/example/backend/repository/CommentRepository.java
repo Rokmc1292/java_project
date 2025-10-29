@@ -27,4 +27,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
     // 특정 기간 이후 사용자가 작성한 댓글 수
     long countByUserAndCreatedAtAfter(User user, LocalDateTime after);
+
+    Page<Comment> findByUser(User user, Pageable pageable);
 }

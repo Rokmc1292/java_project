@@ -1,353 +1,154 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
+import mypageApi from '../api/mypageApi';
+import ProfileSection from '../components/ProfileSection';
+import StatsSection from '../components/StatsSection';
+import ActivitySection from '../components/ActivitySection';
+import SettingsSection from '../components/SettingsSection';
+import '../styles/MyPage.css';
 
 /**
- * 마이페이지
- * 프로필, 통계, 활동 내역, 설정
+ * 마이페이지 메인 컴포넌트
+ * 프로필, 통계, 활동 내역, 설정 탭으로 구성
  */
-function MyPage() {
+const MyPage = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState(null);
+
+  // 현재 활성화된 탭 (profile, stats, activity, settings)
   const [activeTab, setActiveTab] = useState('profile');
+  
+  // 프로필 정보
+  const [profile, setProfile] = useState(null);
+  
+  // 예측 통계
+  const [predictionStats, setPredictionStats] = useState(null);
+  
+  // 최근 10경기 결과
+  const [recentResults, setRecentResults] = useState([]);
+  
+  // 로딩 상태
+  const [loading, setLoading] = useState(true);
+
+  // 컴포넌트 마운트 시 데이터 로드
+  useEffect(() => {
+    loadMyPageData();
+  }, []);
 
   /**
-   * 로그아웃 처리 함수
+   * 마이페이지 기본 데이터 로드
+   * 프로필, 통계, 최근 결과 한번에 로드
+   */
+  const loadMyPageData = async () => {
+    try {
+      setLoading(true);
+      
+      // 병렬로 데이터 로드
+      const [profileData, statsData, resultsData] = await Promise.all([
+        mypageApi.getUserProfile(),
+        mypageApi.getPredictionStats(),
+        mypageApi.getRecentPredictionResults()
+      ]);
+
+      setProfile(profileData);
+      setPredictionStats(statsData);
+      setRecentResults(resultsData);
+    } catch (error) {
+      console.error('마이페이지 데이터 로드 실패:', error);
+      alert('데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 로그아웃 처리
    */
   const handleLogout = () => {
-    if (window.confirm('정말 로그아웃 하시겠습니까?')) {
-      // localStorage에서 사용자 정보 제거
-      localStorage.removeItem('user');
-      alert('로그아웃되었습니다.');
-      // 로그인 페이지로 이동
+    if (window.confirm('로그아웃 하시겠습니까?')) {
+      // 세션 삭제 후 로그인 페이지로 이동
       navigate('/login');
     }
   };
 
-  // 사용자 정보 조회
-  const fetchUserInfo = async (userId) => {
-    try {
-      const response = await fetch(`http://localhost:8080/api/auth/user/${userId}`);
-      if (response.ok) {
-        const data = await response.json();
-        setUser({
-          ...data,
-          predictions: {
-            total: 0,
-            correct: 0,
-            wrong: 0,
-            winRate: 0
-          },
-          posts: [],
-          comments: []
-        });
-      } else {
-        console.error('사용자 정보 조회 실패');
-      }
-    } catch (error) {
-      console.error('사용자 정보 조회 오류:', error);
-    }
-  };
-
-  useEffect(() => {
-    // localStorage에서 사용자 정보 가져오기
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      try {
-        const parsedUser = JSON.parse(userData);
-        fetchUserInfo(parsedUser.userId);
-      } catch (e) {
-        console.error('사용자 정보 파싱 오류:', e);
-      }
-    }
-  }, []);
-
-  const tabs = [
-    { id: 'profile', label: '프로필', icon: '👤' },
-    { id: 'predictions', label: '예측 내역', icon: '🎯' },
-    { id: 'posts', label: '작성 글/댓글', icon: '✏️' },
-    { id: 'settings', label: '설정', icon: '⚙️' }
-  ];
-
-  if (!user) {
+  if (loading) {
     return (
-      <div>
-        <Navbar />
-        <div style={{ textAlign: 'center', padding: '100px', color: '#888' }}>
-          로그인이 필요합니다.
-        </div>
+      <div className="mypage-loading">
+        <div className="spinner"></div>
+        <p>로딩 중...</p>
       </div>
     );
   }
 
   return (
-    <div>
-      <Navbar />
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px' }}>
-          👤 마이페이지
-        </h1>
-
-        {/* 탭 메뉴 */}
-        <div style={{
-          display: 'flex',
-          gap: '10px',
-          marginBottom: '30px',
-          borderBottom: '2px solid #e0e0e0',
-          paddingBottom: '10px'
-        }}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                padding: '12px 25px',
-                backgroundColor: activeTab === tab.id ? '#646cff' : '#f5f5f5',
-                color: activeTab === tab.id ? 'white' : '#333',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontWeight: activeTab === tab.id ? 'bold' : 'normal',
-                fontSize: '16px',
-                transition: 'all 0.3s'
-              }}
-            >
-              {tab.icon} {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* 프로필 탭 */}
-        {activeTab === 'profile' && (
-          <div>
-            <div style={{
-              backgroundColor: 'white',
-              border: '2px solid #e0e0e0',
-              borderRadius: '10px',
-              padding: '30px',
-              marginBottom: '20px'
-            }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px' }}>
-                프로필 정보
-              </h2>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '30px' }}>
-                <div style={{
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: '50%',
-                  backgroundColor: '#f0f0f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '48px'
-                }}>
-                  👤
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <div style={{ marginBottom: '15px' }}>
-                    <div style={{ fontSize: '14px', color: '#888', marginBottom: '5px' }}>닉네임</div>
-                    <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{user.nickname}</div>
-                  </div>
-
-                  <div style={{ marginBottom: '15px' }}>
-                    <div style={{ fontSize: '14px', color: '#888', marginBottom: '5px' }}>티어</div>
-                    <div style={{
-                      display: 'inline-block',
-                      padding: '8px 20px',
-                      backgroundColor: '#646cff',
-                      color: 'white',
-                      borderRadius: '20px',
-                      fontWeight: 'bold'
-                    }}>
-                      {user.tier} ({user.tierScore} 점)
-                    </div>
-                  </div>
-
-                  <div>
-                    <div style={{ fontSize: '14px', color: '#888', marginBottom: '5px' }}>가입일</div>
-                    <div style={{ fontSize: '16px' }}>{new Date(user.createdAt).toLocaleDateString()}</div>
-                  </div>
-                </div>
-              </div>
+    <div className="mypage-container">
+      {/* 상단 프로필 헤더 - 모든 탭에서 보임 */}
+      <div className="mypage-header">
+        {profile && (
+          <>
+            <img 
+              src={profile.profileImage} 
+              alt="프로필" 
+              className="profile-image-large"
+            />
+            <div className="profile-header-info">
+              <h2>{profile.nickname}</h2>
+              <div className="tier-badge-large">{profile.tier}</div>
             </div>
+          </>
+        )}
+      </div>
 
-            {/* 통계 */}
-            <div style={{
-              backgroundColor: 'white',
-              border: '2px solid #e0e0e0',
-              borderRadius: '10px',
-              padding: '30px'
-            }}>
-              <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px' }}>
-                예측 통계
-              </h2>
+      {/* 탭 네비게이션 */}
+      <div className="mypage-tabs">
+        <button
+          className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
+          onClick={() => setActiveTab('profile')}
+        >
+          프로필
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'stats' ? 'active' : ''}`}
+          onClick={() => setActiveTab('stats')}
+        >
+          통계
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'activity' ? 'active' : ''}`}
+          onClick={() => setActiveTab('activity')}
+        >
+          활동 내역
+        </button>
+        <button
+          className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
+          onClick={() => setActiveTab('settings')}
+        >
+          설정
+        </button>
+      </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
-                <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: '#888', marginBottom: '10px' }}>총 예측</div>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#333' }}>
-                    {user.predictions.total}
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: '#888', marginBottom: '10px' }}>적중</div>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#4CAF50' }}>
-                    {user.predictions.correct}
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: '#888', marginBottom: '10px' }}>실패</div>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#f44336' }}>
-                    {user.predictions.wrong}
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'center', padding: '20px', backgroundColor: '#f9f9f9', borderRadius: '8px' }}>
-                  <div style={{ fontSize: '14px', color: '#888', marginBottom: '10px' }}>승률</div>
-                  <div style={{ fontSize: '28px', fontWeight: 'bold', color: '#646cff' }}>
-                    {user.predictions.winRate}%
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+      {/* 탭 컨텐츠 */}
+      <div className="mypage-content">
+        {activeTab === 'profile' && profile && (
+          <ProfileSection profile={profile} />
         )}
 
-        {/* 예측 내역 탭 */}
-        {activeTab === 'predictions' && (
-          <div style={{
-            backgroundColor: 'white',
-            border: '2px solid #e0e0e0',
-            borderRadius: '10px',
-            padding: '30px',
-            textAlign: 'center',
-            color: '#888'
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>🎯</div>
-            <p>예측 내역이 없습니다.</p>
-            <p style={{ marginTop: '10px', fontSize: '14px' }}>
-              경기 예측에 참여하고 티어 점수를 올려보세요!
-            </p>
-          </div>
+        {activeTab === 'stats' && predictionStats && (
+          <StatsSection 
+            stats={predictionStats} 
+            recentResults={recentResults} 
+          />
         )}
 
-        {/* 작성 글/댓글 탭 */}
-        {activeTab === 'posts' && (
-          <div style={{
-            backgroundColor: 'white',
-            border: '2px solid #e0e0e0',
-            borderRadius: '10px',
-            padding: '30px',
-            textAlign: 'center',
-            color: '#888'
-          }}>
-            <div style={{ fontSize: '48px', marginBottom: '20px' }}>✏️</div>
-            <p>작성한 글과 댓글이 없습니다.</p>
-            <p style={{ marginTop: '10px', fontSize: '14px' }}>
-              커뮤니티에서 다른 팬들과 소통해보세요!
-            </p>
-          </div>
+        {activeTab === 'activity' && (
+          <ActivitySection />
         )}
 
-        {/* 설정 탭 */}
         {activeTab === 'settings' && (
-          <div style={{
-            backgroundColor: 'white',
-            border: '2px solid #e0e0e0',
-            borderRadius: '10px',
-            padding: '30px'
-          }}>
-            <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px' }}>
-              계정 설정
-            </h2>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                닉네임 변경
-              </label>
-              <input
-                type="text"
-                defaultValue={user.nickname}
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '5px',
-                  fontSize: '14px'
-                }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '20px' }}>
-              <label style={{ display: 'block', marginBottom: '8px', fontWeight: 'bold' }}>
-                비밀번호 변경
-              </label>
-              <input
-                type="password"
-                placeholder="새 비밀번호"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '5px',
-                  fontSize: '14px',
-                  marginBottom: '10px'
-                }}
-              />
-              <input
-                type="password"
-                placeholder="비밀번호 확인"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '5px',
-                  fontSize: '14px'
-                }}
-              />
-            </div>
-
-            <button
-              style={{
-                padding: '12px 30px',
-                backgroundColor: '#646cff',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                marginRight: '10px'
-              }}
-              onClick={() => alert('설정이 저장되었습니다.')}
-            >
-              저장하기
-            </button>
-
-            <button
-              style={{
-                padding: '12px 30px',
-                backgroundColor: '#f44336',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                fontSize: '16px',
-                fontWeight: 'bold'
-              }}
-              onClick={handleLogout}
-            >
-              로그아웃
-            </button>
-          </div>
+          <SettingsSection onLogout={handleLogout} />
         )}
       </div>
     </div>
   );
-}
+};
 
 export default MyPage;

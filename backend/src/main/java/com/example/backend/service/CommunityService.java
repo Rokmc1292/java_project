@@ -248,7 +248,7 @@ public class CommunityService {
 
         // 인기글 진입 알림 (기준 달성 시)
         if (post.getIsPopular() && post.getLikeCount() == POPULAR_POST_THRESHOLD) {
-            notificationService.sendPopularPostNotification(post);
+            notificationService.createPopularPostNotification(post);
         }
     }
 
@@ -362,10 +362,10 @@ public class CommunityService {
             comment.setParentComment(parentComment);
 
             // 대댓글 알림 발송
-            notificationService.sendReplyNotification(parentComment, user);
+            notificationService.createReplyNotification(parentComment, comment);
         } else {
             // 댓글 알림 발송 (게시글 작성자에게)
-            notificationService.sendCommentNotification(post, user);
+            notificationService.createCommentNotification(post, comment);
         }
 
         // 댓글 수 증가
