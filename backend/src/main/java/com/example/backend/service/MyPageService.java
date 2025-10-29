@@ -4,6 +4,7 @@ import com.example.backend.dto.*;
 import com.example.backend.entity.*;
 import com.example.backend.repository.*;
 import lombok.RequiredArgsConstructor;
+import org.mindrot.jbcrypt.BCrypt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,7 +25,6 @@ public class MyPageService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserSettingsRepository userSettingsRepository;
-    // PasswordEncoder 제거
 
     public UserProfileDto getUserProfile(String username) {
         User user = userRepository.findByUsername(username)
@@ -186,8 +186,8 @@ public class MyPageService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
 
-        // 단순 비교 (암호화 없이)
-        if (!request.getCurrentPassword().equals(user.getPassword())) {
+        // BCrypt를 사용한 비밀번호 검증
+        if (!BCrypt.checkpw(request.getCurrentPassword(), user.getPassword())) {
             throw new RuntimeException("현재 비밀번호가 일치하지 않습니다");
         }
 
@@ -195,8 +195,8 @@ public class MyPageService {
             throw new RuntimeException("새 비밀번호가 일치하지 않습니다");
         }
 
-        // 비밀번호를 그대로 저장 (암호화 없이)
-        user.setPassword(request.getNewPassword());
+        // BCrypt를 사용한 비밀번호 암호화
+        user.setPassword(BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt()));
         userRepository.save(user);
     }
 

@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import Navbar from '../components/Navbar';
 
+// 환경변수에서 API Base URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 /**
  * 스포츠 뉴스 페이지
  */
@@ -22,9 +25,9 @@ function News() {
   const fetchNews = async () => {
     setLoading(true);
     try {
-      let url = 'http://localhost:8080/api/news';
+      let url = `${API_BASE_URL}/api/news`;
       if (selectedSport !== 'ALL') {
-        url = `http://localhost:8080/api/news/sport/${selectedSport}`;
+        url = `${API_BASE_URL}/api/news/sport/${selectedSport}`;
       }
 
       const response = await fetch(url);

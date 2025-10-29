@@ -6,6 +6,7 @@ import com.example.backend.repository.BoardCategoryRepository;
 import com.example.backend.service.CommunityService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/community")
 @RequiredArgsConstructor
@@ -108,7 +110,7 @@ public class CommunityController {
             categoryName = "자유게시판";
         }
 
-        System.out.println("작성할 카테고리: " + categoryName); // 디버깅용
+        log.debug("게시글 작성 요청 - 카테고리: {}, 제목: {}", categoryName, request.getTitle());
 
         PostDto post = communityService.createPost(username, categoryName, request.getTitle(), request.getContent());
         return ResponseEntity.ok(post);

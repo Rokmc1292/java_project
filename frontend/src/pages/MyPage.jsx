@@ -65,7 +65,9 @@ const MyPage = () => {
    */
   const handleLogout = () => {
     if (window.confirm('로그아웃 하시겠습니까?')) {
-      // 세션 삭제 후 로그인 페이지로 이동
+      // 로컬 스토리지에서 사용자 정보 삭제
+      localStorage.removeItem('user');
+      // 로그인 페이지로 이동
       navigate('/login');
     }
   };

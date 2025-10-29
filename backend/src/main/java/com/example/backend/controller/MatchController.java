@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.MatchDto;
 import com.example.backend.service.MatchService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import java.util.List;
  * 경기 일정 Controller
  * 경기 조회 API 제공
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/matches")
 @RequiredArgsConstructor
@@ -31,13 +33,11 @@ public class MatchController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "ALL") String sport) {
 
-        System.out.println("=== 경기 조회 요청 ===");
-        System.out.println("날짜: " + date);
-        System.out.println("종목: " + sport);
+        log.debug("경기 조회 요청 - 날짜: {}, 종목: {}", date, sport);
 
         List<MatchDto> matches = matchService.getMatchesByDate(date, sport);
 
-        System.out.println("조회된 경기 수: " + matches.size());
+        log.debug("조회된 경기 수: {}", matches.size());
 
         return ResponseEntity.ok(matches);
     }
@@ -52,14 +52,11 @@ public class MatchController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
             @RequestParam(defaultValue = "ALL") String sport) {
 
-        System.out.println("=== 경기 범위 조회 요청 ===");
-        System.out.println("시작 날짜: " + startDate);
-        System.out.println("종료 날짜: " + endDate);
-        System.out.println("종목: " + sport);
+        log.debug("경기 범위 조회 요청 - 시작: {}, 종료: {}, 종목: {}", startDate, endDate, sport);
 
         List<MatchDto> matches = matchService.getMatchesByDateRange(startDate, endDate, sport);
 
-        System.out.println("조회된 경기 수: " + matches.size());
+        log.debug("조회된 경기 수: {}", matches.size());
 
         return ResponseEntity.ok(matches);
     }
