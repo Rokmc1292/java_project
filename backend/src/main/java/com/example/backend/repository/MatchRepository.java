@@ -27,13 +27,13 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findByMatchDateAndSport(@Param("date") LocalDateTime date, @Param("sportName") String sportName);
 
     /**
-     * 날짜 범위로 경기 조회 (전체 종목) - findByDateRange 별칭
+     * 날짜 범위로 경기 조회 (전체 종목)
      */
     @Query("SELECT m FROM Match m WHERE m.matchDate BETWEEN :startDate AND :endDate ORDER BY m.matchDate ASC")
     List<Match> findByMatchDateBetween(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
 
     /**
-     * 날짜 범위로 경기 조회 (전체 종목) - 별칭 메서드
+     * 날짜 범위로 경기 조회 (별칭)
      */
     @Query("SELECT m FROM Match m WHERE m.matchDate BETWEEN :startDate AND :endDate ORDER BY m.matchDate ASC")
     List<Match> findByDateRange(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
@@ -51,17 +51,15 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     List<Match> findLiveMatches();
 
     /**
-     * 상태별 경기 조회 (내림차순) - LiveService용
+     * 상태별 경기 조회 (내림차순)
      */
     @Query("SELECT m FROM Match m WHERE m.status = :status ORDER BY m.matchDate DESC")
     List<Match> findByStatusOrderByMatchDateDesc(@Param("status") String status);
 
     /**
-     * 특정 상태의 경기 조회 (스케줄러용)
+     * 특정 상태의 경기 조회
      */
     List<Match> findByStatus(String status);
-
-    // ========== 승부예측용 메서드 ==========
 
     /**
      * 예측 가능한 경기 조회 (D-2 경기, 전체 종목)
@@ -83,4 +81,10 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable
     );
+
+    /**
+     * EPL 리그의 LIVE 경기 조회 (실시간 점수 업데이트용)
+     */
+    @Query("SELECT m FROM Match m WHERE m.league.leagueId = :leagueId AND m.status = 'LIVE'")
+    List<Match> findLiveMatchesByLeague(@Param("leagueId") Long leagueId);
 }

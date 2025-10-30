@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'com.example'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0'
 
 java {
     toolchain {
@@ -24,21 +24,37 @@ repositories {
 }
 
 dependencies {
-    // Spring Boot Starters
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    // ===============================
+    // ✅ Spring Boot Starters
+    // ===============================
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // BCrypt 암호화 (Security 없이 사용)
-    implementation 'org.mindrot:jbcrypt:0.4'
-
-    // MySQL Driver
+    // ===============================
+    // ✅ 데이터베이스
+    // ===============================
     runtimeOnly 'com.mysql:mysql-connector-j'
 
-    // Lombok
+    // ===============================
+    // ✅ 유틸리티 / 보안
+    // ===============================
+    implementation 'org.mindrot:jbcrypt:0.4' // BCrypt 암호화
+
+    // ===============================
+    // ✅ Lombok
+    // ===============================
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-    // Test
+    // ===============================
+    // ✅ Selenium / WebDriver
+    // ===============================
+    implementation 'org.seleniumhq.selenium:selenium-java:4.15.0'
+    implementation 'io.github.bonigarcia:webdrivermanager:5.6.2'
+
+    // ===============================
+    // ✅ Test
+    // ===============================
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
