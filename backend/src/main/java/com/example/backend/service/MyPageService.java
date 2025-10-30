@@ -84,7 +84,8 @@ public class MyPageService {
 
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
         List<Prediction> predictions = predictionRepository
-                .findByUserAndIsCorrectNotNull(user, pageable);
+                .findByUserAndIsCorrectNotNull(user, pageable)
+                .getContent(); // Page에서 List로 변환
 
         return predictions.stream()
                 .map(p -> {
