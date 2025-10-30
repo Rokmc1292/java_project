@@ -5,6 +5,7 @@ import com.example.backend.dto.PostDto;
 import com.example.backend.entity.*;
 import com.example.backend.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +20,7 @@ import java.util.stream.Collectors;
  * 커뮤니티 서비스
  * 게시글, 댓글, 추천, 스크랩, 신고 등 모든 비즈니스 로직 처리
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CommunityService {
@@ -73,8 +75,7 @@ public class CommunityService {
 
             return posts.map(this::convertToDto);
         } catch (Exception e) {
-            System.err.println("게시글 조회 중 에러 발생: " + e.getMessage());
-            e.printStackTrace();
+            log.error("게시글 조회 중 에러 발생", e);
             return Page.empty(pageable);
         }
     }
@@ -87,8 +88,7 @@ public class CommunityService {
             Page<Post> posts = postRepository.findByIsPopularTrueOrderByLikeCountDescCreatedAtDesc(pageable);
             return posts.map(this::convertToDto);
         } catch (Exception e) {
-            System.err.println("인기글 조회 중 에러 발생: " + e.getMessage());
-            e.printStackTrace();
+            log.error("인기글 조회 중 에러 발생", e);
             return Page.empty(pageable);
         }
     }
@@ -110,8 +110,7 @@ public class CommunityService {
             Page<Post> posts = postRepository.findByCategoryAndIsPopularTrueOrderByLikeCountDescCreatedAtDesc(category, pageable);
             return posts.map(this::convertToDto);
         } catch (Exception e) {
-            System.err.println("카테고리별 인기글 조회 중 에러 발생: " + e.getMessage());
-            e.printStackTrace();
+            log.error("카테고리별 인기글 조회 중 에러 발생", e);
             return Page.empty(pageable);
         }
     }

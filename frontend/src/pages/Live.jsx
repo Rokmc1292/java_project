@@ -22,9 +22,17 @@ function Live() {
     const userData = localStorage.getItem('user');
     if (userData) {
       try {
-        setUser(JSON.parse(userData));
+        const parsedUser = JSON.parse(userData);
+        // username 필드 검증
+        if (parsedUser && parsedUser.username) {
+          setUser(parsedUser);
+        } else {
+          console.error('사용자 정보가 올바르지 않습니다.');
+          localStorage.removeItem('user');
+        }
       } catch (e) {
         console.error('사용자 정보 파싱 오류:', e);
+        localStorage.removeItem('user');
       }
     }
   }, []);
