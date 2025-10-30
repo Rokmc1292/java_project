@@ -55,7 +55,7 @@ public class EplLiveScoreUpdater {
             // 네이버 스포츠 EPL 일정 페이지 (오늘 날짜)
             String baseUrl = "https://sports.news.naver.com/wfootball/schedule/index?category=epl";
             driver.get(baseUrl);
-            Thread.sleep(2000);
+            Thread.sleep(1500);  // 페이지 로딩 대기
 
             // 오늘 경기 목록 찾기
             List<WebElement> matchElements = driver.findElements(By.cssSelector(".MatchBox_match_item__WiPhj"));
@@ -150,16 +150,23 @@ public class EplLiveScoreUpdater {
 
             if (scores.size() >= 2) {
                 try {
-                    int newHomeScore = Integer.parseInt(scores.get(0).getText());
-                    int newAwayScore = Integer.parseInt(scores.get(1).getText());
+                    String homeScoreText = scores.get(0).getText().trim();
+                    String awayScoreText = scores.get(1).getText().trim();
+
+                    if (homeScoreText.isEmpty() || awayScoreText.isEmpty()) {
+                        log.warn("⚠️ 점수 텍스트가 비어있음");
+                        return false;
+                    }
+
+                    Integer newHomeScore = Integer.parseInt(homeScoreText);
+                    Integer newAwayScore = Integer.parseInt(awayScoreText);
 
                     // 점수나 상태가 변경되었는지 확인
-                    // int 타입은 == 연산자 사용
                     Integer currentHomeScore = match.getHomeScore();
                     Integer currentAwayScore = match.getAwayScore();
 
-                    boolean scoreChanged = (currentHomeScore == null || currentHomeScore != newHomeScore)
-                            || (currentAwayScore == null || currentAwayScore != newAwayScore);
+                    boolean scoreChanged = (currentHomeScore == null || !currentHomeScore.equals(newHomeScore))
+                            || (currentAwayScore == null || !currentAwayScore.equals(newAwayScore));
                     boolean statusChanged = !newStatus.equals(match.getStatus());
 
                     if (scoreChanged || statusChanged) {
@@ -182,7 +189,7 @@ public class EplLiveScoreUpdater {
                     }
 
                 } catch (NumberFormatException e) {
-                    log.warn("⚠️ 점수 파싱 실패");
+                    log.warn("⚠️ 점수 파싱 실패: {}", e.getMessage());
                 }
             }
 

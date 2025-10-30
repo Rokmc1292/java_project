@@ -285,8 +285,12 @@ public class PredictionService {
      * 경기 결과 판정
      */
     private String determineMatchResult(Match match) {
-        int homeScore = match.getHomeScore();
-        int awayScore = match.getAwayScore();
+        Integer homeScore = match.getHomeScore();
+        Integer awayScore = match.getAwayScore();
+
+        if (homeScore == null || awayScore == null) {
+            throw new RuntimeException("경기 점수가 없습니다. matchId=" + match.getMatchId());
+        }
 
         if (homeScore > awayScore) {
             return "HOME";
