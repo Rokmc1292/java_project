@@ -50,20 +50,27 @@ public class EplCrawlerService {
      * @return 설정된 WebDriver 인스턴스
      */
     public WebDriver setupDriver() {
-        // ChromeDriver 자동 설치 및 설정
-        WebDriverManager.chromedriver().setup();
+        try {
+            // ChromeDriver 자동 설치 및 설정
+            WebDriverManager.chromedriver().setup();
 
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless");  // 백그라운드 실행
-        options.addArguments("--no-sandbox");
-        options.addArguments("--disable-dev-shm-usage");
-        options.addArguments("--window-size=1920,1080");
-        options.addArguments("--disable-gpu");
-        options.addArguments("--disable-extensions");
-        options.addArguments("--disable-blink-features=AutomationControlled");
-        options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+            ChromeOptions options = new ChromeOptions();
+            options.addArguments("--headless");  // 백그라운드 실행
+            options.addArguments("--no-sandbox");
+            options.addArguments("--disable-dev-shm-usage");
+            options.addArguments("--window-size=1920,1080");
+            options.addArguments("--disable-gpu");
+            options.addArguments("--disable-extensions");
+            options.addArguments("--disable-blink-features=AutomationControlled");
+            options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
 
-        return new ChromeDriver(options);
+            WebDriver driver = new ChromeDriver(options);
+            log.info("✅ WebDriver 초기화 성공");
+            return driver;
+        } catch (Exception e) {
+            log.error("❌ WebDriver 초기화 실패: {}", e.getMessage());
+            throw new RuntimeException("WebDriver 초기화 실패", e);
+        }
     }
 
     /**

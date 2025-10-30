@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 import mypageApi from '../api/mypageApi';
 import ProfileSection from '../components/ProfileSection';
 import StatsSection from '../components/StatsSection';
@@ -29,8 +30,16 @@ const MyPage = () => {
   // 로딩 상태
   const [loading, setLoading] = useState(true);
 
-  // 컴포넌트 마운트 시 데이터 로드
+  // 컴포넌트 마운트 시 인증 체크 및 데이터 로드
   useEffect(() => {
+    // 로그인 체크
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
+
     loadMyPageData();
   }, []);
 
@@ -74,15 +83,20 @@ const MyPage = () => {
 
   if (loading) {
     return (
-      <div className="mypage-loading">
-        <div className="spinner"></div>
-        <p>로딩 중...</p>
-      </div>
+      <>
+        <Navbar />
+        <div className="mypage-loading">
+          <div className="spinner"></div>
+          <p>로딩 중...</p>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="mypage-container">
+    <>
+      <Navbar />
+      <div className="mypage-container">
       {/* 상단 프로필 헤더 - 모든 탭에서 보임 */}
       <div className="mypage-header">
         {profile && (
@@ -150,6 +164,7 @@ const MyPage = () => {
         )}
       </div>
     </div>
+    </>
   );
 };
 

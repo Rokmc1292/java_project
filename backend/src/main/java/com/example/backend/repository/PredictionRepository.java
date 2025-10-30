@@ -72,5 +72,5 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
 
     List<Prediction> findByUser(User user);
     Page<Prediction> findByUser(User user, Pageable pageable);
-    List<Prediction> findByUserAndIsCorrectNotNull(User user, Pageable pageable);
+    Page<Prediction> findByUserAndIsCorrectNotNull(User user, Pageable pageable);
 }

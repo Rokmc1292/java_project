@@ -25,7 +25,7 @@ const ProfileSection = ({ profile }) => {
    */
   const calculateProgress = () => {
     if (!profile.nextTierScore) return 100; // 최고 티어는 100%
-    
+
     const tierScoreRanges = {
       BRONZE: 0,
       SILVER: 100,
@@ -38,7 +38,10 @@ const ProfileSection = ({ profile }) => {
     const scoreInCurrentTier = profile.tierScore - currentTierMin;
     const tierRange = profile.nextTierScore - currentTierMin;
 
-    return (scoreInCurrentTier / tierRange) * 100;
+    if (tierRange === 0) return 100; // 범위가 0이면 100% 반환
+
+    const progress = (scoreInCurrentTier / tierRange) * 100;
+    return Math.max(0, Math.min(100, progress)); // 0-100 사이로 제한
   };
 
   /**

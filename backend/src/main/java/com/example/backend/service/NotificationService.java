@@ -29,7 +29,7 @@ public class NotificationService {
 
         // 사용자 알림 설정 확인
         UserSettings setting = userSettingsRepository.findByUser(postAuthor).orElse(null);
-        if (setting == null || !setting.getCommentNotification()) {
+        if (setting == null || !Boolean.TRUE.equals(setting.getCommentNotification())) {
             return;
         }
 
@@ -64,7 +64,7 @@ public class NotificationService {
 
         // 사용자 알림 설정 확인
         UserSettings setting = userSettingsRepository.findByUser(commentAuthor).orElse(null);
-        if (setting == null || !setting.getReplyNotification()) {
+        if (setting == null || !Boolean.TRUE.equals(setting.getReplyNotification())) {
             return;
         }
 
@@ -93,7 +93,7 @@ public class NotificationService {
 
         // 사용자 알림 설정 확인
         UserSettings setting = userSettingsRepository.findByUser(postAuthor).orElse(null);
-        if (setting == null || !setting.getPopularPostNotification()) {
+        if (setting == null || !Boolean.TRUE.equals(setting.getPopularPostNotification())) {
             return;
         }
 

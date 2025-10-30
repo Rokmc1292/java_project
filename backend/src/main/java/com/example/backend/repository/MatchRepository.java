@@ -84,7 +84,8 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     /**
      * EPL 리그의 LIVE 경기 조회 (실시간 점수 업데이트용)
+     * JOIN FETCH로 팀 정보를 함께 로드하여 LazyInitializationException 방지
      */
-    @Query("SELECT m FROM Match m WHERE m.league.leagueId = :leagueId AND m.status = 'LIVE'")
+    @Query("SELECT m FROM Match m JOIN FETCH m.homeTeam JOIN FETCH m.awayTeam WHERE m.league.leagueId = :leagueId AND m.status = 'LIVE'")
     List<Match> findLiveMatchesByLeague(@Param("leagueId") Long leagueId);
 }

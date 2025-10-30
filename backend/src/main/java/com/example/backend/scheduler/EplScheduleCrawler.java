@@ -66,20 +66,20 @@ public class EplScheduleCrawler {
             // 네이버 스포츠 EPL 일정 페이지
             String baseUrl = "https://sports.news.naver.com/wfootball/schedule/index?category=epl";
             driver.get(baseUrl);
-            Thread.sleep(3000);
+            Thread.sleep(2000);  // 초기 페이지 로딩 대기
 
             // 2025년 8월~12월 크롤링
             for (int month = 8; month <= 12; month++) {
                 List<MatchCrawlDto> monthMatches = crawlMonthSchedule(driver, wait, 2025, month);
                 allMatches.addAll(monthMatches);
-                Thread.sleep(2000);
+                Thread.sleep(1000);  // 월 간 전환 대기
             }
 
             // 2026년 1월~5월 크롤링
             for (int month = 1; month <= 5; month++) {
                 List<MatchCrawlDto> monthMatches = crawlMonthSchedule(driver, wait, 2026, month);
                 allMatches.addAll(monthMatches);
-                Thread.sleep(2000);
+                Thread.sleep(1000);  // 월 간 전환 대기
             }
 
             log.info("🎉 전체 시즌 크롤링 완료!");
@@ -109,7 +109,7 @@ public class EplScheduleCrawler {
             String monthXpath = String.format("//button[contains(@class, 'CalendarDate_tab__WFXXe')]//em[text()='%d']", month);
             WebElement monthButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(monthXpath)));
             monthButton.click();
-            Thread.sleep(3000);
+            Thread.sleep(2000);  // 페이지 로딩 대기
 
             // 경기 일정 그룹 찾기
             List<WebElement> dateGroups = driver.findElements(By.cssSelector(".ScheduleLeagueType_match_list_group__\\+\\+HQY"));
@@ -173,17 +173,23 @@ public class EplScheduleCrawler {
             String homeTeam = teamItems.get(0).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
             String awayTeam = teamItems.get(1).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
 
-            // 점수
+            // 점수 (LIVE 또는 FINISHED 경기만 점수 있음)
             List<WebElement> scores = matchElement.findElements(By.cssSelector(".MatchBoxHeadToHeadArea_score__TChmp"));
-            int homeScore = 0;
-            int awayScore = 0;
+            Integer homeScore = null;
+            Integer awayScore = null;
 
-            if (scores.size() >= 2 && "FINISHED".equals(status)) {
+            if (scores.size() >= 2 && ("FINISHED".equals(status) || "LIVE".equals(status))) {
                 try {
-                    homeScore = Integer.parseInt(scores.get(0).getText());
-                    awayScore = Integer.parseInt(scores.get(1).getText());
+                    String homeScoreText = scores.get(0).getText().trim();
+                    String awayScoreText = scores.get(1).getText().trim();
+
+                    if (!homeScoreText.isEmpty() && !awayScoreText.isEmpty()) {
+                        homeScore = Integer.parseInt(homeScoreText);
+                        awayScore = Integer.parseInt(awayScoreText);
+                    }
                 } catch (NumberFormatException e) {
-                    // 점수 파싱 실패시 0 유지
+                    // 점수 파싱 실패시 null 유지
+                    log.warn("⚠️ 점수 파싱 실패: {} vs {}", homeTeam, awayTeam);
                 }
             }
 
