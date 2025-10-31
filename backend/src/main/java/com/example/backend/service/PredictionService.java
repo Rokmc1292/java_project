@@ -32,21 +32,21 @@ public class PredictionService {
     private final UserRepository userRepository;
     // NotificationService 제거
 
-    // ========== 예측 경기 목록 (D-2 경기) ==========
+    // ========== 예측 경기 목록 (D-7 경기) ==========
 
     /**
-     * 예측 가능한 경기 목록 조회 (이틀 전 경기)
+     * 예측 가능한 경기 목록 조회 (일주일 전 경기)
+     * 현재 시간부터 7일 후까지의 경기를 조회
      */
     @Transactional(readOnly = true)
     public Page<Match> getPredictableMatches(String sportName, Pageable pageable) {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime twoDaysLater = now.plusDays(2);
-        LocalDateTime endOfTwoDays = twoDaysLater.plusDays(1);
+        LocalDateTime sevenDaysLater = now.plusDays(7);
 
         if (sportName != null && !sportName.equals("ALL")) {
-            return matchRepository.findPredictableMatchesBySport(sportName, twoDaysLater, endOfTwoDays, pageable);
+            return matchRepository.findPredictableMatchesBySport(sportName, now, sevenDaysLater, pageable);
         } else {
-            return matchRepository.findPredictableMatches(twoDaysLater, endOfTwoDays, pageable);
+            return matchRepository.findPredictableMatches(now, sevenDaysLater, pageable);
         }
     }
 
