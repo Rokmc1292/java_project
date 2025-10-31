@@ -7,10 +7,10 @@ import '../styles/Predictions.css';
 
 /**
  * 승부예측 메인 페이지
- * - 예측 가능한 경기 목록 (D-2 경기)
+ * - 예측 가능한 경기 목록 (일주일 이내 경기)
  * - 종목별 필터링
  * - 마감 시간 카운트다운
- * 
+ *
  * 파일 위치: frontend/src/pages/Predictions.jsx
  */
 function Predictions() {
@@ -77,10 +77,10 @@ function Predictions() {
     return `${days}일 ${hours}시간 ${minutes}분`;
   };
 
-  // 날짜 포맷팅
+  // 날짜 포맷팅 - DB 시간을 그대로 표시
   const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return `${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
+    // 백엔드에서 한국 시간으로 제공하므로 변환 없이 그대로 표시
+    return dateString;
   };
 
   return (
@@ -90,14 +90,14 @@ function Predictions() {
         {/* 페이지 헤더 */}
         <div className="predictions-header">
           <h1>⚽ 승부예측</h1>
-          <p>경기 이틀 전부터 예측 가능합니다. 코멘트와 함께 예측해보세요!</p>
+          <p>일주일 이내 경기를 예측할 수 있습니다. 코멘트와 함께 예측해보세요!</p>
         </div>
 
         {/* 안내 메시지 */}
         <div className="info-box">
           <p className="info-title">💡 승부예측 안내</p>
           <ul className="info-list">
-            <li>경기 이틀 전(D-2)부터 예측 가능합니다</li>
+            <li>현재부터 일주일 이내 경기를 예측할 수 있습니다</li>
             <li>예측 성공 시 +10점, 실패 시 -10점</li>
             <li>코멘트 작성은 필수입니다 (최소 10자)</li>
             <li>제출 후 수정할 수 없으니 신중하게 선택하세요</li>
