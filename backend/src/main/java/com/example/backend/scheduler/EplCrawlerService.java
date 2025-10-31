@@ -86,16 +86,39 @@ public class EplCrawlerService {
 
     /**
      * 경기 상태 텍스트 변환
-     * "종료" -> FINISHED, "예정" -> SCHEDULED, 기타 -> LIVE
+     * 네이버 스포츠의 다양한 상태 텍스트를 정확하게 판단
      */
     public String convertStatus(String statusText) {
-        if ("종료".equals(statusText)) {
-            return "FINISHED";
-        } else if ("예정".equals(statusText)) {
+        if (statusText == null || statusText.isEmpty()) {
             return "SCHEDULED";
-        } else {
+        }
+
+        statusText = statusText.trim();
+
+        // 종료된 경기
+        if ("종료".equals(statusText) || "FT".equals(statusText) || "Full Time".equals(statusText)) {
+            return "FINISHED";
+        }
+
+        // 예정된 경기
+        if ("예정".equals(statusText) || "VS".equals(statusText)) {
+            return "SCHEDULED";
+        }
+
+        // 연기/취소된 경기
+        if ("연기".equals(statusText) || "취소".equals(statusText) || "POSTPONED".equals(statusText)) {
+            return "POSTPONED";
+        }
+
+        // 진행 중인 경기 (시간 표시, HT 등)
+        // "1'", "45'+2'", "HT" (Half Time) 등
+        if (statusText.matches("\\d+'.*") || "HT".equals(statusText) || "Half Time".equals(statusText)) {
             return "LIVE";
         }
+
+        // 알 수 없는 상태는 SCHEDULED로 처리 (안전한 기본값)
+        log.warn("⚠️ 알 수 없는 경기 상태: '{}', SCHEDULED로 처리", statusText);
+        return "SCHEDULED";
     }
 
     /**

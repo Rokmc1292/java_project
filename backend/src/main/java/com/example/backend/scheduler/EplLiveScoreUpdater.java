@@ -169,8 +169,20 @@ public class EplLiveScoreUpdater {
                             || (currentAwayScore == null || !currentAwayScore.equals(newAwayScore));
                     boolean statusChanged = !newStatus.equals(match.getStatus());
 
+                    // ⚠️ 중요: FINISHED 경기는 상태를 변경하지 않음 (보호)
+                    String currentStatus = match.getStatus();
+
+                    if ("FINISHED".equals(currentStatus) && !"FINISHED".equals(newStatus)) {
+                        // FINISHED 경기를 다른 상태로 변경하려는 시도 차단
+                        log.warn("⚠️ FINISHED 경기 보호: {} vs {} (크롤링 상태: {} → 무시)",
+                                match.getHomeTeam().getTeamName(),
+                                match.getAwayTeam().getTeamName(),
+                                newStatus);
+                        return false;
+                    }
+
                     if (scoreChanged || statusChanged) {
-                        // 점수 업데이트
+                        // 점수 및 상태 업데이트
                         match.setHomeScore(newHomeScore);
                         match.setAwayScore(newAwayScore);
                         match.setStatus(newStatus);

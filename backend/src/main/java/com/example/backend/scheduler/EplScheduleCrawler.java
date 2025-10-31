@@ -280,11 +280,30 @@ public class EplScheduleCrawler {
 
                 if (existingMatch != null) {
                     // 기존 경기 업데이트
-                    existingMatch.setStatus(dto.getStatus());
-                    existingMatch.setHomeScore(dto.getHomeScore());
-                    existingMatch.setAwayScore(dto.getAwayScore());
-                    existingMatch.setVenue(dto.getVenue());
-                    matchRepository.save(existingMatch);
+                    // ⚠️ 중요: FINISHED 경기는 상태를 변경하지 않음 (보호)
+                    String currentStatus = existingMatch.getStatus();
+
+                    if (!"FINISHED".equals(currentStatus)) {
+                        // FINISHED가 아닌 경우에만 상태 업데이트
+                        existingMatch.setStatus(dto.getStatus());
+                        existingMatch.setHomeScore(dto.getHomeScore());
+                        existingMatch.setAwayScore(dto.getAwayScore());
+                        existingMatch.setVenue(dto.getVenue());
+                        matchRepository.save(existingMatch);
+                        log.debug("✅ 경기 업데이트: {} vs {} ({})",
+                            dto.getHomeTeamName(), dto.getAwayTeamName(), dto.getStatus());
+                    } else if ("FINISHED".equals(dto.getStatus())) {
+                        // 둘 다 FINISHED인 경우는 점수만 업데이트 (점수 수정 가능성)
+                        existingMatch.setHomeScore(dto.getHomeScore());
+                        existingMatch.setAwayScore(dto.getAwayScore());
+                        matchRepository.save(existingMatch);
+                        log.debug("✅ 종료 경기 점수 업데이트: {} {} - {} {}",
+                            dto.getHomeTeamName(), dto.getHomeScore(), dto.getAwayScore(), dto.getAwayTeamName());
+                    } else {
+                        // 기존 FINISHED 경기를 다른 상태로 변경하려는 시도 차단
+                        log.warn("⚠️ FINISHED 경기 보호: {} vs {} (크롤링 상태: {} → 무시)",
+                            dto.getHomeTeamName(), dto.getAwayTeamName(), dto.getStatus());
+                    }
                 } else {
                     // 새 경기 생성
                     Match match = new Match();
