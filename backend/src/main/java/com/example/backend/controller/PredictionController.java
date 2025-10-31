@@ -41,7 +41,7 @@ public class PredictionController {
     // ========== 예측 경기 목록 ==========
 
     /**
-     * 예측 가능한 경기 목록 조회 (D-2 경기)
+     * 예측 가능한 경기 목록 조회 (D-30 경기)
      */
     @GetMapping("/matches")
     public ResponseEntity<Page<Match>> getPredictableMatches(
