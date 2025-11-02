@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import mypageApi from '../api/mypageApi';
 import '../styles/ActivitySection.css';
 
+// 환경변수에서 API Base URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const ActivitySection = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('predictions');
@@ -118,12 +121,12 @@ const ActivitySection = () => {
                   </div>
                   <div className="prediction-teams">
                     <div className="team-info">
-                      <img src={prediction.homeTeamLogo} alt={prediction.homeTeam} />
+                      {prediction.homeTeamLogo && <img src={`${API_BASE_URL}/${prediction.homeTeamLogo}`} alt={prediction.homeTeam} />}
                       <span>{prediction.homeTeam}</span>
                     </div>
                     <div className="vs-divider">VS</div>
                     <div className="team-info">
-                      <img src={prediction.awayTeamLogo} alt={prediction.awayTeam} />
+                      {prediction.awayTeamLogo && <img src={`${API_BASE_URL}/${prediction.awayTeamLogo}`} alt={prediction.awayTeam} />}
                       <span>{prediction.awayTeam}</span>
                     </div>
                   </div>

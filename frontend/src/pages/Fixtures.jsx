@@ -175,7 +175,7 @@ function Fixtures() {
                 <div className="match-league">
                   {match.league.logo && (
                     <img
-                      src={match.league.logo}
+                      src={`${API_BASE_URL}/${match.league.logo}`}
                       alt={match.league.name}
                       className="league-logo"
                     />
@@ -192,7 +192,7 @@ function Fixtures() {
                   <div className="team home-team">
                     {match.teams.home.logo && (
                       <img
-                        src={match.teams.home.logo}
+                        src={`${API_BASE_URL}/${match.teams.home.logo}`}
                         alt={match.teams.home.name}
                         className="team-logo"
                       />
@@ -241,7 +241,7 @@ function Fixtures() {
                     </div>
                     {match.teams.away.logo && (
                       <img
-                        src={match.teams.away.logo}
+                        src={`${API_BASE_URL}/${match.teams.away.logo}`}
                         alt={match.teams.away.name}
                         className="team-logo"
                       />
