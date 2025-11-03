@@ -43,7 +43,7 @@ public class MatchController {
      * 특정 날짜의 경기 조회
      * GET /api/matches?date=2025-10-16&sport=FOOTBALL
      */
-    @GetMapping
+    @GetMapping(params = "date")
     public ResponseEntity<List<MatchDto>> getMatches(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(defaultValue = "ALL") String sport) {
