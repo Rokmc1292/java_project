@@ -1,5 +1,6 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.MatchDto;
 import com.example.backend.dto.PredictionDto;
 import com.example.backend.dto.PredictionRequest;
 import com.example.backend.dto.PredictionStatisticsDto;
@@ -39,15 +40,18 @@ public class PredictionService {
      * 현재 시간부터 30일 후까지의 경기를 조회
      */
     @Transactional(readOnly = true)
-    public Page<Match> getPredictableMatches(String sportName, Pageable pageable) {
+    public Page<MatchDto> getPredictableMatches(String sportName, Pageable pageable) {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime thirtyDaysLater = now.plusDays(30);
 
+        Page<Match> matches;
         if (sportName != null && !sportName.equals("ALL")) {
-            return matchRepository.findPredictableMatchesBySport(sportName, now, thirtyDaysLater, pageable);
+            matches = matchRepository.findPredictableMatchesBySport(sportName, now, thirtyDaysLater, pageable);
         } else {
-            return matchRepository.findPredictableMatches(now, thirtyDaysLater, pageable);
+            matches = matchRepository.findPredictableMatches(now, thirtyDaysLater, pageable);
         }
+
+        return matches.map(this::convertMatchToDto);
     }
 
     /**
@@ -489,6 +493,67 @@ public class PredictionService {
             dto.setDrawPercentage(0.0);
             dto.setAwayPercentage(0.0);
         }
+
+        return dto;
+    }
+
+    /**
+     * Match 엔티티를 MatchDto로 변환
+     */
+    private MatchDto convertMatchToDto(Match match) {
+        MatchDto dto = new MatchDto();
+        dto.setMatchId(match.getMatchId());
+
+        // 리그 정보
+        if (match.getLeague() != null) {
+            MatchDto.LeagueInfo leagueInfo = new MatchDto.LeagueInfo();
+            leagueInfo.setLeagueId(match.getLeague().getLeagueId());
+            leagueInfo.setName(match.getLeague().getLeagueName());
+            leagueInfo.setCountry(match.getLeague().getCountry());
+            leagueInfo.setLogo(match.getLeague().getLeagueLogo());
+            dto.setLeague(leagueInfo);
+
+            // 종목 정보
+            if (match.getLeague().getSport() != null) {
+                dto.setSportType(match.getLeague().getSport().getSportName());
+            }
+        }
+
+        // 팀 정보
+        MatchDto.TeamInfo teamInfo = new MatchDto.TeamInfo();
+
+        if (match.getHomeTeam() != null) {
+            MatchDto.Team homeTeam = new MatchDto.Team();
+            homeTeam.setId(match.getHomeTeam().getTeamId());
+            homeTeam.setName(match.getHomeTeam().getTeamName());
+            homeTeam.setLogo(match.getHomeTeam().getTeamLogo());
+            homeTeam.setCountry(match.getHomeTeam().getCountry());
+            teamInfo.setHome(homeTeam);
+        }
+
+        if (match.getAwayTeam() != null) {
+            MatchDto.Team awayTeam = new MatchDto.Team();
+            awayTeam.setId(match.getAwayTeam().getTeamId());
+            awayTeam.setName(match.getAwayTeam().getTeamName());
+            awayTeam.setLogo(match.getAwayTeam().getTeamLogo());
+            awayTeam.setCountry(match.getAwayTeam().getCountry());
+            teamInfo.setAway(awayTeam);
+        }
+
+        dto.setTeams(teamInfo);
+
+        // 점수 정보
+        MatchDto.Score score = new MatchDto.Score();
+        score.setHome(match.getHomeScore());
+        score.setAway(match.getAwayScore());
+        dto.setScore(score);
+
+        // 경기 상세 정보
+        MatchDto.MatchDetail detail = new MatchDto.MatchDetail();
+        detail.setMatchDate(match.getMatchDate());
+        detail.setVenue(match.getVenue());
+        detail.setStatus(match.getStatus());
+        dto.setDetail(detail);
 
         return dto;
     }
