@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * NBA 전체 시즌 일정 크롤러
- * 매일 새벽 3시 30분에 2024-2025 시즌 전체 일정 크롤링
+ * 매일 새벽 3시 30분에 2025-2026 시즌 전체 일정 크롤링
  */
 @Component
 @RequiredArgsConstructor
@@ -49,13 +49,13 @@ public class NbaScheduleCrawler {
 
     /**
      * 전체 시즌 크롤링 실행
-     * 2024년 10월 ~ 2025년 4월
+     * 2025년 10월 ~ 2026년 4월
      */
     @Transactional
     public void crawlFullSeason() {
         log.info("=".repeat(60));
-        log.info("NBA 2024-2025 시즌 전체 일정 크롤링 시작");
-        log.info("기간: 2024년 10월 ~ 2025년 4월");
+        log.info("NBA 2025-2026 시즌 전체 일정 크롤링 시작");
+        log.info("기간: 2025년 10월 ~ 2026년 4월");
         log.info("=".repeat(60));
 
         WebDriver driver = null;
@@ -74,21 +74,8 @@ public class NbaScheduleCrawler {
             Thread.sleep(3000);  // 초기 페이지 로딩 대기
             log.info("✅ 페이지 로드 완료");
 
-            // 2024년 10월~12월 크롤링
+            // 2025년 10월~12월 크롤링
             for (int month = 10; month <= 12; month++) {
-                try {
-                    List<MatchCrawlDto> monthMatches = crawlMonthSchedule(driver, wait, 2024, month);
-                    allMatches.addAll(monthMatches);
-                    successMonths++;
-                    Thread.sleep(1500);  // 월 간 전환 대기
-                } catch (Exception e) {
-                    log.error("  ❌ {}년 {}월 크롤링 실패 - 다음 달로 계속 진행", 2024, month, e);
-                    failedMonths++;
-                }
-            }
-
-            // 2025년 1월~4월 크롤링
-            for (int month = 1; month <= 4; month++) {
                 try {
                     List<MatchCrawlDto> monthMatches = crawlMonthSchedule(driver, wait, 2025, month);
                     allMatches.addAll(monthMatches);
@@ -96,6 +83,19 @@ public class NbaScheduleCrawler {
                     Thread.sleep(1500);  // 월 간 전환 대기
                 } catch (Exception e) {
                     log.error("  ❌ {}년 {}월 크롤링 실패 - 다음 달로 계속 진행", 2025, month, e);
+                    failedMonths++;
+                }
+            }
+
+            // 2026년 1월~4월 크롤링
+            for (int month = 1; month <= 4; month++) {
+                try {
+                    List<MatchCrawlDto> monthMatches = crawlMonthSchedule(driver, wait, 2026, month);
+                    allMatches.addAll(monthMatches);
+                    successMonths++;
+                    Thread.sleep(1500);  // 월 간 전환 대기
+                } catch (Exception e) {
+                    log.error("  ❌ {}년 {}월 크롤링 실패 - 다음 달로 계속 진행", 2026, month, e);
                     failedMonths++;
                 }
             }
