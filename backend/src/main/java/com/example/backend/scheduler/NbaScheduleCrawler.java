@@ -5,6 +5,7 @@ import com.example.backend.entity.League;
 import com.example.backend.entity.Match;
 import com.example.backend.entity.Team;
 import com.example.backend.repository.MatchRepository;
+import com.example.backend.repository.TeamRepository;
 import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class NbaScheduleCrawler {
     private final MatchRepository matchRepository;
     private final NbaCrawlerService crawlerService;
     private final EntityManager entityManager;
+    private final TeamRepository teamRepository;
 
     /**
      * 매일 새벽 3시 30분에 NBA 전체 시즌 일정 크롤링
@@ -306,6 +308,14 @@ public class NbaScheduleCrawler {
         int updatedMatchCount = 0;
         int skippedCount = 0;
 
+        // 크롤링된 고유 팀 이름 수집 (디버깅용)
+        java.util.Set<String> crawledTeams = new java.util.HashSet<>();
+        for (MatchCrawlDto dto : matchDtos) {
+            crawledTeams.add(dto.getHomeTeamName());
+            crawledTeams.add(dto.getAwayTeamName());
+        }
+        log.info("📋 크롤링된 팀 목록 ({}개): {}", crawledTeams.size(), crawledTeams);
+
         // NBA 리그 조회 (league_id = 2)
         League nbaLeague;
         try {
@@ -315,6 +325,15 @@ public class NbaScheduleCrawler {
             return;
         }
 
+        // DB의 NBA 팀 목록 조회 및 로그 출력 (디버깅용)
+        List<Team> dbNbaTeams = teamRepository.findAll().stream()
+                .filter(t -> t.getLeague() != null && t.getLeague().getLeagueId() == 2L)
+                .toList();
+        java.util.Set<String> dbTeamNames = dbNbaTeams.stream()
+                .map(Team::getTeamName)
+                .collect(java.util.stream.Collectors.toSet());
+        log.info("🗄️ DB의 NBA 팀 목록 ({}개): {}", dbTeamNames.size(), dbTeamNames);
+
         for (MatchCrawlDto dto : matchDtos) {
             try {
                 // 팀 ID 조회
@@ -322,7 +341,12 @@ public class NbaScheduleCrawler {
                 Long awayTeamId = crawlerService.getTeamId(dto.getAwayTeamName());
 
                 if (homeTeamId == null || awayTeamId == null) {
-                    log.warn("  ⚠️ 팀 매핑 실패: {} vs {} (DB에 팀 정보 없음)", dto.getHomeTeamName(), dto.getAwayTeamName());
+                    if (homeTeamId == null) {
+                        log.warn("  ⚠️ 홈팀 매핑 실패: '{}' (DB에 이 이름의 팀 없음)", dto.getHomeTeamName());
+                    }
+                    if (awayTeamId == null) {
+                        log.warn("  ⚠️ 원정팀 매핑 실패: '{}' (DB에 이 이름의 팀 없음)", dto.getAwayTeamName());
+                    }
                     skippedCount++;
                     continue;
                 }
