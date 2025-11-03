@@ -54,27 +54,42 @@ function PredictionDetail() {
     setLoading(true);
     setError(null);
     try {
+      console.log('경기 정보 로드 시작 - matchId:', matchId);
+
       // 경기 정보 로드
       const matchData = await getMatch(matchId);
+      console.log('경기 정보 로드 성공:', matchData);
       setMatch(matchData);
 
       // 예측 통계 로드
+      console.log('예측 통계 로드 시작');
       const statsData = await getPredictionStatistics(matchId);
+      console.log('예측 통계 로드 성공:', statsData);
       setStatistics(statsData);
 
       // 예측 목록 로드
+      console.log('예측 목록 로드 시작');
       const predictionsData = await getPredictionsByMatch(matchId, page, 20);
+      console.log('예측 목록 로드 성공:', predictionsData);
       setPredictions(predictionsData.content || []);
       setTotalPages(predictionsData.totalPages || 0);
 
       // 이미 예측했는지 확인
       if (isLoggedIn()) {
-        const checkData = await checkUserPrediction(matchId);
-        setHasPredicted(checkData.hasPredicted);
+        console.log('예측 여부 확인 시작');
+        try {
+          const checkData = await checkUserPrediction(matchId);
+          console.log('예측 여부 확인 성공:', checkData);
+          setHasPredicted(checkData.hasPredicted);
+        } catch (checkErr) {
+          console.error('예측 여부 확인 실패 (무시):', checkErr);
+          // 예측 여부 확인 실패는 무시 (로그인 문제일 수 있음)
+          setHasPredicted(false);
+        }
       }
     } catch (err) {
       console.error('데이터 로드 실패:', err);
-      setError('데이터를 불러오는데 실패했습니다.');
+      setError(`데이터를 불러오는데 실패했습니다. ${err.message || ''}`);
     } finally {
       setLoading(false);
     }

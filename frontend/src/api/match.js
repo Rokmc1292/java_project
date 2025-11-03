@@ -11,12 +11,18 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
  */
 export const getMatch = async (matchId) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/matches/${matchId}`);
-    
+    const response = await fetch(`${API_BASE_URL}/api/matches/${matchId}`, {
+      method: 'GET',
+      credentials: 'include', // 세션 쿠키 전송
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
     if (!response.ok) {
       throw new Error('경기 정보를 불러오는데 실패했습니다.');
     }
-    
+
     return await response.json();
   } catch (error) {
     console.error('경기 상세 조회 실패:', error);
