@@ -13,6 +13,9 @@ import { getMatch } from '../api/match';
 import { getUserData, isLoggedIn } from '../api/api';
 import '../styles/Predictions.css';
 
+// 환경변수에서 API Base URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 /**
  * 승부예측 상세 페이지
  * - 경기 정보 표시
@@ -206,11 +209,20 @@ function PredictionDetail() {
         <div className="match-detail-card">
           {/* 경기 헤더 */}
           <div className="match-detail-header">
-            <span className="league-badge">
-              {match.league?.sport?.displayName || '종목'}
-            </span>
+            <div className="league-info">
+              {match.league?.logo && (
+                <img
+                  src={`${API_BASE_URL}/${match.league.logo}`}
+                  alt={match.league.name}
+                  className="league-logo"
+                />
+              )}
+              <span className="league-name">
+                {match.league?.name || '리그'}
+              </span>
+            </div>
             <span className="match-date">
-              {formatDate(match.matchDate)}
+              {formatDate(match.detail?.matchDate)}
             </span>
           </div>
 
@@ -218,9 +230,17 @@ function PredictionDetail() {
           <div className="match-detail-teams">
             {/* 홈팀 */}
             <div className="team-detail">
-              <div className="team-logo-large">🏠</div>
+              {match.teams?.home?.logo ? (
+                <img
+                  src={`${API_BASE_URL}/${match.teams.home.logo}`}
+                  alt={match.teams.home.name}
+                  className="team-logo-large"
+                />
+              ) : (
+                <div className="team-logo-large-placeholder">🏠</div>
+              )}
               <div className="team-name-large">
-                {match.homeTeam?.teamName || '홈팀'}
+                {match.teams?.home?.name || '홈팀'}
               </div>
             </div>
 
@@ -229,16 +249,24 @@ function PredictionDetail() {
 
             {/* 원정팀 */}
             <div className="team-detail">
-              <div className="team-logo-large">✈️</div>
+              {match.teams?.away?.logo ? (
+                <img
+                  src={`${API_BASE_URL}/${match.teams.away.logo}`}
+                  alt={match.teams.away.name}
+                  className="team-logo-large"
+                />
+              ) : (
+                <div className="team-logo-large-placeholder">✈️</div>
+              )}
               <div className="team-name-large">
-                {match.awayTeam?.teamName || '원정팀'}
+                {match.teams?.away?.name || '원정팀'}
               </div>
             </div>
           </div>
 
           {/* 경기장 정보 */}
           <div className="match-detail-venue">
-            📍 {match.venue || '경기장 정보 없음'}
+            📍 {match.detail?.venue || '경기장 정보 없음'}
           </div>
         </div>
 
