@@ -234,20 +234,24 @@ public class NbaScheduleCrawler {
             Integer homeScore = null;
             Integer awayScore = null;
 
-            if (scores.size() >= 2 && ("FINISHED".equals(status) || "LIVE".equals(status))) {
-                try {
-                    String awayScoreText = scores.get(0).getText().trim();
-                    String homeScoreText = scores.get(1).getText().trim();
+            // SCHEDULED 상태가 아닐 때만 점수 파싱
+            if ("FINISHED".equals(status) || "LIVE".equals(status)) {
+                if (scores.size() >= 2) {
+                    try {
+                        String awayScoreText = scores.get(0).getText().trim();
+                        String homeScoreText = scores.get(1).getText().trim();
 
-                    if (!homeScoreText.isEmpty() && !awayScoreText.isEmpty()) {
-                        awayScore = Integer.parseInt(awayScoreText);
-                        homeScore = Integer.parseInt(homeScoreText);
+                        if (!homeScoreText.isEmpty() && !awayScoreText.isEmpty()) {
+                            awayScore = Integer.parseInt(awayScoreText);
+                            homeScore = Integer.parseInt(homeScoreText);
+                        }
+                    } catch (NumberFormatException e) {
+                        // 점수 파싱 실패시 null 유지
+                        log.warn("⚠️ 점수 파싱 실패: {} vs {}", homeTeam, awayTeam);
                     }
-                } catch (NumberFormatException e) {
-                    // 점수 파싱 실패시 null 유지
-                    log.warn("⚠️ 점수 파싱 실패: {} vs {}", homeTeam, awayTeam);
                 }
             }
+            // SCHEDULED, POSTPONED 등은 무조건 점수를 null로 유지
 
             // 날짜 파싱
             LocalDateTime matchDate = parseDate(dateText, matchTime, year);
@@ -371,9 +375,18 @@ public class NbaScheduleCrawler {
                     if (!"FINISHED".equals(currentStatus)) {
                         // FINISHED가 아닌 경우에만 상태 업데이트
                         existingMatch.setStatus(dto.getStatus());
-                        existingMatch.setHomeScore(dto.getHomeScore());
-                        existingMatch.setAwayScore(dto.getAwayScore());
                         existingMatch.setVenue(dto.getVenue());
+
+                        // SCHEDULED 상태는 무조건 점수를 null로 설정
+                        if ("SCHEDULED".equals(dto.getStatus()) || "POSTPONED".equals(dto.getStatus())) {
+                            existingMatch.setHomeScore(null);
+                            existingMatch.setAwayScore(null);
+                        } else {
+                            // LIVE나 다른 상태는 크롤링된 점수 사용
+                            existingMatch.setHomeScore(dto.getHomeScore());
+                            existingMatch.setAwayScore(dto.getAwayScore());
+                        }
+
                         matchRepository.save(existingMatch);
                         updatedMatchCount++;
                         log.info("  ✅ 업데이트: {} vs {} ({})",
@@ -400,8 +413,15 @@ public class NbaScheduleCrawler {
                     match.setMatchDate(dto.getMatchDate());
                     match.setVenue(dto.getVenue());
                     match.setStatus(dto.getStatus());
-                    match.setHomeScore(dto.getHomeScore());
-                    match.setAwayScore(dto.getAwayScore());
+
+                    // SCHEDULED 상태는 무조건 점수를 null로 설정
+                    if ("SCHEDULED".equals(dto.getStatus()) || "POSTPONED".equals(dto.getStatus())) {
+                        match.setHomeScore(null);
+                        match.setAwayScore(null);
+                    } else {
+                        match.setHomeScore(dto.getHomeScore());
+                        match.setAwayScore(dto.getAwayScore());
+                    }
 
                     matchRepository.save(match);
                     newMatchCount++;
