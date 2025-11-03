@@ -20,6 +20,16 @@ public class MatchService {
 
     private final MatchRepository matchRepository;
 
+    /**
+     * 특정 경기 상세 정보 조회
+     */
+    @Transactional(readOnly = true)
+    public MatchDto getMatchById(Long matchId) {
+        Match match = matchRepository.findById(matchId)
+                .orElseThrow(() -> new RuntimeException("경기를 찾을 수 없습니다."));
+        return convertToDto(match);
+    }
+
     @Transactional(readOnly = true)
     public List<MatchDto> getMatchesByDate(LocalDate date, String sportType) {
         LocalDateTime dateTime = date.atStartOfDay();

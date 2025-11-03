@@ -25,6 +25,21 @@ public class MatchController {
     private final MatchService matchService;
 
     /**
+     * 특정 경기 상세 정보 조회
+     * GET /api/matches/{matchId}
+     */
+    @GetMapping("/{matchId}")
+    public ResponseEntity<MatchDto> getMatch(@PathVariable Long matchId) {
+        log.debug("경기 상세 조회 요청 - matchId: {}", matchId);
+
+        MatchDto match = matchService.getMatchById(matchId);
+
+        log.debug("경기 상세 조회 완료 - matchId: {}", matchId);
+
+        return ResponseEntity.ok(match);
+    }
+
+    /**
      * 특정 날짜의 경기 조회
      * GET /api/matches?date=2025-10-16&sport=FOOTBALL
      */
