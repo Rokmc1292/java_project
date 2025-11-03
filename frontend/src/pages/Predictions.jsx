@@ -5,6 +5,9 @@ import { getPredictableMatches } from '../api/prediction';
 import { isLoggedIn } from '../api/api';
 import '../styles/Predictions.css';
 
+// 환경변수에서 API Base URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 /**
  * 승부예측 메인 페이지
  * - 예측 가능한 경기 목록 (일주일 이내 경기)
@@ -153,11 +156,20 @@ function Predictions() {
               >
                 {/* 경기 정보 헤더 */}
                 <div className="match-header">
-                  <span className="league-badge">
-                    {match.league?.sport?.displayName || '종목'}
-                  </span>
+                  <div className="league-info">
+                    {match.league?.logo && (
+                      <img
+                        src={`${API_BASE_URL}/${match.league.logo}`}
+                        alt={match.league.name}
+                        className="league-logo"
+                      />
+                    )}
+                    <span className="league-name">
+                      {match.league?.name || '리그'}
+                    </span>
+                  </div>
                   <span className="match-date">
-                    {formatDate(match.matchDate)}
+                    {formatDate(match.detail?.matchDate)}
                   </span>
                 </div>
 
@@ -165,9 +177,17 @@ function Predictions() {
                 <div className="match-teams">
                   {/* 홈팀 */}
                   <div className="team home-team">
-                    <div className="team-logo">🏠</div>
+                    {match.teams?.home?.logo ? (
+                      <img
+                        src={`${API_BASE_URL}/${match.teams.home.logo}`}
+                        alt={match.teams.home.name}
+                        className="team-logo"
+                      />
+                    ) : (
+                      <div className="team-logo-placeholder">🏠</div>
+                    )}
                     <div className="team-name">
-                      {match.homeTeam?.teamName || '홈팀'}
+                      {match.teams?.home?.name || '홈팀'}
                     </div>
                   </div>
 
@@ -176,20 +196,28 @@ function Predictions() {
 
                   {/* 원정팀 */}
                   <div className="team away-team">
-                    <div className="team-logo">✈️</div>
                     <div className="team-name">
-                      {match.awayTeam?.teamName || '원정팀'}
+                      {match.teams?.away?.name || '원정팀'}
                     </div>
+                    {match.teams?.away?.logo ? (
+                      <img
+                        src={`${API_BASE_URL}/${match.teams.away.logo}`}
+                        alt={match.teams.away.name}
+                        className="team-logo"
+                      />
+                    ) : (
+                      <div className="team-logo-placeholder">✈️</div>
+                    )}
                   </div>
                 </div>
 
                 {/* 경기 상세 정보 */}
                 <div className="match-info">
                   <span className="venue">
-                    📍 {match.venue || '경기장 정보 없음'}
+                    📍 {match.detail?.venue || '경기장 정보 없음'}
                   </span>
                   <span className="countdown">
-                    ⏰ 마감까지 {getTimeUntilMatch(match.matchDate)}
+                    ⏰ 마감까지 {getTimeUntilMatch(match.detail?.matchDate)}
                   </span>
                 </div>
               </div>

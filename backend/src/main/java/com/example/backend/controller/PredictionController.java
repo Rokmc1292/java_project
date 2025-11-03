@@ -1,10 +1,10 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.MatchDto;
 import com.example.backend.dto.PredictionDto;
 import com.example.backend.dto.PredictionRequest;
 import com.example.backend.dto.PredictionStatisticsDto;
 import com.example.backend.dto.PredictionRankingDto;
-import com.example.backend.entity.Match;
 import com.example.backend.service.PredictionService;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -44,13 +44,13 @@ public class PredictionController {
      * 예측 가능한 경기 목록 조회 (D-30 경기)
      */
     @GetMapping("/matches")
-    public ResponseEntity<Page<Match>> getPredictableMatches(
+    public ResponseEntity<Page<MatchDto>> getPredictableMatches(
             @RequestParam(required = false, defaultValue = "ALL") String sport,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Match> matches = predictionService.getPredictableMatches(sport, pageable);
+        Page<MatchDto> matches = predictionService.getPredictableMatches(sport, pageable);
         return ResponseEntity.ok(matches);
     }
 

@@ -161,6 +161,24 @@
   margin-bottom: 15px;
 }
 
+.league-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.league-logo {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.league-name {
+  font-size: 14px;
+  font-weight: bold;
+  color: #646cff;
+}
+
 .league-badge {
   background-color: #646cff;
   color: white;
@@ -188,6 +206,13 @@
 }
 
 .team-logo {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 10px;
+  object-fit: contain;
+}
+
+.team-logo-placeholder {
   width: 60px;
   height: 60px;
   margin: 0 auto 10px;
