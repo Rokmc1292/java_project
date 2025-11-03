@@ -322,7 +322,7 @@ public class NbaScheduleCrawler {
                 Long awayTeamId = crawlerService.getTeamId(dto.getAwayTeamName());
 
                 if (homeTeamId == null || awayTeamId == null) {
-                    log.debug("  ⚠️ 팀 매핑 실패: {} vs {} (DB에 팀 정보 없음)", dto.getHomeTeamName(), dto.getAwayTeamName());
+                    log.warn("  ⚠️ 팀 매핑 실패: {} vs {} (DB에 팀 정보 없음)", dto.getHomeTeamName(), dto.getAwayTeamName());
                     skippedCount++;
                     continue;
                 }
@@ -352,7 +352,7 @@ public class NbaScheduleCrawler {
                         existingMatch.setVenue(dto.getVenue());
                         matchRepository.save(existingMatch);
                         updatedMatchCount++;
-                        log.debug("  ✅ 업데이트: {} vs {} ({})",
+                        log.info("  ✅ 업데이트: {} vs {} ({})",
                             dto.getHomeTeamName(), dto.getAwayTeamName(), dto.getStatus());
                     } else if ("FINISHED".equals(dto.getStatus())) {
                         // 둘 다 FINISHED인 경우는 점수만 업데이트 (점수 수정 가능성)
@@ -360,11 +360,11 @@ public class NbaScheduleCrawler {
                         existingMatch.setAwayScore(dto.getAwayScore());
                         matchRepository.save(existingMatch);
                         updatedMatchCount++;
-                        log.debug("  ✅ 점수 업데이트: {} {} - {} {}",
+                        log.info("  ✅ 점수 업데이트: {} {} - {} {}",
                             dto.getHomeTeamName(), dto.getHomeScore(), dto.getAwayScore(), dto.getAwayTeamName());
                     } else {
                         // 기존 FINISHED 경기를 다른 상태로 변경하려는 시도 차단
-                        log.debug("  ⏭️ FINISHED 경기 보호: {} vs {}", dto.getHomeTeamName(), dto.getAwayTeamName());
+                        log.info("  ⏭️ FINISHED 경기 보호: {} vs {}", dto.getHomeTeamName(), dto.getAwayTeamName());
                         skippedCount++;
                     }
                 } else {
@@ -381,7 +381,7 @@ public class NbaScheduleCrawler {
 
                     matchRepository.save(match);
                     newMatchCount++;
-                    log.debug("  ✨ 새 경기: {} vs {} ({})",
+                    log.info("  ✨ 새 경기: {} vs {} ({})",
                         dto.getHomeTeamName(), dto.getAwayTeamName(), dto.getMatchDate().toLocalDate());
                 }
 
