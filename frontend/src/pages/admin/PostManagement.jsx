@@ -1,0 +1,211 @@
+/**
+ * 게시글 관리 페이지
+ * 파일 위치: frontend/src/pages/admin/PostManagement.jsx
+ */
+
+import { useState, useEffect } from 'react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+export function PostManagement() {
+    const [posts, setPosts] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        loadPosts();
+    }, []);
+
+    const loadPosts = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/posts`, {
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setPosts(data.content);
+            }
+        } catch (error) {
+            console.error('게시글 로드 실패:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeletePost = async (postId) => {
+        if (!window.confirm('게시글을 삭제하시겠습니까?')) return;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/posts/${postId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                alert('게시글이 삭제되었습니다.');
+                loadPosts();
+            }
+        } catch (error) {
+            console.error('게시글 삭제 실패:', error);
+        }
+    };
+
+    return (
+        <div className="post-management">
+            <div className="page-header">
+                <h2>📝 게시글 관리</h2>
+            </div>
+
+            {loading ? (
+                <div className="loading">로딩 중...</div>
+            ) : posts.length === 0 ? (
+                <div className="no-data">게시글이 없습니다.</div>
+            ) : (
+                <div className="post-table">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>카테고리</th>
+                            <th>제목</th>
+                            <th>작성자</th>
+                            <th>조회수</th>
+                            <th>추천</th>
+                            <th>작성일</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {posts.map(post => (
+                            <tr key={post.postId}>
+                                <td>{post.postId}</td>
+                                <td>{post.categoryName}</td>
+                                <td>{post.title}</td>
+                                <td>{post.nickname}</td>
+                                <td>{post.viewCount}</td>
+                                <td>{post.likeCount}</td>
+                                <td>{new Date(post.createdAt).toLocaleDateString()}</td>
+                                <td className="action-cell">
+                                    <button
+                                        className="btn-sm btn-danger"
+                                        onClick={() => handleDeletePost(post.postId)}
+                                    >
+                                        삭제
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/**
+ * 신고 관리 페이지
+ * 파일 위치: frontend/src/pages/admin/ReportManagement.jsx
+ */
+
+export function ReportManagement() {
+    const [reports, setReports] = useState([]);
+    const [loading, setLoading] = useState(false);
+
+    useEffect(() => {
+        loadReports();
+    }, []);
+
+    const loadReports = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/reports`, {
+                credentials: 'include'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setReports(data);
+            }
+        } catch (error) {
+            console.error('신고 로드 실패:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleResolveReport = async (reportId) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/reports/${reportId}/resolve`, {
+                method: 'POST',
+                credentials: 'include'
+            });
+
+            if (response.ok) {
+                alert('신고가 처리되었습니다.');
+                loadReports();
+            }
+        } catch (error) {
+            console.error('신고 처리 실패:', error);
+        }
+    };
+
+    return (
+        <div className="report-management">
+            <div className="page-header">
+                <h2>🚨 신고 관리</h2>
+            </div>
+
+            {loading ? (
+                <div className="loading">로딩 중...</div>
+            ) : reports.length === 0 ? (
+                <div className="no-data">신고가 없습니다.</div>
+            ) : (
+                <div className="report-table">
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>유형</th>
+                            <th>대상</th>
+                            <th>신고자</th>
+                            <th>사유</th>
+                            <th>신고일</th>
+                            <th>상태</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {reports.map(report => (
+                            <tr key={report.reportId}>
+                                <td>{report.reportId}</td>
+                                <td>{report.type}</td>
+                                <td>{report.targetId}</td>
+                                <td>{report.reporterNickname}</td>
+                                <td>{report.reason}</td>
+                                <td>{new Date(report.createdAt).toLocaleDateString()}</td>
+                                <td>
+                    <span className={`status-badge ${report.status.toLowerCase()}`}>
+                      {report.status === 'PENDING' ? '미처리' : '처리완료'}
+                    </span>
+                                </td>
+                                <td className="action-cell">
+                                    {report.status === 'PENDING' && (
+                                        <button
+                                            className="btn-sm btn-success"
+                                            onClick={() => handleResolveReport(report.reportId)}
+                                        >
+                                            처리
+                                        </button>
+                                    )}
+                                </td>
+                            </tr>
+                        ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default PostManagement;
