@@ -18,7 +18,7 @@ import java.util.List;
 
 /**
  * NBA 실시간 점수 업데이터
- * 30초마다 LIVE 상태 경기의 점수를 크롤링하여 업데이트
+ * 30초마다 오늘의 SCHEDULED/LIVE 경기를 크롤링하여 상태와 점수 업데이트
  */
 @Component
 @RequiredArgsConstructor
@@ -36,15 +36,15 @@ public class NbaLiveScoreUpdater {
     @Scheduled(fixedDelay = 30000, initialDelay = 10000)
     @Transactional
     public void updateLiveScores() {
-        // NBA 리그의 LIVE 경기 조회 (league_id = 2)
-        List<Match> liveMatches = matchRepository.findLiveMatchesByLeague(2L);
+        // NBA 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
+        List<Match> todayMatches = matchRepository.findTodayMatchesByLeague(2L, LocalDateTime.now());
 
-        if (liveMatches.isEmpty()) {
-            // LIVE 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
+        if (todayMatches.isEmpty()) {
+            // 오늘 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
             return;
         }
 
-        log.info("🏀 [실시간 업데이트] LIVE 경기 {}개 발견, 점수 업데이트 시작", liveMatches.size());
+        log.info("🏀 [실시간 업데이트] 오늘 NBA 경기 {}개 발견, 크롤링 시작", todayMatches.size());
 
         WebDriver driver = null;
 
@@ -62,38 +62,50 @@ public class NbaLiveScoreUpdater {
 
             int updatedCount = 0;
             int finishedCount = 0;
+            int liveStartedCount = 0;
 
-            for (Match liveMatch : liveMatches) {
+            for (Match match : todayMatches) {
                 try {
+                    String beforeStatus = match.getStatus();
+
                     // 웹에서 해당 경기 찾기
-                    WebElement matchElement = findMatchElement(matchElements, liveMatch);
+                    WebElement matchElement = findMatchElement(matchElements, match);
 
                     if (matchElement != null) {
                         // 점수 및 상태 업데이트
-                        boolean updated = updateMatchScore(matchElement, liveMatch);
+                        boolean updated = updateMatchScore(matchElement, match);
 
                         if (updated) {
                             updatedCount++;
 
+                            // SCHEDULED -> LIVE 전환 확인
+                            if ("SCHEDULED".equals(beforeStatus) && "LIVE".equals(match.getStatus())) {
+                                liveStartedCount++;
+                                log.info("🟢 경기 시작: {} vs {}",
+                                        match.getHomeTeam().getTeamName(),
+                                        match.getAwayTeam().getTeamName());
+                            }
+
                             // 경기가 종료되었는지 확인
-                            if ("FINISHED".equals(liveMatch.getStatus())) {
+                            if ("FINISHED".equals(match.getStatus())) {
                                 finishedCount++;
                                 log.info("🏁 경기 종료: {} {} - {} {}",
-                                        liveMatch.getHomeTeam().getTeamName(),
-                                        liveMatch.getHomeScore(),
-                                        liveMatch.getAwayScore(),
-                                        liveMatch.getAwayTeam().getTeamName());
+                                        match.getHomeTeam().getTeamName(),
+                                        match.getHomeScore(),
+                                        match.getAwayScore(),
+                                        match.getAwayTeam().getTeamName());
                             }
                         }
                     }
 
                 } catch (Exception e) {
-                    log.warn("⚠️ 경기 업데이트 실패: {}", liveMatch.getMatchId(), e);
+                    log.warn("⚠️ 경기 업데이트 실패: {}", match.getMatchId(), e);
                 }
             }
 
             if (updatedCount > 0) {
-                log.info("✅ [실시간 업데이트] {}개 경기 업데이트 완료 (종료: {}개)", updatedCount, finishedCount);
+                log.info("✅ [실시간 업데이트] {}개 경기 업데이트 완료 (시작: {}개, 종료: {}개)",
+                        updatedCount, liveStartedCount, finishedCount);
             }
 
         } catch (Exception e) {
@@ -164,65 +176,77 @@ public class NbaLiveScoreUpdater {
             String statusText = matchElement.findElement(By.cssSelector(".MatchBox_status__xU6\\+d")).getText().strip();
             String newStatus = crawlerService.convertStatus(statusText);
 
+            // ⚠️ 중요: FINISHED 경기는 상태를 변경하지 않음 (보호)
+            String currentStatus = match.getStatus();
+            if ("FINISHED".equals(currentStatus) && !"FINISHED".equals(newStatus)) {
+                // FINISHED 경기를 다른 상태로 변경하려는 시도 차단
+                return false;
+            }
+
             // 점수 추출
             List<WebElement> scores = matchElement.findElements(By.cssSelector(".MatchBoxHeadToHeadArea_score__TChmp"));
 
+            Integer newHomeScore = null;
+            Integer newAwayScore = null;
+
+            // 점수가 있으면 파싱 (LIVE 또는 FINISHED 경기)
             if (scores.size() >= 2) {
                 try {
                     // NBA는 첫 번째가 원정팀 점수, 두 번째가 홈팀 점수
                     String awayScoreText = scores.get(0).getText().trim();
                     String homeScoreText = scores.get(1).getText().trim();
 
-                    if (homeScoreText.isEmpty() || awayScoreText.isEmpty()) {
-                        log.warn("⚠️ 점수 텍스트가 비어있음");
-                        return false;
+                    if (!homeScoreText.isEmpty() && !awayScoreText.isEmpty()) {
+                        newHomeScore = Integer.parseInt(homeScoreText);
+                        newAwayScore = Integer.parseInt(awayScoreText);
                     }
-
-                    Integer newHomeScore = Integer.parseInt(homeScoreText);
-                    Integer newAwayScore = Integer.parseInt(awayScoreText);
-
-                    // 점수나 상태가 변경되었는지 확인
-                    Integer currentHomeScore = match.getHomeScore();
-                    Integer currentAwayScore = match.getAwayScore();
-
-                    boolean scoreChanged = (currentHomeScore == null || !currentHomeScore.equals(newHomeScore))
-                            || (currentAwayScore == null || !currentAwayScore.equals(newAwayScore));
-                    boolean statusChanged = !newStatus.equals(match.getStatus());
-
-                    // ⚠️ 중요: FINISHED 경기는 상태를 변경하지 않음 (보호)
-                    String currentStatus = match.getStatus();
-
-                    if ("FINISHED".equals(currentStatus) && !"FINISHED".equals(newStatus)) {
-                        // FINISHED 경기를 다른 상태로 변경하려는 시도 차단
-                        log.warn("⚠️ FINISHED 경기 보호: {} vs {} (크롤링 상태: {} → 무시)",
-                                match.getHomeTeam().getTeamName(),
-                                match.getAwayTeam().getTeamName(),
-                                newStatus);
-                        return false;
-                    }
-
-                    if (scoreChanged || statusChanged) {
-                        // 점수 및 상태 업데이트
-                        match.setHomeScore(newHomeScore);
-                        match.setAwayScore(newAwayScore);
-                        match.setStatus(newStatus);
-                        match.setUpdatedAt(LocalDateTime.now());
-
-                        matchRepository.save(match);
-
-                        log.info("🔄 점수 업데이트: {} {} - {} {} (상태: {})",
-                                match.getHomeTeam().getTeamName(),
-                                newHomeScore,
-                                newAwayScore,
-                                match.getAwayTeam().getTeamName(),
-                                newStatus);
-
-                        return true;
-                    }
-
                 } catch (NumberFormatException e) {
                     log.warn("⚠️ 점수 파싱 실패: {}", e.getMessage());
                 }
+            }
+
+            // 점수나 상태가 변경되었는지 확인
+            Integer currentHomeScore = match.getHomeScore();
+            Integer currentAwayScore = match.getAwayScore();
+
+            boolean scoreChanged = false;
+            if (newHomeScore != null && newAwayScore != null) {
+                scoreChanged = (currentHomeScore == null || !currentHomeScore.equals(newHomeScore))
+                        || (currentAwayScore == null || !currentAwayScore.equals(newAwayScore));
+            }
+
+            boolean statusChanged = !newStatus.equals(match.getStatus());
+
+            // 상태가 변경되거나 점수가 변경된 경우 업데이트
+            if (scoreChanged || statusChanged) {
+                // 상태 업데이트
+                match.setStatus(newStatus);
+
+                // 점수 업데이트 (있는 경우에만)
+                if (newHomeScore != null && newAwayScore != null) {
+                    match.setHomeScore(newHomeScore);
+                    match.setAwayScore(newAwayScore);
+                }
+
+                match.setUpdatedAt(LocalDateTime.now());
+                matchRepository.save(match);
+
+                if (newHomeScore != null && newAwayScore != null) {
+                    log.info("🔄 점수 업데이트: {} {} - {} {} (상태: {})",
+                            match.getHomeTeam().getTeamName(),
+                            newHomeScore,
+                            newAwayScore,
+                            match.getAwayTeam().getTeamName(),
+                            newStatus);
+                } else {
+                    log.info("🔄 상태 업데이트: {} vs {} (상태: {} → {})",
+                            match.getHomeTeam().getTeamName(),
+                            match.getAwayTeam().getTeamName(),
+                            currentStatus,
+                            newStatus);
+                }
+
+                return true;
             }
 
         } catch (Exception e) {
