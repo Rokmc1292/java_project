@@ -110,15 +110,26 @@ public class EplCrawlerService {
             return "POSTPONED";
         }
 
-        // 진행 중인 경기 (시간 표시, HT 등)
-        // "1'", "45'+2'", "HT" (Half Time) 등
-        if (statusText.matches("\\d+'.*") || "HT".equals(statusText) || "Half Time".equals(statusText)) {
+        // 진행 중인 경기
+        // 1) 시간 표시: "1'", "45'", "45'+2'" 등
+        // 2) 하프타임: "HT", "Half Time"
+        // 3) 전후반: "전반", "후반"
+        // 4) 추가시간: "AT" (Additional Time)
+        if (statusText.matches("\\d+'.*")
+                || "HT".equals(statusText)
+                || "Half Time".equals(statusText)
+                || "전반".equals(statusText)
+                || "후반".equals(statusText)
+                || "AT".equals(statusText)
+                || statusText.contains("전반")
+                || statusText.contains("후반")) {
             return "LIVE";
         }
 
-        // 알 수 없는 상태는 SCHEDULED로 처리 (안전한 기본값)
-        log.warn("⚠️ 알 수 없는 경기 상태: '{}', SCHEDULED로 처리", statusText);
-        return "SCHEDULED";
+        // 알 수 없는 상태 - 일단 로그만 남기고 그대로 반환하여 호출측에서 판단하도록
+        log.warn("⚠️ 알 수 없는 경기 상태: '{}'", statusText);
+        // 기본값을 LIVE로 변경 - 점수가 있는데 알 수 없는 상태면 대부분 경기중
+        return "LIVE";
     }
 
     /**
