@@ -88,4 +88,16 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
      */
     @Query("SELECT m FROM Match m JOIN FETCH m.homeTeam JOIN FETCH m.awayTeam WHERE m.league.leagueId = :leagueId AND m.status = 'LIVE'")
     List<Match> findLiveMatchesByLeague(@Param("leagueId") Long leagueId);
+
+    /**
+     * 오늘 날짜의 특정 리그 경기 조회 (SCHEDULED 또는 LIVE 상태)
+     * 실시간 점수 업데이트를 위해 경기 중이거나 경기 예정인 경기를 모두 조회
+     * JOIN FETCH로 팀 정보를 함께 로드하여 LazyInitializationException 방지
+     */
+    @Query("SELECT m FROM Match m JOIN FETCH m.homeTeam JOIN FETCH m.awayTeam " +
+           "WHERE m.league.leagueId = :leagueId " +
+           "AND DATE(m.matchDate) = DATE(:date) " +
+           "AND m.status IN ('SCHEDULED', 'LIVE') " +
+           "ORDER BY m.matchDate ASC")
+    List<Match> findTodayMatchesByLeague(@Param("leagueId") Long leagueId, @Param("date") LocalDateTime date);
 }
