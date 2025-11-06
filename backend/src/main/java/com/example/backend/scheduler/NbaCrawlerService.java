@@ -21,41 +21,44 @@ public class NbaCrawlerService {
     /**
      * NBA 팀 이름과 DB team_id 매핑
      * 크롤링한 팀 이름을 DB의 team_id로 변환
-     * DB의 실제 팀 이름과 네이버 스포츠 크롤링 이름 모두 매핑
      */
     public static final Map<String, Long> TEAM_NAME_TO_ID = new HashMap<>() {{
-        // 네이버 스포츠 크롤링 이름 (짧은 이름)
-        put("보스턴", 21L);
-        put("브루클린", 22L);
-        put("뉴욕", 23L);
-        put("필라델피아", 24L);
-        put("토론토", 25L);
-        put("시카고", 26L);
-        put("클리블랜드", 27L);
-        put("디트로이트", 28L);
-        put("인디애나", 29L);
-        put("밀워키", 30L);
-        put("애틀랜타", 31L);
-        put("샬럿", 32L);
-        put("마이애미", 33L);
-        put("올랜도", 34L);
-        put("워싱턴", 35L);
-        put("덴버", 36L);
-        put("미네소타", 37L);
+        // 네이버 스포츠 크롤링 이름 (짧은 이름) - 정확한 매핑
         put("오클라호마", 38L);
-        put("오클라호마시티", 38L);
-        put("포틀랜드", 39L);
-        put("유타", 40L);
-        put("골든스테이트", 41L);
-        put("LA클리퍼스", 42L);
-        put("LA레이커스", 43L);
-        put("피닉스", 44L);
-        put("새크라멘토", 45L);
-        put("댈러스", 46L);
+        put("클리블랜드", 27L);
         put("휴스턴", 47L);
+        put("보스턴", 21L);
+        put("뉴욕", 23L);
+        put("LA레이커스", 43L);
+        put("덴버", 36L);
+        put("인디애나", 29L);
+        put("LA클리퍼스", 42L);
+        put("밀워키", 30L);
+        put("디트로이트", 28L);
+        put("미네소타", 37L);
+        put("골든스테이트", 41L);
+        put("올랜도", 34L);
         put("멤피스", 48L);
-        put("뉴올리언스", 49L);
+        put("애틀랜타", 31L);
+        put("시카고", 26L);
+        put("새크라멘토", 45L);
+        put("마이애미", 33L);
+        put("댈러스", 46L);
+        put("토론토", 25L);
+        put("피닉스", 44L);
+        put("포틀랜드", 39L);
+        put("브루클린", 22L);
+        put("필라델피아", 24L);
         put("샌안토니오", 50L);
+        put("뉴올리언스", 49L);
+        put("샬럿", 32L);
+        put("유타", 40L);
+        put("워싱턴", 35L);
+
+        // 추가 표기법 (다양한 표기 대응)
+        put("오클라호마시티", 38L);
+        put("뉴올리언즈", 49L);  // '스' vs '즈' 받침 차이 대응
+        put("샬롯", 32L);  // '샬롯' 표기 대응
 
         // DB의 전체 팀 이름 (백업용)
         put("보스턴 셀틱스", 21L);
@@ -155,15 +158,23 @@ public class NbaCrawlerService {
             return "POSTPONED";
         }
 
-        // 진행 중인 경기 (쿼터 표시 등)
-        // "1Q", "2Q", "3Q", "4Q", "OT" 등
-        if (statusText.matches("\\d+Q") || "OT".equals(statusText) || statusText.contains("연장")) {
+        // 진행 중인 경기
+        // 1) 쿼터 표시: "1Q", "2Q", "3Q", "4Q"
+        // 2) 연장: "OT", "OT2", "연장"
+        // 3) 쿼터 문자열: "1쿼터", "2쿼터", "3쿼터", "4쿼터"
+        if (statusText.matches("\\d+Q")
+                || statusText.matches("OT\\d*")
+                || "OT".equals(statusText)
+                || statusText.contains("연장")
+                || statusText.contains("쿼터")
+                || statusText.contains("Q")) {
             return "LIVE";
         }
 
-        // 알 수 없는 상태는 SCHEDULED로 처리 (안전한 기본값)
-        log.warn("⚠️ 알 수 없는 경기 상태: '{}', SCHEDULED로 처리", statusText);
-        return "SCHEDULED";
+        // 알 수 없는 상태 - 일단 로그만 남기고 그대로 반환하여 호출측에서 판단하도록
+        log.warn("⚠️ 알 수 없는 경기 상태: '{}'", statusText);
+        // 기본값을 LIVE로 변경 - 점수가 있는데 알 수 없는 상태면 대부분 경기중
+        return "LIVE";
     }
 
     /**

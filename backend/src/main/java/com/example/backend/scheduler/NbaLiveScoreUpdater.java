@@ -17,16 +17,16 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * EPL 실시간 점수 업데이터
+ * NBA 실시간 점수 업데이터
  * 30초마다 오늘의 SCHEDULED/LIVE 경기를 크롤링하여 상태와 점수 업데이트
  */
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class EplLiveScoreUpdater {
+public class NbaLiveScoreUpdater {
 
     private final MatchRepository matchRepository;
-    private final EplCrawlerService crawlerService;
+    private final NbaCrawlerService crawlerService;
 
     /**
      * 15초마다 실시간 점수 업데이트
@@ -36,15 +36,15 @@ public class EplLiveScoreUpdater {
     @Scheduled(fixedDelay = 15000, initialDelay = 10000)
     @Transactional
     public void updateLiveScores() {
-        // EPL 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
-        List<Match> todayMatches = matchRepository.findTodayMatchesByLeague(1L, LocalDateTime.now());
+        // NBA 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
+        List<Match> todayMatches = matchRepository.findTodayMatchesByLeague(2L, LocalDateTime.now());
 
         if (todayMatches.isEmpty()) {
             // 오늘 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
             return;
         }
 
-        log.info("⚽ [실시간 업데이트] 오늘 EPL 경기 {}개 발견, 크롤링 시작", todayMatches.size());
+        log.info("🏀 [실시간 업데이트] 오늘 NBA 경기 {}개 발견, 크롤링 시작", todayMatches.size());
 
         WebDriver driver = null;
 
@@ -52,8 +52,8 @@ public class EplLiveScoreUpdater {
             driver = crawlerService.setupDriver();
             WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-            // 네이버 스포츠 EPL 일정 페이지 (오늘 날짜)
-            String baseUrl = "https://sports.news.naver.com/wfootball/schedule/index?category=epl";
+            // 네이버 스포츠 NBA 일정 페이지 (오늘 날짜)
+            String baseUrl = "https://m.sports.naver.com/basketball/schedule/index?category=nba";
             driver.get(baseUrl);
             Thread.sleep(1500);  // 페이지 로딩 대기
 
@@ -126,7 +126,7 @@ public class EplLiveScoreUpdater {
 
     /**
      * 웹 페이지에서 DB의 경기와 일치하는 요소 찾기
-     * 홈팀과 원정팀 이름으로 매칭
+     * NBA는 첫 번째 팀이 원정팀, 두 번째 팀이 홈팀
      */
     private WebElement findMatchElement(List<WebElement> matchElements, Match dbMatch) {
         String homeTeamName = dbMatch.getHomeTeam().getTeamName();
@@ -139,13 +139,14 @@ public class EplLiveScoreUpdater {
                 List<WebElement> teamItems = matchElement.findElements(By.cssSelector(".MatchBoxHeadToHeadArea_team_item__9ZknX"));
 
                 if (teamItems.size() >= 2) {
-                    String webHomeTeam = teamItems.get(0).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
-                    String webAwayTeam = teamItems.get(1).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
+                    // NBA는 첫 번째 팀이 원정팀, 두 번째 팀이 홈팀
+                    String webAwayTeam = teamItems.get(0).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
+                    String webHomeTeam = teamItems.get(1).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
 
                     log.debug("   웹[{} vs {}]", webHomeTeam, webAwayTeam);
 
-                    // 팀 이름이 일치하면 해당 경기
-                    if (homeTeamName.equals(webHomeTeam) && awayTeamName.equals(webAwayTeam)) {
+                    // 팀 이름이 일치하는지 확인 (짧은 이름으로 비교)
+                    if (isMatchingTeam(homeTeamName, webHomeTeam) && isMatchingTeam(awayTeamName, webAwayTeam)) {
                         log.debug("   ✅ 매칭 성공!");
                         return matchElement;
                     }
@@ -158,6 +159,24 @@ public class EplLiveScoreUpdater {
 
         log.debug("   ❌ 매칭 실패: 웹에서 해당 경기를 찾지 못함");
         return null;
+    }
+
+    /**
+     * 팀 이름 매칭 확인
+     * DB의 전체 이름과 웹의 짧은 이름을 비교
+     */
+    private boolean isMatchingTeam(String dbTeamName, String webTeamName) {
+        // 완전 일치
+        if (dbTeamName.equals(webTeamName)) {
+            return true;
+        }
+
+        // DB 이름이 웹 이름을 포함하는지 확인 (예: "보스턴 셀틱스" contains "보스턴")
+        if (dbTeamName.contains(webTeamName)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -186,8 +205,9 @@ public class EplLiveScoreUpdater {
             // 점수가 있으면 파싱 (LIVE 또는 FINISHED 경기)
             if (scores.size() >= 2) {
                 try {
-                    String homeScoreText = scores.get(0).getText().trim();
-                    String awayScoreText = scores.get(1).getText().trim();
+                    // NBA는 첫 번째가 원정팀 점수, 두 번째가 홈팀 점수
+                    String awayScoreText = scores.get(0).getText().trim();
+                    String homeScoreText = scores.get(1).getText().trim();
 
                     if (!homeScoreText.isEmpty() && !awayScoreText.isEmpty()) {
                         newHomeScore = Integer.parseInt(homeScoreText);
@@ -252,21 +272,21 @@ public class EplLiveScoreUpdater {
     /**
      * 경기 시작 시간 기준으로 SCHEDULED -> LIVE 상태 변경
      * 5분마다 실행하여 경기 시작 확인
-     * EPL 리그만 처리
+     * NBA 리그만 처리
      */
     @Scheduled(fixedDelay = 300000, initialDelay = 60000)
     @Transactional
     public void checkMatchStartTime() {
         LocalDateTime now = LocalDateTime.now();
 
-        // SCHEDULED 상태이면서 EPL 리그(league_id = 1)인 경기 조회
+        // SCHEDULED 상태이면서 NBA 리그(league_id = 2)인 경기 조회
         List<Match> scheduledMatches = matchRepository.findByStatus("SCHEDULED");
 
         int updatedCount = 0;
 
         for (Match match : scheduledMatches) {
-            // EPL 경기만 처리
-            if (match.getLeague().getLeagueId().equals(1L)) {
+            // NBA 경기만 처리
+            if (match.getLeague().getLeagueId().equals(2L)) {
                 // 경기 시작 시간이 현재 시간보다 이전이면 LIVE로 변경
                 if (match.getMatchDate().isBefore(now)) {
                     match.setStatus("LIVE");
@@ -282,7 +302,7 @@ public class EplLiveScoreUpdater {
         }
 
         if (updatedCount > 0) {
-            log.info("✅ {}개 EPL 경기가 LIVE 상태로 변경됨", updatedCount);
+            log.info("✅ {}개 NBA 경기가 LIVE 상태로 변경됨", updatedCount);
         }
     }
 }
