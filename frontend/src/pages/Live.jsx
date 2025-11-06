@@ -126,6 +126,18 @@ function Live() {
     return () => clearInterval(interval);
   }, []);
 
+  // 채팅방에 있을 때 liveMatches가 업데이트되면 selectedMatch도 업데이트
+  useEffect(() => {
+    if (selectedMatch && liveMatches.length > 0) {
+      const updatedMatch = liveMatches.find(
+        match => match.matchId === selectedMatch.matchId
+      );
+      if (updatedMatch) {
+        setSelectedMatch(updatedMatch);
+      }
+    }
+  }, [liveMatches]);
+
   return (
     <div>
       <Navbar />
@@ -196,8 +208,22 @@ function Live() {
                     🔴 LIVE
                   </div>
 
-                  <div style={{ fontSize: '12px', color: '#888', marginBottom: '10px' }}>
-                    {match.league?.name}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '10px',
+                    fontSize: '12px',
+                    color: '#888',
+                    marginBottom: '15px'
+                  }}>
+                    {match.league?.logo && (
+                      <img
+                        src={`${API_BASE_URL}/${match.league.logo}`}
+                        alt={match.league?.name}
+                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                      />
+                    )}
+                    <span>{match.league?.name}</span>
                   </div>
 
                   <div style={{
@@ -206,8 +232,15 @@ function Live() {
                     alignItems: 'center',
                     marginBottom: '15px'
                   }}>
-                    <div style={{ flex: 1, textAlign: 'center' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                    <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      {match.teams?.home?.logo && (
+                        <img
+                          src={`${API_BASE_URL}/${match.teams.home.logo}`}
+                          alt={match.teams?.home?.name}
+                          style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                        />
+                      )}
+                      <div style={{ fontWeight: 'bold', fontSize: '14px' }}>
                         {match.teams?.home?.name}
                       </div>
                       <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#333' }}>
@@ -219,8 +252,15 @@ function Live() {
                       :
                     </div>
 
-                    <div style={{ flex: 1, textAlign: 'center' }}>
-                      <div style={{ fontWeight: 'bold', marginBottom: '5px' }}>
+                    <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                      {match.teams?.away?.logo && (
+                        <img
+                          src={`${API_BASE_URL}/${match.teams.away.logo}`}
+                          alt={match.teams?.away?.name}
+                          style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                        />
+                      )}
+                      <div style={{ fontWeight: 'bold', fontSize: '14px' }}>
                         {match.teams?.away?.name}
                       </div>
                       <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#333' }}>
@@ -274,9 +314,24 @@ function Live() {
                   🔴 LIVE
                 </div>
 
-                <h2 style={{ fontSize: '16px', marginBottom: '20px', color: '#888' }}>
-                  {selectedMatch.league?.name}
-                </h2>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  marginBottom: '20px'
+                }}>
+                  {selectedMatch.league?.logo && (
+                    <img
+                      src={`${API_BASE_URL}/${selectedMatch.league.logo}`}
+                      alt={selectedMatch.league?.name}
+                      style={{ width: '30px', height: '30px', objectFit: 'contain' }}
+                    />
+                  )}
+                  <h2 style={{ fontSize: '16px', margin: 0, color: '#888' }}>
+                    {selectedMatch.league?.name}
+                  </h2>
+                </div>
 
                 <div style={{
                   display: 'flex',
@@ -284,8 +339,15 @@ function Live() {
                   alignItems: 'center',
                   marginBottom: '30px'
                 }}>
-                  <div>
-                    <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                    {selectedMatch.teams?.home?.logo && (
+                      <img
+                        src={`${API_BASE_URL}/${selectedMatch.teams.home.logo}`}
+                        alt={selectedMatch.teams?.home?.name}
+                        style={{ width: '60px', height: '60px', objectFit: 'contain' }}
+                      />
+                    )}
+                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
                       {selectedMatch.teams?.home?.name}
                     </div>
                     <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#333' }}>
@@ -295,8 +357,15 @@ function Live() {
 
                   <div style={{ fontSize: '24px', color: '#888' }}>:</div>
 
-                  <div>
-                    <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                    {selectedMatch.teams?.away?.logo && (
+                      <img
+                        src={`${API_BASE_URL}/${selectedMatch.teams.away.logo}`}
+                        alt={selectedMatch.teams?.away?.name}
+                        style={{ width: '60px', height: '60px', objectFit: 'contain' }}
+                      />
+                    )}
+                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
                       {selectedMatch.teams?.away?.name}
                     </div>
                     <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#333' }}>
