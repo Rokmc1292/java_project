@@ -30,11 +30,11 @@ public class NbaLiveScoreUpdater {
     private final NbaCrawlerService crawlerService;
 
     /**
-     * 15초마다 실시간 점수 업데이트
-     * fixedDelay: 이전 실행이 끝난 후 15초 대기
+     * 10초마다 실시간 점수 업데이트
+     * fixedDelay: 이전 실행이 끝난 후 10초 대기
      * initialDelay: 서버 시작 후 10초 뒤 첫 실행
      */
-    @Scheduled(fixedDelay = 15000, initialDelay = 10000)
+    @Scheduled(fixedDelay = 10000, initialDelay = 10000)
     @Transactional
     public void updateLiveScores() {
         // NBA 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
@@ -51,7 +51,7 @@ public class NbaLiveScoreUpdater {
 
         try {
             driver = crawlerService.setupDriver();
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
             // 네이버 스포츠 NBA 일정 페이지 (오늘 날짜)
             String baseUrl = "https://m.sports.naver.com/basketball/schedule/index?category=nba";
