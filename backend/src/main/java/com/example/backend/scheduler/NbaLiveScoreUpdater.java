@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -50,16 +51,71 @@ public class NbaLiveScoreUpdater {
 
         try {
             driver = crawlerService.setupDriver();
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
             // 네이버 스포츠 NBA 일정 페이지 (오늘 날짜)
             String baseUrl = "https://m.sports.naver.com/basketball/schedule/index?category=nba";
-            driver.get(baseUrl);
-            Thread.sleep(1500);  // 페이지 로딩 대기
 
-            // 오늘 경기 목록 찾기
-            List<WebElement> matchElements = driver.findElements(By.cssSelector(".MatchBox_match_item__WiPhj"));
-            log.info("📋 웹에서 {}개 경기 요소 발견", matchElements.size());
+            // 페이지 로드 재시도 로직 (최대 3번)
+            List<WebElement> matchElements = null;
+            int maxRetries = 3;
+
+            for (int retry = 0; retry < maxRetries; retry++) {
+                try {
+                    driver.get(baseUrl);
+                    log.debug("🌐 페이지 로딩 중... (시도 {}/{})", retry + 1, maxRetries);
+
+                    // 페이지가 완전히 로드될 때까지 대기 (최대 15초)
+                    wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("body")));
+                    Thread.sleep(2000);  // 동적 콘텐츠 로딩 대기 (증가)
+
+                    // 경기 목록 찾기 - 명시적 대기 사용
+                    try {
+                        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+                            By.cssSelector(".MatchBox_match_item__WiPhj")));
+                        matchElements = driver.findElements(By.cssSelector(".MatchBox_match_item__WiPhj"));
+
+                        if (matchElements != null && !matchElements.isEmpty()) {
+                            log.info("📋 웹에서 {}개 경기 요소 발견", matchElements.size());
+                            break;  // 성공적으로 찾았으면 종료
+                        }
+                    } catch (Exception e) {
+                        log.warn("⚠️ CSS 셀렉터로 경기를 찾지 못함 (시도 {}/{})", retry + 1, maxRetries);
+                    }
+
+                    // 요소를 찾지 못한 경우 디버깅 정보 출력
+                    if (matchElements == null || matchElements.isEmpty()) {
+                        log.warn("⚠️ 경기 요소를 찾지 못함. 현재 URL: {}", driver.getCurrentUrl());
+
+                        // 페이지 소스의 일부를 로깅 (디버깅용)
+                        String pageSource = driver.getPageSource();
+                        if (pageSource.length() > 500) {
+                            log.debug("📄 페이지 소스 샘플: {}", pageSource.substring(0, 500));
+                        }
+
+                        // MatchBox 관련 요소가 있는지 확인
+                        List<WebElement> anyMatchBox = driver.findElements(By.cssSelector("[class*='MatchBox']"));
+                        log.debug("🔍 MatchBox 관련 요소 수: {}", anyMatchBox.size());
+
+                        if (retry < maxRetries - 1) {
+                            log.info("🔄 페이지 재로딩 시도...");
+                            Thread.sleep(2000);  // 재시도 전 대기
+                        }
+                    }
+
+                } catch (Exception e) {
+                    log.warn("⚠️ 페이지 로딩 중 오류 (시도 {}/{}): {}", retry + 1, maxRetries, e.getMessage());
+                    if (retry < maxRetries - 1) {
+                        Thread.sleep(2000);  // 재시도 전 대기
+                    }
+                }
+            }
+
+            // 재시도 후에도 요소를 찾지 못한 경우
+            if (matchElements == null || matchElements.isEmpty()) {
+                log.error("❌ {}번 시도 후에도 경기 요소를 찾지 못했습니다. 크롤링을 건너뜁니다.", maxRetries);
+                return;
+            }
 
             int updatedCount = 0;
             int finishedCount = 0;
@@ -119,7 +175,12 @@ public class NbaLiveScoreUpdater {
             log.error("❌ [실시간 업데이트] 실패", e);
         } finally {
             if (driver != null) {
-                driver.quit();
+                try {
+                    driver.quit();
+                    log.debug("🔌 WebDriver 종료 완료");
+                } catch (Exception e) {
+                    log.warn("⚠️ WebDriver 종료 중 오류: {}", e.getMessage());
+                }
             }
         }
     }
