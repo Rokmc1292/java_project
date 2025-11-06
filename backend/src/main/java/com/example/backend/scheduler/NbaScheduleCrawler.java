@@ -65,7 +65,7 @@ public class NbaScheduleCrawler {
 
         try {
             driver = crawlerService.setupDriver();
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
             // 네이버 스포츠 NBA 일정 페이지
             String baseUrl = "https://m.sports.naver.com/basketball/schedule/index?category=nba";

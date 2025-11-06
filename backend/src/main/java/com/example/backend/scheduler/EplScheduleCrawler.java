@@ -63,14 +63,38 @@ public class EplScheduleCrawler {
 
         try {
             driver = crawlerService.setupDriver();
-            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
             // 네이버 스포츠 EPL 일정 페이지
             String baseUrl = "https://sports.news.naver.com/wfootball/schedule/index?category=epl";
             log.info("🌐 페이지 로드 중: {}", baseUrl);
-            driver.get(baseUrl);
-            Thread.sleep(3000);  // 초기 페이지 로딩 대기
-            log.info("✅ 페이지 로드 완료");
+
+            // 페이지 로드 재시도 로직
+            boolean pageLoaded = false;
+            for (int retry = 0; retry < 3; retry++) {
+                try {
+                    driver.get(baseUrl);
+                    wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("body")));
+                    Thread.sleep(2000);  // 동적 콘텐츠 로딩 대기
+
+                    // 캘린더 탭이 로드되었는지 확인
+                    wait.until(ExpectedConditions.presenceOfElementLocated(
+                        By.cssSelector(".CalendarDate_tab__WFXXe")));
+
+                    pageLoaded = true;
+                    log.info("✅ 페이지 로드 완료");
+                    break;
+                } catch (Exception e) {
+                    log.warn("⚠️ 페이지 로딩 실패 (시도 {}/3): {}", retry + 1, e.getMessage());
+                    if (retry < 2) {
+                        Thread.sleep(2000);
+                    }
+                }
+            }
+
+            if (!pageLoaded) {
+                throw new RuntimeException("페이지 로드 실패: 3번 시도 후에도 실패");
+            }
 
             // 2025년 8월~12월 크롤링
             for (int month = 8; month <= 12; month++) {
@@ -115,9 +139,9 @@ public class EplScheduleCrawler {
             if (driver != null) {
                 try {
                     driver.quit();
-                    log.info("✅ WebDriver 종료 완료");
+                    log.info("🔌 WebDriver 종료 완료");
                 } catch (Exception e) {
-                    log.error("WebDriver 종료 중 오류", e);
+                    log.warn("⚠️ WebDriver 종료 중 오류: {}", e.getMessage());
                 }
             }
         }
@@ -138,15 +162,27 @@ public class EplScheduleCrawler {
                 String monthXpath = String.format("//button[contains(@class, 'CalendarDate_tab__WFXXe')]//em[text()='%d']", month);
                 WebElement monthButton = wait.until(ExpectedConditions.elementToBeClickable(By.xpath(monthXpath)));
                 monthButton.click();
-                Thread.sleep(2500);  // 페이지 로딩 대기
+
+                // 페이지가 업데이트될 때까지 명시적 대기
+                Thread.sleep(2000);  // 초기 대기
+                wait.until(ExpectedConditions.presenceOfElementLocated(
+                    By.cssSelector(".ScheduleLeagueType_match_list_group__\\+\\+HQY")));
+                Thread.sleep(500);  // 추가 안정화
 
                 // 경기 일정 그룹 찾기
                 List<WebElement> dateGroups = driver.findElements(By.cssSelector(".ScheduleLeagueType_match_list_group__\\+\\+HQY"));
 
                 if (dateGroups.isEmpty()) {
                     log.warn("  ⚠️ {}년 {}월: 날짜 그룹을 찾을 수 없습니다. (시도 {}/{})", year, month, retries + 1, maxRetries);
+
+                    // 디버깅 정보 출력
+                    List<WebElement> anySchedule = driver.findElements(By.cssSelector("[class*='Schedule']"));
+                    log.debug("  🔍 Schedule 관련 요소 수: {}", anySchedule.size());
+
                     retries++;
-                    Thread.sleep(2000);
+                    if (retries < maxRetries) {
+                        Thread.sleep(2000);
+                    }
                     continue;
                 }
 
