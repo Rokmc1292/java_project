@@ -3,6 +3,9 @@ package com.example.backend.controller;
 import com.example.backend.scheduler.EplScheduleCrawler;
 import com.example.backend.scheduler.NbaScheduleCrawler;
 import com.example.backend.scheduler.BundesligaScheduleCrawler;
+import com.example.backend.scheduler.EplLiveScoreUpdater;
+import com.example.backend.scheduler.NbaLiveScoreUpdater;
+import com.example.backend.scheduler.BundesligaLiveScoreUpdater;
 import com.example.backend.repository.LeagueRepository;
 import com.example.backend.repository.TeamRepository;
 import com.example.backend.entity.League;
@@ -31,6 +34,9 @@ public class AdminController {
     private final EplScheduleCrawler eplScheduleCrawler;
     private final NbaScheduleCrawler nbaScheduleCrawler;
     private final BundesligaScheduleCrawler bundesligaScheduleCrawler;
+    private final EplLiveScoreUpdater eplLiveScoreUpdater;
+    private final NbaLiveScoreUpdater nbaLiveScoreUpdater;
+    private final BundesligaLiveScoreUpdater bundesligaLiveScoreUpdater;
     private final LeagueRepository leagueRepository;
     private final TeamRepository teamRepository;
 
@@ -230,6 +236,111 @@ public class AdminController {
             log.error("DB 데이터 확인 실패", e);
             response.put("success", false);
             response.put("message", "DB 데이터 확인 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * EPL 실시간 점수 업데이트 수동 실행
+     * POST /api/admin/live/epl
+     */
+    @PostMapping("/live/epl")
+    public ResponseEntity<Map<String, Object>> updateEplLiveScores() {
+        log.info("=== EPL 실시간 점수 업데이트 수동 실행 요청 ===");
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 실시간 업데이트 실행 (별도 스레드에서 실행하여 API 응답 지연 방지)
+            new Thread(() -> {
+                try {
+                    log.info("EPL 실시간 업데이트 시작...");
+                    eplLiveScoreUpdater.updateLiveScores();
+                    log.info("EPL 실시간 업데이트 완료!");
+                } catch (Exception e) {
+                    log.error("EPL 실시간 업데이트 실행 중 오류 발생", e);
+                }
+            }).start();
+
+            response.put("success", true);
+            response.put("message", "EPL 실시간 점수 업데이트가 시작되었습니다.");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("실시간 업데이트 실행 실패", e);
+            response.put("success", false);
+            response.put("message", "실시간 업데이트 실행 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * NBA 실시간 점수 업데이트 수동 실행
+     * POST /api/admin/live/nba
+     */
+    @PostMapping("/live/nba")
+    public ResponseEntity<Map<String, Object>> updateNbaLiveScores() {
+        log.info("=== NBA 실시간 점수 업데이트 수동 실행 요청 ===");
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 실시간 업데이트 실행 (별도 스레드에서 실행하여 API 응답 지연 방지)
+            new Thread(() -> {
+                try {
+                    log.info("NBA 실시간 업데이트 시작...");
+                    nbaLiveScoreUpdater.updateLiveScores();
+                    log.info("NBA 실시간 업데이트 완료!");
+                } catch (Exception e) {
+                    log.error("NBA 실시간 업데이트 실행 중 오류 발생", e);
+                }
+            }).start();
+
+            response.put("success", true);
+            response.put("message", "NBA 실시간 점수 업데이트가 시작되었습니다.");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("실시간 업데이트 실행 실패", e);
+            response.put("success", false);
+            response.put("message", "실시간 업데이트 실행 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 분데스리가 실시간 점수 업데이트 수동 실행
+     * POST /api/admin/live/bundesliga
+     */
+    @PostMapping("/live/bundesliga")
+    public ResponseEntity<Map<String, Object>> updateBundesligaLiveScores() {
+        log.info("=== 분데스리가 실시간 점수 업데이트 수동 실행 요청 ===");
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 실시간 업데이트 실행 (별도 스레드에서 실행하여 API 응답 지연 방지)
+            new Thread(() -> {
+                try {
+                    log.info("분데스리가 실시간 업데이트 시작...");
+                    bundesligaLiveScoreUpdater.updateLiveScores();
+                    log.info("분데스리가 실시간 업데이트 완료!");
+                } catch (Exception e) {
+                    log.error("분데스리가 실시간 업데이트 실행 중 오류 발생", e);
+                }
+            }).start();
+
+            response.put("success", true);
+            response.put("message", "분데스리가 실시간 점수 업데이트가 시작되었습니다.");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("실시간 업데이트 실행 실패", e);
+            response.put("success", false);
+            response.put("message", "실시간 업데이트 실행 중 오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.internalServerError().body(response);
         }
     }
