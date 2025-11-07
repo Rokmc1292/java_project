@@ -297,7 +297,9 @@ function PredictionDetail() {
             {/* 홈승 비율 */}
             <div className="vote-bar-container">
               <div className="vote-bar-header">
-                <span className="vote-label">홈팀 승</span>
+                <span className="vote-label">
+                  홈팀 승 ({match.teams?.home?.name || '홈팀'})
+                </span>
                 <span className="vote-percentage home">
                   {statistics.homePercentage.toFixed(1)}% ({statistics.homeVotes}명)
                 </span>
@@ -337,7 +339,9 @@ function PredictionDetail() {
             {/* 원정승 비율 */}
             <div className="vote-bar-container">
               <div className="vote-bar-header">
-                <span className="vote-label">원정팀 승</span>
+                <span className="vote-label">
+                  원정팀 승 ({match.teams?.away?.name || '원정팀'})
+                </span>
                 <span className="vote-percentage away">
                   {statistics.awayPercentage.toFixed(1)}% ({statistics.awayVotes}명)
                 </span>
@@ -367,7 +371,8 @@ function PredictionDetail() {
                 onClick={() => setSelectedResult('HOME')}
                 className={`result-btn home ${selectedResult === 'HOME' ? 'active' : ''}`}
               >
-                홈팀 승
+                홈팀 승<br />
+                <span className="team-name-small">({match.teams?.home?.name || '홈팀'})</span>
               </button>
 
               <button
@@ -381,7 +386,8 @@ function PredictionDetail() {
                 onClick={() => setSelectedResult('AWAY')}
                 className={`result-btn away ${selectedResult === 'AWAY' ? 'active' : ''}`}
               >
-                원정팀 승
+                원정팀 승<br />
+                <span className="team-name-small">({match.teams?.away?.name || '원정팀'})</span>
               </button>
             </div>
 
