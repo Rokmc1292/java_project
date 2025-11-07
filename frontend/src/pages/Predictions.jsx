@@ -80,10 +80,11 @@ function Predictions() {
     return `${days}일 ${hours}시간 ${minutes}분`;
   };
 
-  // 날짜 포맷팅 - DB 시간을 그대로 표시
+  // 날짜 포맷팅 - ISO 형식을 일반 형식으로 변환
   const formatDate = (dateString) => {
-    // 백엔드에서 한국 시간으로 제공하므로 변환 없이 그대로 표시
-    return dateString;
+    // "2025-11-08T09:00:00" → "2025-11-08 09:00:00"
+    if (!dateString) return '';
+    return dateString.replace('T', ' ');
   };
 
   return (
@@ -101,8 +102,8 @@ function Predictions() {
           <p className="info-title">💡 승부예측 안내</p>
           <ul className="info-list">
             <li>현재부터 일주일 이내 경기를 예측할 수 있습니다</li>
-            <li>예측 성공 시 +10점, 실패 시 -10점</li>
-            <li>코멘트 작성은 필수입니다 (최소 10자)</li>
+            <li>예측 결과에 따라 점수가 배당률처럼 차등 지급됩니다</li>
+            <li>코멘트 작성은 필수입니다 (최소 2자)</li>
             <li>제출 후 수정할 수 없으니 신중하게 선택하세요</li>
           </ul>
         </div>
