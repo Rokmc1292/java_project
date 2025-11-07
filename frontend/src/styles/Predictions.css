@@ -524,10 +524,17 @@
   font-size: 18px;
   font-weight: bold;
   transition: all 0.3s;
+  line-height: 1.4;
 }
 
 .result-btn:hover {
   background-color: #e0e0e0;
+}
+
+.team-name-small {
+  font-size: 14px;
+  font-weight: normal;
+  opacity: 0.8;
 }
 
 .result-btn.active.home {

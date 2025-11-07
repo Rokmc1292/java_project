@@ -288,34 +288,35 @@ public class PredictionService {
             prediction.setIsCorrect(isCorrect);
             predictionRepository.save(prediction);
 
-            // 배당률 기반 점수 계산
+            // 배당률 + 참여자 수 기반 점수 계산
             User user = prediction.getUser();
             int pointsChange = 0;
+            int totalVotes = stats.getTotalVotes();
 
             if (isCorrect) {
-                // 적중 시: 선택한 비율에 따라 점수 차등 지급
+                // 적중 시: 선택한 비율과 참여자 수에 따라 점수 차등 지급
                 switch (prediction.getPredictedResult()) {
                     case "HOME":
-                        pointsChange = calculateWinPoints(homeRatio);
+                        pointsChange = calculateWinPoints(homeRatio, totalVotes);
                         break;
                     case "DRAW":
-                        pointsChange = calculateWinPoints(drawRatio);
+                        pointsChange = calculateWinPoints(drawRatio, totalVotes);
                         break;
                     case "AWAY":
-                        pointsChange = calculateWinPoints(awayRatio);
+                        pointsChange = calculateWinPoints(awayRatio, totalVotes);
                         break;
                 }
             } else {
-                // 실패 시: 선택한 비율에 따라 점수 차등 감점
+                // 실패 시: 선택한 비율과 참여자 수에 따라 점수 차등 감점
                 switch (prediction.getPredictedResult()) {
                     case "HOME":
-                        pointsChange = calculateLosePoints(homeRatio);
+                        pointsChange = calculateLosePoints(homeRatio, totalVotes);
                         break;
                     case "DRAW":
-                        pointsChange = calculateLosePoints(drawRatio);
+                        pointsChange = calculateLosePoints(drawRatio, totalVotes);
                         break;
                     case "AWAY":
-                        pointsChange = calculateLosePoints(awayRatio);
+                        pointsChange = calculateLosePoints(awayRatio, totalVotes);
                         break;
                 }
             }
@@ -536,48 +537,52 @@ public class PredictionService {
             dto.setDrawPercentage(drawRatio * 100);
             dto.setAwayPercentage(awayRatio * 100);
 
-            // 예상 점수 계산 (배당률 방식)
-            // 적중 시: 10 + (90 * (1 - 선택 비율))
-            // 실패 시: -(10 + (90 * 선택 비율))
-            dto.setHomeWinPoints(calculateWinPoints(homeRatio));
-            dto.setHomeLosePoints(calculateLosePoints(homeRatio));
-            dto.setDrawWinPoints(calculateWinPoints(drawRatio));
-            dto.setDrawLosePoints(calculateLosePoints(drawRatio));
-            dto.setAwayWinPoints(calculateWinPoints(awayRatio));
-            dto.setAwayLosePoints(calculateLosePoints(awayRatio));
+            // 예상 점수 계산 (배당률 + 참여자 수 고려)
+            int totalVotes = stats.getTotalVotes();
+            dto.setHomeWinPoints(calculateWinPoints(homeRatio, totalVotes));
+            dto.setHomeLosePoints(calculateLosePoints(homeRatio, totalVotes));
+            dto.setDrawWinPoints(calculateWinPoints(drawRatio, totalVotes));
+            dto.setDrawLosePoints(calculateLosePoints(drawRatio, totalVotes));
+            dto.setAwayWinPoints(calculateWinPoints(awayRatio, totalVotes));
+            dto.setAwayLosePoints(calculateLosePoints(awayRatio, totalVotes));
         } else {
             dto.setHomePercentage(0.0);
             dto.setDrawPercentage(0.0);
             dto.setAwayPercentage(0.0);
 
-            // 투표가 없을 때는 기본 점수 (50/50 가정)
-            dto.setHomeWinPoints(55);
-            dto.setHomeLosePoints(-55);
-            dto.setDrawWinPoints(55);
-            dto.setDrawLosePoints(-55);
-            dto.setAwayWinPoints(55);
-            dto.setAwayLosePoints(-55);
+            // 투표가 없을 때는 기본 점수
+            dto.setHomeWinPoints(10);
+            dto.setHomeLosePoints(-10);
+            dto.setDrawWinPoints(10);
+            dto.setDrawLosePoints(-10);
+            dto.setAwayWinPoints(10);
+            dto.setAwayLosePoints(-10);
         }
 
         return dto;
     }
 
     /**
-     * 배당률 기반 적중 점수 계산
-     * 공식: 10 + (90 * (1 - 선택 비율))
-     * 최소 10점, 최대 100점
+     * 배당률 기반 적중 점수 계산 (참여자 수 고려)
+     * 공식: 10 + (90 * (1 - 선택 비율) * 참여자 보정 계수)
+     * 참여자 보정 계수 = min(1.0, totalVotes / 10.0)
+     * - 10명 이상: 최대 배당 효과
+     * - 5명: 50% 배당 효과
+     * - 1명: 10% 배당 효과
      */
-    private Integer calculateWinPoints(double ratio) {
-        return (int) Math.round(10 + (90 * (1 - ratio)));
+    private Integer calculateWinPoints(double ratio, int totalVotes) {
+        double participantFactor = Math.min(1.0, totalVotes / 10.0);
+        return (int) Math.round(10 + (90 * (1 - ratio) * participantFactor));
     }
 
     /**
-     * 배당률 기반 실패 점수 계산
-     * 공식: -(10 + (90 * 선택 비율))
-     * 최소 -10점, 최대 -100점
+     * 배당률 기반 실패 점수 계산 (참여자 수 고려)
+     * 공식: -(10 + (90 * 선택 비율 * 참여자 보정 계수))
+     * 참여자 보정 계수 = min(1.0, totalVotes / 10.0)
      */
-    private Integer calculateLosePoints(double ratio) {
-        return -(int) Math.round(10 + (90 * ratio));
+    private Integer calculateLosePoints(double ratio, int totalVotes) {
+        double participantFactor = Math.min(1.0, totalVotes / 10.0);
+        return -(int) Math.round(10 + (90 * ratio * participantFactor));
     }
 
     /**
