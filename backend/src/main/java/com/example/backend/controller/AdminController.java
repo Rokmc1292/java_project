@@ -5,11 +5,13 @@ import com.example.backend.scheduler.NbaScheduleCrawler;
 import com.example.backend.scheduler.BundesligaScheduleCrawler;
 import com.example.backend.scheduler.LaLigaScheduleCrawler;
 import com.example.backend.scheduler.SerieAScheduleCrawler;
+import com.example.backend.scheduler.Ligue1ScheduleCrawler;
 import com.example.backend.scheduler.EplLiveScoreUpdater;
 import com.example.backend.scheduler.NbaLiveScoreUpdater;
 import com.example.backend.scheduler.BundesligaLiveScoreUpdater;
 import com.example.backend.scheduler.LaLigaLiveScoreUpdater;
 import com.example.backend.scheduler.SerieALiveScoreUpdater;
+import com.example.backend.scheduler.Ligue1LiveScoreUpdater;
 import com.example.backend.repository.LeagueRepository;
 import com.example.backend.repository.TeamRepository;
 import com.example.backend.entity.League;
@@ -40,11 +42,13 @@ public class AdminController {
     private final BundesligaScheduleCrawler bundesligaScheduleCrawler;
     private final LaLigaScheduleCrawler laLigaScheduleCrawler;
     private final SerieAScheduleCrawler serieAScheduleCrawler;
+    private final Ligue1ScheduleCrawler ligue1ScheduleCrawler;
     private final EplLiveScoreUpdater eplLiveScoreUpdater;
     private final NbaLiveScoreUpdater nbaLiveScoreUpdater;
     private final BundesligaLiveScoreUpdater bundesligaLiveScoreUpdater;
     private final LaLigaLiveScoreUpdater laLigaLiveScoreUpdater;
     private final SerieALiveScoreUpdater serieALiveScoreUpdater;
+    private final Ligue1LiveScoreUpdater ligue1LiveScoreUpdater;
     private final LeagueRepository leagueRepository;
     private final TeamRepository teamRepository;
 
@@ -224,6 +228,41 @@ public class AdminController {
     }
 
     /**
+     * 리그 1 전체 시즌 크롤링 수동 실행
+     * POST /api/admin/crawl/ligue1
+     */
+    @PostMapping("/crawl/ligue1")
+    public ResponseEntity<Map<String, Object>> crawlLigue1Schedule() {
+        log.info("=== 리그 1 크롤링 수동 실행 요청 ===");
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 크롤링 실행 (별도 스레드에서 실행하여 API 응답 지연 방지)
+            new Thread(() -> {
+                try {
+                    log.info("리그 1 크롤링 시작...");
+                    ligue1ScheduleCrawler.crawlFullSeason();
+                    log.info("리그 1 크롤링 완료!");
+                } catch (Exception e) {
+                    log.error("리그 1 크롤링 실행 중 오류 발생", e);
+                }
+            }).start();
+
+            response.put("success", true);
+            response.put("message", "리그 1 크롤링이 시작되었습니다. 완료까지 수 분이 소요될 수 있습니다.");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("크롤링 실행 실패", e);
+            response.put("success", false);
+            response.put("message", "크롤링 실행 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
      * DB 데이터 확인 (리그 및 팀)
      * GET /api/admin/check-db
      */
@@ -253,6 +292,9 @@ public class AdminController {
             // 세리에 A 리그 확인
             League serieALeague = leagueRepository.findById(8L).orElse(null);
 
+            // 리그 1 리그 확인
+            League ligue1League = leagueRepository.findById(9L).orElse(null);
+
             // EPL 팀 수 확인
             long eplTeamCount = teamRepository.findAll().stream()
                     .filter(t -> t.getLeague() != null && t.getLeague().getLeagueId() == 1L)
@@ -276,6 +318,11 @@ public class AdminController {
             // 세리에 A 팀 수 확인
             long serieATeamCount = teamRepository.findAll().stream()
                     .filter(t -> t.getLeague() != null && t.getLeague().getLeagueId() == 8L)
+                    .count();
+
+            // 리그 1 팀 수 확인
+            long ligue1TeamCount = teamRepository.findAll().stream()
+                    .filter(t -> t.getLeague() != null && t.getLeague().getLeagueId() == 9L)
                     .count();
 
             // NBA 팀 목록
@@ -322,6 +369,17 @@ public class AdminController {
                     })
                     .collect(Collectors.toList());
 
+            // 리그 1 팀 목록
+            List<Map<String, Object>> ligue1Teams = teamRepository.findAll().stream()
+                    .filter(t -> t.getLeague() != null && t.getLeague().getLeagueId() == 9L)
+                    .map(t -> {
+                        Map<String, Object> teamInfo = new HashMap<>();
+                        teamInfo.put("teamId", t.getTeamId());
+                        teamInfo.put("teamName", t.getTeamName());
+                        return teamInfo;
+                    })
+                    .collect(Collectors.toList());
+
             response.put("success", true);
             response.put("totalLeagues", allLeagues.size());
             response.put("eplLeague", eplLeague != null ? Map.of(
@@ -344,21 +402,28 @@ public class AdminController {
                 "leagueId", serieALeague.getLeagueId(),
                 "leagueName", serieALeague.getLeagueName()
             ) : "NOT FOUND");
+            response.put("ligue1League", ligue1League != null ? Map.of(
+                "leagueId", ligue1League.getLeagueId(),
+                "leagueName", ligue1League.getLeagueName()
+            ) : "NOT FOUND");
             response.put("eplTeamCount", eplTeamCount);
             response.put("nbaTeamCount", nbaTeamCount);
             response.put("bundesligaTeamCount", bundesligaTeamCount);
             response.put("laLigaTeamCount", laLigaTeamCount);
             response.put("serieATeamCount", serieATeamCount);
+            response.put("ligue1TeamCount", ligue1TeamCount);
             response.put("nbaTeams", nbaTeams);
             response.put("bundesligaTeams", bundesligaTeams);
             response.put("laLigaTeams", laLigaTeams);
             response.put("serieATeams", serieATeams);
+            response.put("ligue1Teams", ligue1Teams);
 
             log.info("EPL 리그: {}, 팀 수: {}", eplLeague != null ? "존재" : "없음", eplTeamCount);
             log.info("NBA 리그: {}, 팀 수: {}", nbaLeague != null ? "존재" : "없음", nbaTeamCount);
             log.info("분데스리가 리그: {}, 팀 수: {}", bundesligaLeague != null ? "존재" : "없음", bundesligaTeamCount);
             log.info("라리가 리그: {}, 팀 수: {}", laLigaLeague != null ? "존재" : "없음", laLigaTeamCount);
             log.info("세리에 A 리그: {}, 팀 수: {}", serieALeague != null ? "존재" : "없음", serieATeamCount);
+            log.info("리그 1 리그: {}, 팀 수: {}", ligue1League != null ? "존재" : "없음", ligue1TeamCount);
 
             return ResponseEntity.ok(response);
 
@@ -534,6 +599,41 @@ public class AdminController {
 
             response.put("success", true);
             response.put("message", "세리에 A 실시간 점수 업데이트가 시작되었습니다.");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("실시간 업데이트 실행 실패", e);
+            response.put("success", false);
+            response.put("message", "실시간 업데이트 실행 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
+     * 리그 1 실시간 점수 업데이트 수동 실행
+     * POST /api/admin/live/ligue1
+     */
+    @PostMapping("/live/ligue1")
+    public ResponseEntity<Map<String, Object>> updateLigue1LiveScores() {
+        log.info("=== 리그 1 실시간 점수 업데이트 수동 실행 요청 ===");
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 실시간 업데이트 실행 (별도 스레드에서 실행하여 API 응답 지연 방지)
+            new Thread(() -> {
+                try {
+                    log.info("리그 1 실시간 업데이트 시작...");
+                    ligue1LiveScoreUpdater.updateLiveScores();
+                    log.info("리그 1 실시간 업데이트 완료!");
+                } catch (Exception e) {
+                    log.error("리그 1 실시간 업데이트 실행 중 오류 발생", e);
+                }
+            }).start();
+
+            response.put("success", true);
+            response.put("message", "리그 1 실시간 점수 업데이트가 시작되었습니다.");
 
             return ResponseEntity.ok(response);
 
