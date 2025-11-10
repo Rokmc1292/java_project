@@ -3,7 +3,11 @@
  * 파일 위치: frontend/src/pages/admin/ReportManagement.jsx
  */
 
-export function ReportManagement() {
+import { useState, useEffect } from 'react';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+function ReportManagement() {
     const [reports, setReports] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -79,9 +83,9 @@ export function ReportManagement() {
                                 <td>{report.reason}</td>
                                 <td>{new Date(report.createdAt).toLocaleDateString()}</td>
                                 <td>
-                    <span className={`status-badge ${report.status.toLowerCase()}`}>
-                      {report.status === 'PENDING' ? '미처리' : '처리완료'}
-                    </span>
+                                    <span className={`status-badge ${report.status.toLowerCase()}`}>
+                                        {report.status === 'PENDING' ? '미처리' : '처리완료'}
+                                    </span>
                                 </td>
                                 <td className="action-cell">
                                     {report.status === 'PENDING' && (

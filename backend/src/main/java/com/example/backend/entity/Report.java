@@ -1,46 +1,71 @@
 package com.example.backend.entity;
 
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 /**
- * 신고 Entity
+ * 신고 엔티티
  */
 @Entity
 @Table(name = "reports")
-@Getter
-@Setter
+@Getter @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Report {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "report_id")
     private Long reportId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "reporter_id", nullable = false)
-    private User reporter;
+    private User reporter; // 신고자
 
-    @Column(name = "target_type", nullable = false, length = 20)
-    private String targetType; // POST, COMMENT
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReportType reportType; // 신고 유형 (게시글, 댓글, 사용자)
 
-    @Column(name = "target_id", nullable = false)
-    private Long targetId;
+    @Column(nullable = false)
+    private Long targetId; // 신고 대상 ID
 
-    @Column(name = "reason", nullable = false, length = 50)
-    private String reason;
+    @Column(nullable = false, length = 100)
+    private String reason; // 신고 사유
 
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
+    @Column(length = 1000)
+    private String description; // 상세 설명
 
-    @Column(name = "status", length = 20)
-    private String status = "PENDING"; // PENDING, PROCESSED, REJECTED
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ReportStatus status = ReportStatus.PENDING; // 처리 상태
 
-    @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column
+    private LocalDateTime resolvedAt; // 처리 일시
+
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+    }
+}
+
+/**
+ * 신고 유형
+ */
+enum ReportType {
+    POST,    // 게시글
+    COMMENT, // 댓글
+    USER     // 사용자
+}
+
+/**
+ * 신고 상태
+ */
+enum ReportStatus {
+    PENDING,  // 미처리
+    RESOLVED  // 처리 완료
 }
