@@ -1,15 +1,14 @@
 package com.example.backend.repository;
 
 import com.example.backend.entity.User;
-import org.springframework.data.domain.Page;  // ⭐ 추가
-import org.springframework.data.domain.Pageable;  // ⭐ 추가
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -39,7 +38,7 @@ public interface UserRepository extends JpaRepository<User, Long> {
             "UNION SELECT c.user.userId FROM Comment c WHERE c.createdAt >= :since) " +
             "ORDER BY (SELECT COUNT(p2) FROM Post p2 WHERE p2.user = u AND p2.createdAt >= :since) + " +
             "(SELECT COUNT(c2) FROM Comment c2 WHERE c2.user = u AND c2.createdAt >= :since) DESC")
-    List<User> findTopActiveUsers(@Param("since") LocalDateTime since, Pageable pageable);
+    Page<User> findTopActiveUsers(@Param("since") LocalDateTime since, Pageable pageable);
 
     // ========== 승부예측 랭킹용 추가 메서드 ==========
 
@@ -48,4 +47,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * - 랭킹 시스템에 사용
      */
     Page<User> findAllByOrderByTierScoreDescTierAsc(Pageable pageable);
+
+    // ========== 관리자 페이지용 추가 메서드 ==========
+
+    /**
+     * 특정 날짜 이후 가입한 사용자 수 (대시보드 통계용)
+     */
+    long countByCreatedAtAfter(LocalDateTime date);
 }

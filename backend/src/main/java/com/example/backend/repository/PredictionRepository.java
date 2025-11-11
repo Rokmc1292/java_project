@@ -1,10 +1,11 @@
+// language: java
 package com.example.backend.repository;
 
 import com.example.backend.entity.Prediction;
 import com.example.backend.entity.Match;
 import com.example.backend.entity.User;
-import org.springframework.data.domain.Page;  // ⭐ 추가
-import org.springframework.data.domain.Pageable;  // ⭐ 추가
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -25,10 +26,10 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
     Optional<Prediction> findByMatchAndUser(Match match, User user);
 
     // 특정 경기의 모든 예측 조회 (추천순 -> 최신순)
-    List<Prediction> findByMatchOrderByLikeCountDescCreatedAtDesc(Match match);
-
-    // 특정 경기의 모든 예측 조회 (페이징)
     Page<Prediction> findByMatchOrderByLikeCountDescCreatedAtDesc(Match match, Pageable pageable);
+
+    // 특정 경기의 모든 예측 조회 (Pageable 없는 버전)
+    List<Prediction> findByMatchOrderByLikeCountDescCreatedAtDesc(Match match);
 
     // 사용자의 예측 내역 조회 (최신순)
     Page<Prediction> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
@@ -70,7 +71,16 @@ public interface PredictionRepository extends JpaRepository<Prediction, Long> {
      */
     long countByMatchAndIsCorrectIsNull(Match match);
 
-    List<Prediction> findByUser(User user);
+    // 사용자별 예측 목록 조회 (페이징)
     Page<Prediction> findByUser(User user, Pageable pageable);
+
+    // 완료된 예측만 조회
     Page<Prediction> findByUserAndIsCorrectNotNull(User user, Pageable pageable);
+
+    // ========== 관리자 페이지용 추가 메서드 ==========
+
+    /**
+     * 특정 날짜 이후 생성된 예측 개수 (대시보드 통계용)
+     */
+    long countByCreatedAtAfter(LocalDateTime date);
 }

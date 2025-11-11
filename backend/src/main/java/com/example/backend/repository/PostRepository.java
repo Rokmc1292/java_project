@@ -26,6 +26,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 사용자별 게시글 조회
     Page<Post> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    Page<Post> findByUser(User user, Pageable pageable);
 
     // 검색
     @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword% ORDER BY p.createdAt DESC")
@@ -63,5 +64,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user = :user AND p.createdAt >= :startDate")
     long countByUserAndCreatedAtAfter(@Param("user") User user, @Param("startDate") LocalDateTime startDate);
 
-    Page<Post> findByUser(User user, Pageable pageable);
+    // ========== 관리자 페이지용 추가 메서드 ==========
+
+    /**
+     * 특정 날짜 이후 작성된 게시글 수 (대시보드 통계용)
+     */
+    long countByCreatedAtAfter(LocalDateTime date);
 }

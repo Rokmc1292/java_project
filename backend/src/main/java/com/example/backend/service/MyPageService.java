@@ -57,7 +57,7 @@ public class MyPageService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
 
-        List<Prediction> predictions = predictionRepository.findByUser(user);
+        List<Prediction> predictions = predictionRepository.findByUser(user, Pageable.unpaged()).getContent();
 
         int total = predictions.size();
         int correct = (int) predictions.stream()
