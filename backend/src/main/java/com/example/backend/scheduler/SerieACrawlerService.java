@@ -81,8 +81,8 @@ public class SerieACrawlerService {
             WebDriver driver = new ChromeDriver(options);
 
             // 타임아웃 설정 (비용 절감 최적화: 대기 시간 단축)
-            driver.manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(15))  // 30→15초;
-            driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(3))    // 5→3초;
+            driver.manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(15));  // 30→15초
+            driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(3));    // 5→3초
 
             log.info("✅ WebDriver 초기화 성공 (세리에 A)");
             return driver;
