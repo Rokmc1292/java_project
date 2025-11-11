@@ -1,22 +1,25 @@
+// backend/src/main/java/com/example/backend/config/WebConfig.java
 package com.example.backend.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/**
- * 전역 CORS 설정
- * - 프론트엔드에서 백엔드 API 호출 허용
- * - 개발 환경과 프로덕션 환경 모두 지원
- */
 @Configuration
+@RequiredArgsConstructor
 public class WebConfig implements WebMvcConfigurer {
 
-    /**
-     * CORS 매핑 설정
-     * - 모든 API 엔드포인트에 대해 CORS 허용
-     * - 프론트엔드 개발 서버 및 배포 URL 허용
-     */
+    private final AdminInterceptor adminInterceptor;
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(adminInterceptor)
+                .addPathPatterns("/api/admin-page/**")  // 관리자 페이지 경로
+                .excludePathPatterns("/api/auth/**");   // 인증 경로는 제외
+    }
+
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")  // /api로 시작하는 모든 경로

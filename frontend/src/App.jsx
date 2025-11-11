@@ -15,12 +15,12 @@ import PostDetail from './pages/PostDetail';
 import Live from './pages/Live';
 import News from './pages/News';
 import MyPage from './pages/MyPage';
+import AdminLayout from './pages/AdminLayout';
 import SplashScreen from './components/SplashScreen';
+import ProtectedRoute from './components/ProtectedRoute';
 import Predictions from './pages/Predictions';
 import PredictionDetail from './pages/PredictionDetail';
 import PredictionRanking from './pages/PredictionRanking';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminRoute from './components/AdminRoute';
 import './App.css';
 
 function App() {
@@ -82,13 +82,13 @@ function App() {
                     {/* 마이페이지 */}
                     <Route path="/mypage" element={<MyPage />} />
 
-                    {/* 관리자 페이지 (보호된 라우트) */}
+                    {/* 관리자 페이지 - 관리자 권한 필요 */}
                     <Route
                         path="/admin/*"
                         element={
-                            <AdminRoute>
-                                <AdminDashboard />
-                            </AdminRoute>
+                            <ProtectedRoute is_Admin={true}>
+                                <AdminLayout />
+                            </ProtectedRoute>
                         }
                     />
 

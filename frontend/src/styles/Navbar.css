@@ -136,3 +136,31 @@
     display: none;
   }
 }
+
+/* 관리자 메뉴 스타일 */
+.navbar-admin {
+    color: #ff9800 !important;
+    font-weight: 600;
+}
+
+.navbar-admin:hover {
+    color: #f57c00 !important;
+}
+
+.navbar-admin.active {
+    color: #e65100 !important;
+    border-bottom: 3px solid #ff9800;
+}
+
+/* 관리자 배지 */
+.admin-badge-mini {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 10px;
+    vertical-align: middle;
+}
