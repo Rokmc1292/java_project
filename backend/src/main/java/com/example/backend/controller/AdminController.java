@@ -302,6 +302,74 @@ public class AdminController {
     }
 
     /**
+     * 모든 리그 일정 크롤링 (순차 실행)
+     * POST /api/admin/crawl/all-leagues
+     * League ID 순서: EPL(1) → NBA(2) → Bundesliga(6) → La Liga(7) → Serie A(8) → Ligue 1(9) → KBL(10)
+     */
+    @PostMapping("/crawl/all-leagues")
+    public ResponseEntity<Map<String, Object>> crawlAllLeagues() {
+        log.info("=== 전체 리그 크롤링 수동 실행 요청 ===");
+
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            // 크롤링 실행 (별도 스레드에서 실행하여 API 응답 지연 방지)
+            new Thread(() -> {
+                try {
+                    log.info("🌍 ========== 전체 리그 크롤링 시작 ==========");
+
+                    // League ID 순서대로 실행: 1 → 2 → 6 → 7 → 8 → 9 → 10
+
+                    log.info("1️⃣ EPL 크롤링 시작 (league_id=1)");
+                    eplScheduleCrawler.crawlFullSeason();
+                    log.info("✅ EPL 크롤링 완료");
+
+                    log.info("2️⃣ NBA 크롤링 시작 (league_id=2)");
+                    nbaScheduleCrawler.crawlFullSeason();
+                    log.info("✅ NBA 크롤링 완료");
+
+                    log.info("6️⃣ Bundesliga 크롤링 시작 (league_id=6)");
+                    bundesligaScheduleCrawler.crawlFullSeason();
+                    log.info("✅ Bundesliga 크롤링 완료");
+
+                    log.info("7️⃣ La Liga 크롤링 시작 (league_id=7)");
+                    laLigaScheduleCrawler.crawlFullSeason();
+                    log.info("✅ La Liga 크롤링 완료");
+
+                    log.info("8️⃣ Serie A 크롤링 시작 (league_id=8)");
+                    serieAScheduleCrawler.crawlFullSeason();
+                    log.info("✅ Serie A 크롤링 완료");
+
+                    log.info("9️⃣ Ligue 1 크롤링 시작 (league_id=9)");
+                    ligue1ScheduleCrawler.crawlFullSeason();
+                    log.info("✅ Ligue 1 크롤링 완료");
+
+                    log.info("🔟 KBL 크롤링 시작 (league_id=10)");
+                    kblScheduleCrawler.crawlFullSeason();
+                    log.info("✅ KBL 크롤링 완료");
+
+                    log.info("🎉 ========== 전체 리그 크롤링 완료 ==========");
+
+                } catch (Exception e) {
+                    log.error("❌ 전체 리그 크롤링 실행 중 오류 발생", e);
+                }
+            }).start();
+
+            response.put("success", true);
+            response.put("message", "전체 리그 크롤링이 시작되었습니다. League ID 순서대로 순차 실행됩니다 (EPL→NBA→Bundesliga→La Liga→Serie A→Ligue 1→KBL). 완료까지 상당한 시간이 소요될 수 있습니다.");
+            response.put("leagues", List.of("EPL(1)", "NBA(2)", "Bundesliga(6)", "La Liga(7)", "Serie A(8)", "Ligue 1(9)", "KBL(10)"));
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("크롤링 실행 실패", e);
+            response.put("success", false);
+            response.put("message", "크롤링 실행 중 오류가 발생했습니다: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
+    /**
      * DB 데이터 확인 (리그 및 팀)
      * GET /api/admin/check-db
      */
