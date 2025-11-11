@@ -9,6 +9,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +32,81 @@ public class NbaLiveScoreUpdater {
     private final NbaCrawlerService crawlerService;
 
     /**
+     * 서버 시작 시 LIVE 상태로 남아있는 경기들을 체크하고 업데이트
+     * 서버가 중단되었다가 다시 시작되면 LIVE 상태 경기가 실제로는 이미 종료되었을 수 있음
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void checkStuckLiveMatchesOnStartup() {
+        log.info("🔍 [NBA] 서버 시작 - LIVE 상태 경기 점검 시작");
+
+        try {
+            // NBA 리그의 LIVE 상태 경기 조회
+            List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+            List<Match> nbaLiveMatches = liveMatches.stream()
+                    .filter(m -> m.getLeague().getLeagueId().equals(2L))
+                    .toList();
+
+            if (nbaLiveMatches.isEmpty()) {
+                log.info("✅ [NBA] LIVE 상태 경기 없음");
+                return;
+            }
+
+            log.info("⚠️ [NBA] LIVE 상태 경기 {}개 발견 - 업데이트 시작", nbaLiveMatches.size());
+
+            // 과거 경기들만 필터링 (경기 시작 시간 + 4시간이 현재보다 이전 - NBA는 좀 더 길게)
+            LocalDateTime now = LocalDateTime.now();
+            List<Match> stuckMatches = nbaLiveMatches.stream()
+                    .filter(m -> m.getMatchDate().plusHours(4).isBefore(now))
+                    .toList();
+
+            if (stuckMatches.isEmpty()) {
+                log.info("✅ [NBA] 모든 LIVE 경기가 정상 범위 내");
+                return;
+            }
+
+            log.info("🔄 [NBA] 과거 LIVE 경기 {}개 발견 - FINISHED로 업데이트", stuckMatches.size());
+
+            // 각 경기를 FINISHED로 업데이트
+            for (Match match : stuckMatches) {
+                try {
+                    updateStuckMatch(match);
+                } catch (Exception e) {
+                    log.error("❌ [NBA] 경기 업데이트 실패: {} vs {} - {}",
+                            match.getHomeTeam().getTeamName(),
+                            match.getAwayTeam().getTeamName(),
+                            e.getMessage());
+                }
+            }
+
+            log.info("✅ [NBA] LIVE 상태 경기 점검 완료");
+
+        } catch (Exception e) {
+            log.error("❌ [NBA] LIVE 상태 경기 점검 실패", e);
+        }
+    }
+
+    /**
+     * 멈춰있는 LIVE 경기를 FINISHED로 업데이트
+     */
+    private void updateStuckMatch(Match match) {
+        log.info("🔄 업데이트 중: {} vs {} ({})",
+                match.getHomeTeam().getTeamName(),
+                match.getAwayTeam().getTeamName(),
+                match.getMatchDate());
+
+        match.setStatus("FINISHED");
+        match.setUpdatedAt(LocalDateTime.now());
+        matchRepository.save(match);
+
+        log.info("✅ 업데이트 완료: {} {} - {} {} (FINISHED)",
+                match.getHomeTeam().getTeamName(),
+                match.getHomeScore(),
+                match.getAwayScore(),
+                match.getAwayTeam().getTeamName());
+    }
+
+    /**
      * 10초마다 실시간 점수 업데이트
      * fixedDelay: 이전 실행이 끝난 후 10초 대기
      * initialDelay: 서버 시작 후 10초 뒤 첫 실행
@@ -37,15 +114,18 @@ public class NbaLiveScoreUpdater {
     @Scheduled(fixedDelay = 10000, initialDelay = 10000)
     @Transactional
     public void updateLiveScores() {
-        // NBA 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
-        List<Match> todayMatches = matchRepository.findTodayMatchesByLeague(2L, LocalDateTime.now());
+        // NBA 리그의 LIVE 경기 조회 (날짜 관계없이 LIVE 상태만 추적)
+        List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+        List<Match> nbaLiveMatches = liveMatches.stream()
+                .filter(m -> m.getLeague().getLeagueId().equals(2L))
+                .toList();
 
-        if (todayMatches.isEmpty()) {
-            // 오늘 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
+        if (nbaLiveMatches.isEmpty()) {
+            // LIVE 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
             return;
         }
 
-        log.info("🏀 [실시간 업데이트] 오늘 NBA 경기 {}개 발견, 크롤링 시작", todayMatches.size());
+        log.info("🏀 [실시간 업데이트] NBA LIVE 경기 {}개 발견, 크롤링 시작", nbaLiveMatches.size());
 
         WebDriver driver = null;
 
@@ -122,7 +202,7 @@ public class NbaLiveScoreUpdater {
             int liveStartedCount = 0;
             int notFoundCount = 0;
 
-            for (Match match : todayMatches) {
+            for (Match match : nbaLiveMatches) {
                 try {
                     String beforeStatus = match.getStatus();
                     String homeTeam = match.getHomeTeam().getTeamName();

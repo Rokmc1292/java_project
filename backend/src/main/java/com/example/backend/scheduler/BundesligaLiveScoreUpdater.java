@@ -9,6 +9,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,6 +31,29 @@ public class BundesligaLiveScoreUpdater {
     private final MatchRepository matchRepository;
     private final BundesligaCrawlerService crawlerService;
 
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void checkStuckLiveMatchesOnStartup() {
+        log.info("🔍 [Bundesliga] 서버 시작 - LIVE 상태 경기 점검 시작");
+        try {
+            List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+            List<Match> leagueMatches = liveMatches.stream()
+                    .filter(m -> m.getLeague().getLeagueId().equals(6L)).toList();
+            if (leagueMatches.isEmpty()) { log.info("✅ [Bundesliga] LIVE 상태 경기 없음"); return; }
+            log.info("⚠️ [Bundesliga] LIVE 상태 경기 {}개 발견", leagueMatches.size());
+            LocalDateTime now = LocalDateTime.now();
+            List<Match> stuckMatches = leagueMatches.stream()
+                    .filter(m -> m.getMatchDate().plusHours(3).isBefore(now)).toList();
+            if (stuckMatches.isEmpty()) { log.info("✅ [Bundesliga] 모든 LIVE 경기가 정상 범위 내"); return; }
+            log.info("🔄 [Bundesliga] 과거 LIVE 경기 {}개 발견 - FINISHED로 업데이트", stuckMatches.size());
+            for (Match match : stuckMatches) {
+                match.setStatus("FINISHED"); match.setUpdatedAt(LocalDateTime.now()); matchRepository.save(match);
+                log.info("✅ 업데이트: {} {} - {} {}", match.getHomeTeam().getTeamName(),
+                    match.getHomeScore(), match.getAwayScore(), match.getAwayTeam().getTeamName());
+            }
+        } catch (Exception e) { log.error("❌ [Bundesliga] LIVE 경기 점검 실패", e); }
+    }
+
     /**
      * 10초마다 실시간 점수 업데이트
      * fixedDelay: 이전 실행이 끝난 후 10초 대기
@@ -37,15 +62,18 @@ public class BundesligaLiveScoreUpdater {
     @Scheduled(fixedDelay = 10000, initialDelay = 15000)
     @Transactional
     public void updateLiveScores() {
-        // 분데스리가 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
-        List<Match> todayMatches = matchRepository.findTodayMatchesByLeague(6L, LocalDateTime.now());
+        // 분데스리가 리그의 LIVE 경기 조회 (날짜 관계없이 LIVE 상태만 추적)
+        List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+        List<Match> bundesligaLiveMatches = liveMatches.stream()
+                .filter(m -> m.getLeague().getLeagueId().equals(6L))
+                .toList();
 
-        if (todayMatches.isEmpty()) {
-            // 오늘 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
+        if (bundesligaLiveMatches.isEmpty()) {
+            // LIVE 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
             return;
         }
 
-        log.info("⚽ [실시간 업데이트] 오늘 분데스리가 경기 {}개 발견, 크롤링 시작", todayMatches.size());
+        log.info("⚽ [실시간 업데이트] 분데스리가 LIVE 경기 {}개 발견, 크롤링 시작", bundesligaLiveMatches.size());
 
         WebDriver driver = null;
 
@@ -122,7 +150,7 @@ public class BundesligaLiveScoreUpdater {
             int liveStartedCount = 0;
             int notFoundCount = 0;
 
-            for (Match match : todayMatches) {
+            for (Match match : bundesligaLiveMatches) {
                 try {
                     String beforeStatus = match.getStatus();
                     String homeTeam = match.getHomeTeam().getTeamName();
