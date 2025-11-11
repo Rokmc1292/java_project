@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * 리그 1 전체 시즌 일정 크롤러
- * 매일 새벽 3시 40분에 2025-2026 시즌 전체 일정 크롤링
+ * AdminController API를 통해 수동 실행
  */
 @Component
 @RequiredArgsConstructor
@@ -34,24 +34,6 @@ public class Ligue1ScheduleCrawler {
     private final MatchRepository matchRepository;
     private final Ligue1CrawlerService crawlerService;
     private final EntityManager entityManager;
-
-    /**
-     * 매일 새벽 3시 40분에 리그 1 전체 시즌 일정 크롤링
-     * cron: "초 분 시 일 월 요일"
-     * EPL(3:00), 분데스리가(3:10), 라리가(3:20), 세리에A(3:30)와 시간 차이를 두어 충돌 방지
-     */
-    @Scheduled(cron = "0 40 3 * * *")
-    public void scheduledCrawling() {
-        // 시즌 체크: 8월~12월 또는 1월~5월만 크롤링
-        int currentMonth = LocalDateTime.now().getMonthValue();
-        if (currentMonth >= 6 && currentMonth <= 7) {
-            log.info("⏭️ [스케줄] 리그 1 시즌 오프 기간(6-7월) - 크롤링 건너뛰기");
-            return;
-        }
-
-        log.info("⏰ [스케줄] 리그 1 전체 시즌 일정 크롤링 시작 (매일 새벽 3시 40분)");
-        crawlFullSeason();
-    }
 
     /**
      * 전체 시즌 크롤링 실행
