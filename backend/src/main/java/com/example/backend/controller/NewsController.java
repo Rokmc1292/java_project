@@ -24,7 +24,7 @@ public class NewsController {
     private final NewsCrawlerService newsCrawlerService;
     private final NewsCleanupService newsCleanupService;  // 추가!
 
-    /**
+    /***
      * 전체 뉴스 조회
      */
     @GetMapping
