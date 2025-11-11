@@ -114,15 +114,18 @@ public class NbaLiveScoreUpdater {
     @Scheduled(fixedDelay = 10000, initialDelay = 10000)
     @Transactional
     public void updateLiveScores() {
-        // NBA 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
-        List<Match> todayMatches = matchRepository.findTodayMatchesByLeague(2L, LocalDateTime.now());
+        // NBA 리그의 LIVE 경기 조회 (날짜 관계없이 LIVE 상태만 추적)
+        List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+        List<Match> nbaLiveMatches = liveMatches.stream()
+                .filter(m -> m.getLeague().getLeagueId().equals(2L))
+                .toList();
 
-        if (todayMatches.isEmpty()) {
-            // 오늘 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
+        if (nbaLiveMatches.isEmpty()) {
+            // LIVE 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
             return;
         }
 
-        log.info("🏀 [실시간 업데이트] 오늘 NBA 경기 {}개 발견, 크롤링 시작", todayMatches.size());
+        log.info("🏀 [실시간 업데이트] NBA LIVE 경기 {}개 발견, 크롤링 시작", nbaLiveMatches.size());
 
         WebDriver driver = null;
 
@@ -199,7 +202,7 @@ public class NbaLiveScoreUpdater {
             int liveStartedCount = 0;
             int notFoundCount = 0;
 
-            for (Match match : todayMatches) {
+            for (Match match : nbaLiveMatches) {
                 try {
                     String beforeStatus = match.getStatus();
                     String homeTeam = match.getHomeTeam().getTeamName();

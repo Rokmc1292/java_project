@@ -62,15 +62,18 @@ public class SerieALiveScoreUpdater {
     @Scheduled(fixedDelay = 10000, initialDelay = 25000)
     @Transactional
     public void updateLiveScores() {
-        // 세리에 A 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
-        List<Match> todayMatches = matchRepository.findTodayMatchesByLeague(8L, LocalDateTime.now());
+        // 세리에 A 리그의 LIVE 경기 조회 (날짜 관계없이 LIVE 상태만 추적)
+        List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+        List<Match> serieALiveMatches = liveMatches.stream()
+                .filter(m -> m.getLeague().getLeagueId().equals(8L))
+                .toList();
 
-        if (todayMatches.isEmpty()) {
-            // 오늘 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
+        if (serieALiveMatches.isEmpty()) {
+            // LIVE 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
             return;
         }
 
-        log.info("⚽ [실시간 업데이트] 오늘 세리에 A 경기 {}개 발견, 크롤링 시작", todayMatches.size());
+        log.info("⚽ [실시간 업데이트] 세리에 A LIVE 경기 {}개 발견, 크롤링 시작", serieALiveMatches.size());
 
         WebDriver driver = null;
 
@@ -147,7 +150,7 @@ public class SerieALiveScoreUpdater {
             int liveStartedCount = 0;
             int notFoundCount = 0;
 
-            for (Match match : todayMatches) {
+            for (Match match : serieALiveMatches) {
                 try {
                     String beforeStatus = match.getStatus();
                     String homeTeam = match.getHomeTeam().getTeamName();
