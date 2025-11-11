@@ -88,11 +88,11 @@ function Fixtures() {
     }
   };
 
-  // 날짜 포맷팅 - 백엔드에서 제공한 시간 그대로 표시
+  // 날짜 포맷팅 - ISO 형식을 일반 형식으로 변환
   const formatDate = (dateString) => {
-    // 백엔드에서 이미 한국 시간으로 변환하여 전송하므로
-    // 프론트엔드에서는 변환 없이 그대로 표시
-    return dateString;
+    // "2025-11-08T09:00:00" → "2025-11-08 09:00:00"
+    if (!dateString) return '';
+    return dateString.replace('T', ' ');
   };
 
   // 날짜 변경 (이전/다음 날)
