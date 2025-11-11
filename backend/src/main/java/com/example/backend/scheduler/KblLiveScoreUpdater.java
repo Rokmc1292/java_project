@@ -9,6 +9,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,29 @@ public class KblLiveScoreUpdater {
 
     private final MatchRepository matchRepository;
     private final KblCrawlerService crawlerService;
+
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void checkStuckLiveMatchesOnStartup() {
+        log.info("🔍 [KBL] 서버 시작 - LIVE 상태 경기 점검 시작");
+        try {
+            List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+            List<Match> leagueMatches = liveMatches.stream()
+                    .filter(m -> m.getLeague().getLeagueId().equals(10L)).toList();
+            if (leagueMatches.isEmpty()) { log.info("✅ [KBL] LIVE 상태 경기 없음"); return; }
+            log.info("⚠️ [KBL] LIVE 상태 경기 {}개 발견", leagueMatches.size());
+            LocalDateTime now = LocalDateTime.now();
+            List<Match> stuckMatches = leagueMatches.stream()
+                    .filter(m -> m.getMatchDate().plusHours(4).isBefore(now)).toList();
+            if (stuckMatches.isEmpty()) { log.info("✅ [KBL] 모든 LIVE 경기가 정상 범위 내"); return; }
+            log.info("🔄 [KBL] 과거 LIVE 경기 {}개 발견 - FINISHED로 업데이트", stuckMatches.size());
+            for (Match match : stuckMatches) {
+                match.setStatus("FINISHED"); match.setUpdatedAt(LocalDateTime.now()); matchRepository.save(match);
+                log.info("✅ 업데이트: {} {} - {} {}", match.getHomeTeam().getTeamName(),
+                    match.getHomeScore(), match.getAwayScore(), match.getAwayTeam().getTeamName());
+            }
+        } catch (Exception e) { log.error("❌ [KBL] LIVE 경기 점검 실패", e); }
+    }
 
     /**
      * 10초마다 실시간 점수 업데이트
