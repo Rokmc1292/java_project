@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * NBA 전체 시즌 일정 크롤러
- * 매일 새벽 3시 30분에 2025-2026 시즌 전체 일정 크롤링
+ * AdminController API를 통해 수동 실행
  */
 @Component
 @RequiredArgsConstructor
@@ -36,23 +36,6 @@ public class NbaScheduleCrawler {
     private final NbaCrawlerService crawlerService;
     private final EntityManager entityManager;
     private final TeamRepository teamRepository;
-
-    /**
-     * 매일 새벽 3시 30분에 NBA 전체 시즌 일정 크롤링
-     * cron: "초 분 시 일 월 요일"
-     */
-    @Scheduled(cron = "0 30 3 * * *")
-    public void scheduledCrawling() {
-        // 시즌 체크: 10월~12월 또는 1월~6월만 크롤링
-        int currentMonth = LocalDateTime.now().getMonthValue();
-        if (currentMonth >= 7 && currentMonth <= 9) {
-            log.info("⏭️ [스케줄] NBA 시즌 오프 기간(7-9월) - 크롤링 건너뛰기");
-            return;
-        }
-
-        log.info("⏰ [스케줄] NBA 전체 시즌 일정 크롤링 시작 (매일 새벽 3시 30분)");
-        crawlFullSeason();
-    }
 
     /**
      * 전체 시즌 크롤링 실행

@@ -24,7 +24,7 @@ import java.util.List;
 
 /**
  * KBL 전체 시즌 일정 크롤러
- * 매일 새벽 3시 50분에 2024-2025 시즌 전체 일정 크롤링
+ * AdminController API를 통해 수동 실행
  */
 @Component
 @RequiredArgsConstructor
@@ -34,25 +34,6 @@ public class KblScheduleCrawler {
     private final MatchRepository matchRepository;
     private final KblCrawlerService crawlerService;
     private final EntityManager entityManager;
-
-    /**
-    /**
-     * 매일 새벽 3시 50분에 KBL 전체 시즌 일정 크롤링
-     * cron: "초 분 시 일 월 요일"
-     * 비용 절감: 시즌 기간(9월~4월)만 크롤링
-     */
-    @Scheduled(cron = "0 50 3 * * *")
-    public void scheduledCrawling() {
-        // 시즌 체크: 9월~12월 또는 1월~4월만 크롤링
-        int currentMonth = LocalDateTime.now().getMonthValue();
-        if (currentMonth >= 5 && currentMonth <= 8) {
-            log.info("⏭️ [스케줄] KBL 시즌 오프 기간(5-8월) - 크롤링 건너뛰기");
-            return;
-        }
-
-        log.info("⏰ [스케줄] KBL 전체 시즌 일정 크롤링 시작 (매일 새벽 3시 50분)");
-        crawlFullSeason();
-    }
 
     /**
      * 전체 시즌 크롤링 실행
