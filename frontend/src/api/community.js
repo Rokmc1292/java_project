@@ -190,3 +190,16 @@ export const blockUser = async (blockedUsername) => {
 export const unblockUser = async (blockedUsername) => {
   return await apiDelete(`/api/community/users/${blockedUsername}/block`);
 };
+
+/**
+ * 카테고리 목록 조회
+ */
+export const getCategories = async () => {
+    try {
+        const response = await api.get('/api/community/categories');
+        return response.data;
+    } catch (error) {
+        console.error('카테고리 조회 오류:', error);
+        throw error;
+    }
+};
