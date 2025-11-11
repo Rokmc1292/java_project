@@ -56,13 +56,13 @@ public class KblScheduleCrawler {
 
     /**
      * 전체 시즌 크롤링 실행
-     * 2024년 9월 ~ 2025년 4월
+     * 2025년 9월 ~ 2026년 4월
      */
     @Transactional
     public void crawlFullSeason() {
         log.info("=".repeat(60));
-        log.info("KBL 2024-2025 시즌 전체 일정 크롤링 시작");
-        log.info("기간: 2024년 9월 ~ 2025년 4월");
+        log.info("KBL 2025-2026 시즌 전체 일정 크롤링 시작");
+        log.info("기간: 2025년 9월 ~ 2026년 4월");
         log.info("=".repeat(60));
 
         WebDriver driver = null;
@@ -105,21 +105,8 @@ public class KblScheduleCrawler {
                 throw new RuntimeException("페이지 로드 실패: 3번 시도 후에도 실패");
             }
 
-            // 2024년 9월~12월 크롤링
+            // 2025년 9월~12월 크롤링
             for (int month = 9; month <= 12; month++) {
-                try {
-                    List<MatchCrawlDto> monthMatches = crawlMonthSchedule(driver, wait, 2024, month);
-                    allMatches.addAll(monthMatches);
-                    successMonths++;
-                    Thread.sleep(1500);  // 월 간 전환 대기
-                } catch (Exception e) {
-                    log.error("  ❌ {}년 {}월 크롤링 실패 - 다음 달로 계속 진행", 2024, month, e);
-                    failedMonths++;
-                }
-            }
-
-            // 2025년 1월~4월 크롤링
-            for (int month = 1; month <= 4; month++) {
                 try {
                     List<MatchCrawlDto> monthMatches = crawlMonthSchedule(driver, wait, 2025, month);
                     allMatches.addAll(monthMatches);
@@ -127,6 +114,19 @@ public class KblScheduleCrawler {
                     Thread.sleep(1500);  // 월 간 전환 대기
                 } catch (Exception e) {
                     log.error("  ❌ {}년 {}월 크롤링 실패 - 다음 달로 계속 진행", 2025, month, e);
+                    failedMonths++;
+                }
+            }
+
+            // 2026년 1월~4월 크롤링
+            for (int month = 1; month <= 4; month++) {
+                try {
+                    List<MatchCrawlDto> monthMatches = crawlMonthSchedule(driver, wait, 2026, month);
+                    allMatches.addAll(monthMatches);
+                    successMonths++;
+                    Thread.sleep(1500);  // 월 간 전환 대기
+                } catch (Exception e) {
+                    log.error("  ❌ {}년 {}월 크롤링 실패 - 다음 달로 계속 진행", 2026, month, e);
                     failedMonths++;
                 }
             }

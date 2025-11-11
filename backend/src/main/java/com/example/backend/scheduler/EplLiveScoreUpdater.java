@@ -65,47 +65,17 @@ public class EplLiveScoreUpdater {
                 return;
             }
 
-            log.info("🔄 [EPL] 과거 LIVE 경기 {}개 발견 - 크롤링하여 최종 상태 업데이트", stuckMatches.size());
-
-            // 각 경기를 크롤링하여 최종 상태 업데이트
+            log.info("📌 [EPL] 과거 LIVE 경기 {}개 - updateLiveScores()에서 크롤링 예정", stuckMatches.size());
             for (Match match : stuckMatches) {
-                try {
-                    updateStuckMatch(match);
-                } catch (Exception e) {
-                    log.error("❌ [EPL] 경기 업데이트 실패: {} vs {} - {}",
-                            match.getHomeTeam().getTeamName(),
-                            match.getAwayTeam().getTeamName(),
-                            e.getMessage());
-                }
+                log.info("   - {} vs {} ({})",
+                        match.getHomeTeam().getTeamName(),
+                        match.getAwayTeam().getTeamName(),
+                        match.getMatchDate());
             }
-
-            log.info("✅ [EPL] LIVE 상태 경기 점검 완료");
 
         } catch (Exception e) {
             log.error("❌ [EPL] LIVE 상태 경기 점검 실패", e);
         }
-    }
-
-    /**
-     * 멈춰있는 LIVE 경기를 크롤링하여 업데이트
-     */
-    private void updateStuckMatch(Match match) {
-        log.info("🔄 업데이트 중: {} vs {} ({})",
-                match.getHomeTeam().getTeamName(),
-                match.getAwayTeam().getTeamName(),
-                match.getMatchDate());
-
-        // 간단히 FINISHED 상태로 변경
-        // 점수는 이미 마지막으로 업데이트된 점수가 있을 것
-        match.setStatus("FINISHED");
-        match.setUpdatedAt(LocalDateTime.now());
-        matchRepository.save(match);
-
-        log.info("✅ 업데이트 완료: {} {} - {} {} (FINISHED)",
-                match.getHomeTeam().getTeamName(),
-                match.getHomeScore(),
-                match.getAwayScore(),
-                match.getAwayTeam().getTeamName());
     }
 
     /**
@@ -237,9 +207,26 @@ public class EplLiveScoreUpdater {
                     } else {
                         // 매칭 실패 - 웹에서 경기를 찾지 못함
                         notFoundCount++;
-                        log.warn("❌ 웹에서 경기를 찾지 못함: {} vs {} (상태: {}, 점수: {}-{})",
-                                homeTeam, awayTeam, beforeStatus,
-                                match.getHomeScore(), match.getAwayScore());
+
+                        // 경기 시작 시간 + 3시간이 지났으면 자동으로 FINISHED 처리
+                        LocalDateTime matchEndTime = match.getMatchDate().plusHours(3);
+                        LocalDateTime now = LocalDateTime.now();
+
+                        if (matchEndTime.isBefore(now) && "LIVE".equals(beforeStatus)) {
+                            match.setStatus("FINISHED");
+                            match.setUpdatedAt(now);
+                            matchRepository.save(match);
+                            finishedCount++;
+                            log.info("🏁 과거 경기 종료 처리: {} {} - {} {} (웹에서 경기 찾지 못함, 마지막 점수 유지)",
+                                    homeTeam,
+                                    match.getHomeScore() != null ? match.getHomeScore() : 0,
+                                    match.getAwayScore() != null ? match.getAwayScore() : 0,
+                                    awayTeam);
+                        } else {
+                            log.warn("❌ 웹에서 경기를 찾지 못함: {} vs {} (상태: {}, 점수: {}-{})",
+                                    homeTeam, awayTeam, beforeStatus,
+                                    match.getHomeScore(), match.getAwayScore());
+                        }
                     }
 
                 } catch (Exception e) {

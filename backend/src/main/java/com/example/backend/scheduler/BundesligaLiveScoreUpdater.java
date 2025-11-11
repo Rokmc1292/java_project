@@ -182,9 +182,26 @@ public class BundesligaLiveScoreUpdater {
                     } else {
                         // 매칭 실패 - 웹에서 경기를 찾지 못함
                         notFoundCount++;
-                        log.warn("❌ 웹에서 경기를 찾지 못함: {} vs {} (상태: {}, 점수: {}-{})",
-                                homeTeam, awayTeam, beforeStatus,
-                                match.getHomeScore(), match.getAwayScore());
+
+                        // 경기 시작 시간 + 3시간이 지났으면 자동으로 FINISHED 처리
+                        LocalDateTime matchEndTime = match.getMatchDate().plusHours(3);
+                        LocalDateTime now = LocalDateTime.now();
+
+                        if (matchEndTime.isBefore(now) && "LIVE".equals(beforeStatus)) {
+                            match.setStatus("FINISHED");
+                            match.setUpdatedAt(now);
+                            matchRepository.save(match);
+                            finishedCount++;
+                            log.info("🏁 과거 경기 종료 처리: {} {} - {} {} (웹에서 경기 찾지 못함, 마지막 점수 유지)",
+                                    homeTeam,
+                                    match.getHomeScore() != null ? match.getHomeScore() : 0,
+                                    match.getAwayScore() != null ? match.getAwayScore() : 0,
+                                    awayTeam);
+                        } else {
+                            log.warn("❌ 웹에서 경기를 찾지 못함: {} vs {} (상태: {}, 점수: {}-{})",
+                                    homeTeam, awayTeam, beforeStatus,
+                                    match.getHomeScore(), match.getAwayScore());
+                        }
                     }
 
                 } catch (Exception e) {
