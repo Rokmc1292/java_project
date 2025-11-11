@@ -38,9 +38,17 @@ public class EplScheduleCrawler {
     /**
      * 매일 새벽 3시에 EPL 전체 시즌 일정 크롤링
      * cron: "초 분 시 일 월 요일"
+     * 비용 절감: 시즌 기간(8월~5월)만 크롤링
      */
     @Scheduled(cron = "0 0 3 * * *")
     public void scheduledCrawling() {
+        // 시즌 체크: 8월~12월 또는 1월~5월만 크롤링
+        int currentMonth = LocalDateTime.now().getMonthValue();
+        if (currentMonth >= 6 && currentMonth <= 7) {
+            log.info("⏭️ [스케줄] EPL 시즌 오프 기간(6-7월) - 크롤링 건너뛰기");
+            return;
+        }
+
         log.info("⏰ [스케줄] EPL 전체 시즌 일정 크롤링 시작 (매일 새벽 3시)");
         crawlFullSeason();
     }

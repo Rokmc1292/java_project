@@ -78,9 +78,9 @@ public class BundesligaCrawlerService {
 
             WebDriver driver = new ChromeDriver(options);
 
-            // 타임아웃 설정
-            driver.manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(30));
-            driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(5));
+            // 타임아웃 설정 (비용 절감 최적화: 대기 시간 단축)
+            driver.manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(15))  // 30→15초;
+            driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(3))    // 5→3초;
 
             log.info("✅ WebDriver 초기화 성공 (분데스리가)");
             return driver;

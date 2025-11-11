@@ -43,6 +43,13 @@ public class NbaScheduleCrawler {
      */
     @Scheduled(cron = "0 30 3 * * *")
     public void scheduledCrawling() {
+        // 시즌 체크: 10월~12월 또는 1월~6월만 크롤링
+        int currentMonth = LocalDateTime.now().getMonthValue();
+        if (currentMonth >= 7 && currentMonth <= 9) {
+            log.info("⏭️ [스케줄] NBA 시즌 오프 기간(7-9월) - 크롤링 건너뛰기");
+            return;
+        }
+
         log.info("⏰ [스케줄] NBA 전체 시즌 일정 크롤링 시작 (매일 새벽 3시 30분)");
         crawlFullSeason();
     }
