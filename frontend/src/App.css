@@ -1,0 +1,86 @@
+/* App 컴포넌트 전용 스타일 - 네이버 스포츠 스타일 */
+
+.App {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #f7f8fa;
+}
+html, body, #root, .App {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #f7f8fa;
+}
+
+/* 링크 기본 스타일 */
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* 페이지 전환 애니메이션 */
+.page-container {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 404 페이지 스타일 */
+.not-found {
+  text-align: center;
+  margin-top: 100px;
+}
+
+.not-found h1 {
+  font-size: 48px;
+  margin-bottom: 20px;
+}
+
+.not-found p {
+  font-size: 18px;
+  color: #666;
+  margin-bottom: 30px;
+}
+
+/* 마이페이지 임시 스타일 */
+.coming-soon {
+  text-align: center;
+  margin-top: 100px;
+  padding: 40px;
+}
+
+.coming-soon h1 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+.coming-soon p {
+  font-size: 18px;
+  color: #888;
+  margin-bottom: 30px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+  .not-found h1 {
+    font-size: 32px;
+  }
+  
+  .coming-soon h1 {
+    font-size: 28px;
+  }
+}
