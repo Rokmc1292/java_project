@@ -62,16 +62,16 @@ public class CommunityService {
             Page<Post> posts;
 
             if (categoryName == null || categoryName.isEmpty() || categoryName.equals("전체") || categoryName.equals("all")) {
-                // 전체 게시글 조회
-                posts = postRepository.findAllByOrderByCreatedAtDesc(pageable);
+                // 전체 게시글 조회 (블라인드 제외)
+                posts = postRepository.findByIsBlindedFalseOrderByIsNoticeDescCreatedAtDesc(pageable);
             } else {
-                // 특정 카테고리 게시글 조회
+                // 특정 카테고리 게시글 조회 (블라인드 제외)
                 BoardCategory category = boardCategoryRepository.findByCategoryName(categoryName).orElse(null);
                 if (category == null) {
                     // 카테고리가 없으면 빈 페이지 반환
                     return Page.empty(pageable);
                 }
-                posts = postRepository.findByCategoryOrderByCreatedAtDesc(category, pageable);
+                posts = postRepository.findByCategoryAndIsBlindedFalseOrderByIsNoticeDescCreatedAtDesc(category, pageable);
             }
 
             return posts.map(this::convertToDto);
@@ -86,7 +86,8 @@ public class CommunityService {
     @Transactional(readOnly = true)
     public Page<PostDto> getPopularPosts(Pageable pageable) {
         try {
-            Page<Post> posts = postRepository.findByIsPopularTrueOrderByLikeCountDescCreatedAtDesc(pageable);
+            // 블라인드 제외한 인기글 조회
+            Page<Post> posts = postRepository.findByIsPopularTrueAndIsBlindedFalseOrderByLikeCountDescCreatedAtDesc(pageable);
             return posts.map(this::convertToDto);
         } catch (Exception e) {
             log.error("인기글 조회 중 에러 발생", e);
@@ -98,8 +99,8 @@ public class CommunityService {
     public Page<PostDto> getPopularPostsByCategory(String categoryName, Pageable pageable) {
         try {
             if (categoryName == null || categoryName.isEmpty() || categoryName.equals("전체") || categoryName.equals("all")) {
-                // 전체 인기글
-                Page<Post> posts = postRepository.findByIsPopularTrueOrderByLikeCountDescCreatedAtDesc(pageable);
+                // 전체 인기글 (블라인드 제외)
+                Page<Post> posts = postRepository.findByIsPopularTrueAndIsBlindedFalseOrderByLikeCountDescCreatedAtDesc(pageable);
                 return posts.map(this::convertToDto);
             }
 
@@ -108,7 +109,8 @@ public class CommunityService {
                 return Page.empty(pageable);
             }
 
-            Page<Post> posts = postRepository.findByCategoryAndIsPopularTrueOrderByLikeCountDescCreatedAtDesc(category, pageable);
+            // 카테고리별 인기글 (블라인드 제외)
+            Page<Post> posts = postRepository.findByCategoryAndIsPopularTrueAndIsBlindedFalseOrderByLikeCountDescCreatedAtDesc(category, pageable);
             return posts.map(this::convertToDto);
         } catch (Exception e) {
             log.error("카테고리별 인기글 조회 중 에러 발생", e);
@@ -117,11 +119,11 @@ public class CommunityService {
     }
 
     /**
-     * 게시글 검색 (제목, 내용, 작성자)
+     * 게시글 검색 (제목, 내용, 작성자) - 블라인드 제외
      */
     @Transactional(readOnly = true)
     public Page<PostDto> searchPosts(String keyword, Pageable pageable) {
-        return postRepository.searchByKeyword(keyword, pageable)
+        return postRepository.searchByKeywordExcludingBlinded(keyword, pageable)
                 .map(this::convertToDto);
     }
 
