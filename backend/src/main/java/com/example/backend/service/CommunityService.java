@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -658,8 +659,8 @@ public class CommunityService {
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getTopActiveUsers() {
         LocalDateTime monthAgo = LocalDateTime.now().minusMonths(1);
-        List<User> topUsers = userRepository.findTopActiveUsers(monthAgo, PageRequest.of(0, 10));
-
+        Page<User> topUsersPage = userRepository.findTopActiveUsers(monthAgo, PageRequest.of(0, 10));
+        List<User> topUsers = topUsersPage.getContent();
         return topUsers.stream().map(user -> {
             Map<String, Object> userInfo = new HashMap<>();
             userInfo.put("username", user.getUsername());

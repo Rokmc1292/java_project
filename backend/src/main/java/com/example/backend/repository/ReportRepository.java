@@ -21,4 +21,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
     // 전체 신고 목록 조회 (페이징)
     Page<Report> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+    long countByStatus(String status);
+    Page<Report> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
 }

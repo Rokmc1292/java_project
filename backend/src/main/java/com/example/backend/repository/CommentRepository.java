@@ -13,20 +13,30 @@ import java.util.List;
 
 @Repository
 public interface CommentRepository extends JpaRepository<Comment, Long> {
-    // 기존 메서드들...
-    List<Comment> findByPostAndIsDeletedFalseOrderByCreatedAtAsc(Post post);
-    List<Comment> findByPostAndParentCommentIsNullAndIsDeletedFalseOrderByCreatedAtAsc(Post post);
 
-    // 추가 메서드들
+    // 게시글의 모든 댓글 조회 (삭제되지 않은 것만)
+    List<Comment> findByPostAndIsDeletedFalseOrderByCreatedAtAsc(Post post);
+
+    // 게시글의 최상위 댓글만 조회 (대댓글 제외)
+    List<Comment> findByPostAndParentCommentIsNullAndIsDeletedFalseOrderByCreatedAtAsc(Post post);
 
     // 대댓글 조회
     List<Comment> findByParentCommentAndIsDeletedFalseOrderByCreatedAtAsc(Comment parentComment);
 
     // 사용자가 작성한 댓글 조회
     Page<Comment> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+    Page<Comment> findByUser(User user, Pageable pageable);
 
     // 특정 기간 이후 사용자가 작성한 댓글 수
     long countByUserAndCreatedAtAfter(User user, LocalDateTime after);
 
-    Page<Comment> findByUser(User user, Pageable pageable);
+    // 사용자의 전체 댓글 수
+    long countByUser(User user);
+
+    // ========== 관리자 페이지용 추가 메서드 ==========
+
+    /**
+     * 특정 날짜 이후 작성된 댓글 수 (대시보드 통계용)
+     */
+    long countByCreatedAtAfter(LocalDateTime date);
 }
