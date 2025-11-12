@@ -32,6 +32,10 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword% ORDER BY p.createdAt DESC")
     Page<Post> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
+    // 검색 (블라인드 제외)
+    @Query("SELECT p FROM Post p WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    Page<Post> searchByKeywordExcludingBlinded(@Param("keyword") String keyword, Pageable pageable);
+
     // 인기글 (전체)
     Page<Post> findByIsPopularTrueOrderByLikeCountDescCreatedAtDesc(Pageable pageable);
     Page<Post> findByIsPopularTrueAndIsBlindedFalseOrderByLikeCountDescCreatedAtDesc(Pageable pageable);
