@@ -168,6 +168,35 @@ public class AdminPageController {
     }
 
     /**
+     * 관리자 권한 부여/해제
+     * PUT /api/admin/page/users/{userId}/admin
+     */
+    @PutMapping("/users/{userId}/admin")
+    public ResponseEntity<Map<String, Object>> toggleAdminRole(@PathVariable Long userId) {
+        log.info("관리자 권한 변경 - userId: {}", userId);
+
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+            user.setIsAdmin(!user.getIsAdmin());
+            userRepository.save(user);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("isAdmin", user.getIsAdmin());
+            response.put("message", user.getIsAdmin() ? "관리자 권한이 부여되었습니다." : "관리자 권한이 해제되었습니다.");
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error("관리자 권한 변경 실패", e);
+            return ResponseEntity.internalServerError()
+                    .body(Collections.singletonMap("error", e.getMessage()));
+        }
+    }
+
+    /**
      * 신고 목록 조회 (페이징)
      * GET /api/admin/page/reports?page=0&size=20&status=PENDING
      */
