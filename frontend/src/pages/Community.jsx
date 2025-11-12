@@ -7,9 +7,7 @@ import {
   getPopularPosts,
   getPopularPostsByCategory,
   createPost,
-  deletePost,
-  likePost,
-  dislikePost
+  deletePost
 } from '../api/community';
 import { getUserData, isLoggedIn } from '../api/api';
 import '../styles/Community.css';
@@ -36,35 +34,47 @@ function Community() {
 
   const currentUser = getUserData();
 
-  const fetchPosts = async (page = 0) => {
-    setLoading(true);
-    try {
-      let response;
+    const fetchPosts = async (page = 0) => {
+        setLoading(true);
+        try {
+            let response;
 
-      if (activeTab === 'popular') {
-        if (selectedCategory === '전체') {
-          response = await getPopularPosts(page, 20);
-        } else {
-          response = await getPopularPostsByCategory(selectedCategory, page, 20);
-        }
-      } else {
-        if (selectedCategory === '전체') {
-          response = await getPosts(page, 20, searchKeyword);
-        } else {
-          response = await getPostsByCategory(selectedCategory, page, 20);
-        }
-      }
+            if (activeTab === 'popular') {
+                if (selectedCategory === '전체') {
+                    response = await getPopularPosts(page, 20);
+                } else {
+                    response = await getPopularPostsByCategory(selectedCategory, page, 20);
+                }
+            } else {
+                // ⭐ 검색 기능 수정
+                if (selectedCategory === '전체') {
+                    response = await getPosts(page, 20, searchKeyword);
+                } else {
+                    // 카테고리별 검색도 지원
+                    if (searchKeyword) {
+                        // 검색어가 있으면 전체 검색
+                        response = await getPosts(page, 20, searchKeyword);
+                    } else {
+                        // 검색어가 없으면 카테고리별 조회
+                        response = await getPostsByCategory(selectedCategory, page, 20);
+                    }
+                }
+            }
 
-      setPosts(response.content || []);
-      setTotalPages(response.totalPages || 0);
-      setCurrentPage(page);
-    } catch (error) {
-      console.error('게시글 조회 오류:', error);
-      alert('게시글을 불러오는데 실패했습니다.');
-    } finally {
-      setLoading(false);
-    }
-  };
+            console.log('API 응답:', response);
+            console.log('totalPages:', response.totalPages);
+            console.log('content 개수:', response.content?.length);
+
+            setPosts(response.content || []);
+            setTotalPages(response.totalPages || 0);
+            setCurrentPage(page);
+        } catch (error) {
+            console.error('게시글 조회 오류:', error);
+            alert('게시글을 불러오는데 실패했습니다.');
+        } finally {
+            setLoading(false);
+        }
+    };
 
   useEffect(() => {
     fetchPosts(0);
@@ -102,11 +112,27 @@ function Community() {
     setNewPost({ title: '', content: '', categoryName: '축구' });
     setSelectedCategory(newPost.categoryName);
     setActiveTab('all');
+    fetchPosts(0);
   } catch (error) {
     console.error('게시글 작성 오류:', error);
-    alert(error.message || '게시글 작성에 실패했습니다.');
+      // ⭐ validation 에러 메시지 처리
+      if (error.response && error.response.data) {
+          const errors = error.response.data;
+
+          // 에러 객체에서 메시지들을 추출
+          if (typeof errors === 'object' && !errors.message) {
+              // validation 에러 형태: { title: "제목은 최대 200자...", content: "..." }
+              const errorMessages = Object.values(errors).join('\n');
+              alert(errorMessages);
+          } else {
+              // 일반 에러 형태: { message: "..." }
+              alert(errors.message || '게시글 작성에 실패했습니다.');
+          }
+      } else {
+          alert(error.message || '게시글 작성에 실패했습니다.');
+      }
   }
-};
+  };
 
   const handleDeletePost = async (postId) => {
     if (!window.confirm('정말 삭제하시겠습니까?')) {
@@ -127,12 +153,16 @@ function Community() {
     navigate(`/community/post/${postId}`);
   };
 
-  const handlePageChange = (newPage) => {
-    if (newPage >= 0 && newPage < totalPages) {
-      fetchPosts(newPage);
-    }
-  };
-
+    const handlePageChange = (newPage) => {
+        // 페이지 범위를 자동으로 제한
+        if (newPage < 0) {
+            newPage = 0;
+        }
+        if (newPage >= totalPages) {
+            newPage = totalPages - 1;
+        }
+        fetchPosts(newPage);
+    };
   return (
     <div>
       <Navbar />
@@ -205,17 +235,19 @@ function Community() {
             {posts.map((post) => (
               <div key={post.postId} className="post-card" onClick={() => goToPostDetail(post.postId)}>
                 <div className="post-card-header">
-                  <div className="post-card-content">
-                    <span className="badge badge-category">{post.categoryName}</span>
-                    {post.isNotice && <span className="badge badge-notice">공지</span>}
-                    {post.isPopular && <span className="badge badge-popular">인기</span>}
-                    
-                    <span className="post-title">{post.title}</span>
-                    
-                    {post.commentCount > 0 && (
-                      <span className="comment-count">[{post.commentCount}]</span>
-                    )}
-                  </div>
+                    <div className="post-card-content">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
+                            <span className="badge badge-category">{post.categoryName}</span>
+                            {post.isNotice && <span className="badge badge-notice">공지</span>}
+                            {post.isPopular && <span className="badge badge-popular">인기</span>}
+
+                            <span className="post-title" style={{ marginTop: '9px' }}>{post.title}</span>
+
+                            {post.commentCount > 0 && (
+                                <span className="comment-count">[{post.commentCount}]</span>
+                            )}
+                        </div>
+                    </div>
 
                   {currentUser && currentUser.username === post.username && (
                     <button
@@ -244,30 +276,71 @@ function Community() {
           </div>
         )}
 
-        {/* 페이지네이션 */}
-        {totalPages > 1 && (
+          {/* ⭐ 페이지네이션 - 항상 표시 */}
           <div className="pagination">
-            <button
-              className="pagination-button"
-              onClick={() => handlePageChange(currentPage - 1)}
-              disabled={currentPage === 0}
-            >
-              이전
-            </button>
-            
-            <span className="pagination-info">
-              {currentPage + 1} / {totalPages}
-            </span>
-            
-            <button
-              className="pagination-button"
-              onClick={() => handlePageChange(currentPage + 1)}
-              disabled={currentPage === totalPages - 1}
-            >
-              다음
-            </button>
+              {/* 10페이지 이전 */}
+              <button
+                  className="pagination-button"
+                  onClick={() => handlePageChange(currentPage - 10)}
+                  disabled={currentPage < 10}
+                  title="10페이지 이전"
+              >
+                  &lt;&lt;
+              </button>
+
+              {/* 1페이지 이전 */}
+              <button
+                  className="pagination-button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 0}
+                  title="이전"
+              >
+                  Prev  {/* ⭐ &lt; 대신 Prev */}
+              </button>
+
+              {/* 페이지 번호 버튼들 (1~10) */}
+              <div style={{ display: 'flex', gap: '5px' }}>
+                  {(() => {
+                      const startPage = Math.floor(currentPage / 10) * 10;
+                      const endPage = Math.min(startPage + 10, totalPages);
+                      const pages = [];
+
+                      for (let i = startPage; i < endPage; i++) {
+                          pages.push(
+                              <button
+                                  key={i}
+                                  className={`pagination-number ${currentPage === i ? 'active' : ''}`}
+                                  onClick={() => handlePageChange(i)}
+                              >
+                                  {i + 1}
+                              </button>
+                          );
+                      }
+
+                      return pages;
+                  })()}
+              </div>
+
+              {/* 1페이지 다음 */}
+              <button
+                  className="pagination-button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages - 1 || totalPages === 0}
+                  title="다음"
+              >
+                  Next  {/* ⭐ &gt; 대신 Next */}
+              </button>
+
+              {/* 10페이지 다음 */}
+              <button
+                  className="pagination-button"
+                  onClick={() => handlePageChange(currentPage + 10)}
+                  disabled={currentPage >= totalPages - 10 || totalPages === 0}
+                  title="10페이지 다음"
+              >
+                  &gt;&gt;
+              </button>
           </div>
-        )}
 
         {/* 글쓰기 모달 */}
         {showWriteModal && (

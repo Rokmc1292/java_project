@@ -18,6 +18,9 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     List<Comment> findByPostAndParentCommentIsNullAndIsDeletedFalseOrderByCreatedAtAsc(Post post);
 
     // 추가 메서드들
+    // ⭐ 새로 추가: 삭제된 댓글도 포함
+    List<Comment> findByPostAndParentCommentIsNullOrderByCreatedAtAsc(Post post);
+    List<Comment> findByParentCommentOrderByCreatedAtAsc(Comment parentComment);
 
     // 대댓글 조회
     List<Comment> findByParentCommentAndIsDeletedFalseOrderByCreatedAtAsc(Comment parentComment);

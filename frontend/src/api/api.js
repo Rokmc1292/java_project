@@ -3,7 +3,7 @@
  * - 백엔드 API 호출 공통 함수
  * - 세션 기반 인증 (쿠키 자동 전송)
  * - 에러 처리
- * 
+ *
  * 파일 위치: frontend/src/api/api.js
  */
 
@@ -17,76 +17,79 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
  * @returns {Promise} - API 응답 데이터
  */
 export const apiRequest = async (endpoint, options = {}) => {
-  // 기본 헤더 설정
-  const headers = {
-    'Content-Type': 'application/json',
-    ...options.headers,
-  };
+    // 기본 헤더 설정
+    const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers,
+    };
 
-  // API 요청 실행 (credentials: 'include'로 쿠키 자동 전송)
-  try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-      credentials: 'include', // ⭐ 세션 쿠키 자동 전송
-    });
+    // API 요청 실행 (credentials: 'include'로 쿠키 자동 전송)
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers,
+            credentials: 'include', // ⭐ 세션 쿠키 자동 전송
+        });
 
-    // 응답이 JSON이 아닌 경우 처리
-    const contentType = response.headers.get('content-type');
-    if (!contentType || !contentType.includes('application/json')) {
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: 서버 오류가 발생했습니다.`);
-      }
-      return null;
+        // 응답이 JSON이 아닌 경우 처리
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: 서버 오류가 발생했습니다.`);
+            }
+            return null;
+        }
+
+        // JSON 파싱
+        const data = await response.json();
+
+        // HTTP 에러 처리
+        if (!response.ok) {
+            // ⭐ validation 에러를 포함한 에러 객체 생성
+            const error = new Error(data.message || `HTTP ${response.status} 오류`);
+            error.response = { data, status: response.status }; // 에러 응답 데이터 추가
+            throw error;
+        }
+
+        return data;
+    } catch (error) {
+        console.error('API 요청 오류:', error);
+        throw error;
     }
-
-    // JSON 파싱
-    const data = await response.json();
-
-    // HTTP 에러 처리
-    if (!response.ok) {
-      throw new Error(data.message || `HTTP ${response.status} 오류`);
-    }
-
-    return data;
-  } catch (error) {
-    console.error('API 요청 오류:', error);
-    throw error;
-  }
 };
 
 /**
  * GET 요청
  */
 export const apiGet = (endpoint) => {
-  return apiRequest(endpoint, { method: 'GET' });
+    return apiRequest(endpoint, { method: 'GET' });
 };
 
 /**
  * POST 요청
  */
 export const apiPost = (endpoint, data) => {
-  return apiRequest(endpoint, {
-    method: 'POST',
-    body: JSON.stringify(data),
-  });
+    return apiRequest(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
 };
 
 /**
  * PUT 요청
  */
 export const apiPut = (endpoint, data) => {
-  return apiRequest(endpoint, {
-    method: 'PUT',
-    body: JSON.stringify(data),
-  });
+    return apiRequest(endpoint, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
 };
 
 /**
  * DELETE 요청
  */
 export const apiDelete = (endpoint) => {
-  return apiRequest(endpoint, { method: 'DELETE' });
+    return apiRequest(endpoint, { method: 'DELETE' });
 };
 
 // ========== 사용자 관리 함수 (세션 기반) ==========
@@ -95,34 +98,34 @@ export const apiDelete = (endpoint) => {
  * 로컬 스토리지에 사용자 정보 저장
  */
 export const saveUserData = (userData) => {
-  localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('user', JSON.stringify(userData));
 };
 
 /**
  * 로컬 스토리지에서 사용자 정보 가져오기
  */
 export const getUserData = () => {
-  const user = localStorage.getItem('user');
-  if (user) {
-    try {
-      return JSON.parse(user);
-    } catch (e) {
-      return null;
+    const user = localStorage.getItem('user');
+    if (user) {
+        try {
+            return JSON.parse(user);
+        } catch (e) {
+            return null;
+        }
     }
-  }
-  return null;
+    return null;
 };
 
 /**
  * 로컬 스토리지에서 사용자 정보 삭제 (로그아웃)
  */
 export const clearUserData = () => {
-  localStorage.removeItem('user');
+    localStorage.removeItem('user');
 };
 
 /**
  * 로그인 여부 확인
  */
 export const isLoggedIn = () => {
-  return getUserData() !== null;
+    return getUserData() !== null;
 };

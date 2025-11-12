@@ -5,6 +5,7 @@ import com.example.backend.entity.BoardCategory;
 import com.example.backend.repository.BoardCategoryRepository;
 import com.example.backend.service.CommunityService;
 import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -52,6 +53,7 @@ public class CommunityController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String categoryName,
             @RequestParam(required = false, defaultValue = "all") String type,
+            @RequestParam(required = false) String keyword,  // ⭐ 이 줄 추가
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
@@ -67,8 +69,10 @@ public class CommunityController {
 
         Page<PostDto> posts;
 
-        // type에 따라 분기
-        if ("popular".equals(type) || "인기글".equals(type)) {
+        // ⭐ 검색어가 있으면 검색 API 호출
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            posts = communityService.searchPosts(keyword, pageable);
+        } else if ("popular".equals(type) || "인기글".equals(type)) {
             // 인기글 조회
             posts = communityService.getPopularPostsByCategory(categoryName, pageable);
         } else {
@@ -80,8 +84,8 @@ public class CommunityController {
     }
 
     @GetMapping("/posts/{postId}")
-    public ResponseEntity<PostDto> getPost(@PathVariable Long postId) {
-        PostDto post = communityService.getPost(postId);
+    public ResponseEntity<PostDto> getPost(@PathVariable Long postId, HttpSession session) {
+        PostDto post = communityService.getPost(postId,session);
         return ResponseEntity.ok(post);
     }
 
@@ -98,7 +102,7 @@ public class CommunityController {
 
     @PostMapping("/posts")
     public ResponseEntity<PostDto> createPost(
-            @RequestBody PostRequest request,
+            @Valid @RequestBody PostRequest request,  // ⭐ @Valid 추가
             HttpSession session) {
         String username = getUsernameFromSession(session);
 
@@ -119,7 +123,7 @@ public class CommunityController {
     @PutMapping("/posts/{postId}")
     public ResponseEntity<PostDto> updatePost(
             @PathVariable Long postId,
-            @RequestBody PostRequest request,
+            @Valid @RequestBody PostRequest request,  // ⭐ @Valid 추가
             HttpSession session) {
         String username = getUsernameFromSession(session);
         PostDto post = communityService.updatePost(postId, username, request.getTitle(), request.getContent());
@@ -154,15 +158,19 @@ public class CommunityController {
     }
 
     @GetMapping("/posts/{postId}/comments")
-    public ResponseEntity<List<CommentDto>> getComments(@PathVariable Long postId) {
-        List<CommentDto> comments = communityService.getComments(postId);
-        return ResponseEntity.ok(comments);
+    public ResponseEntity<?> getComments(
+            @PathVariable Long postId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "30") int size
+    ) {
+        Map<String, Object> result = communityService.getCommentsPaginated(postId, page, size);
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/posts/{postId}/comments")
     public ResponseEntity<CommentDto> createComment(
             @PathVariable Long postId,
-            @RequestBody CommentRequest request,
+            @Valid @RequestBody CommentRequest request,
             HttpSession session) {
         String username = getUsernameFromSession(session);
         CommentDto comment = communityService.createComment(postId, username, request.getContent(), request.getParentCommentId());
@@ -172,7 +180,7 @@ public class CommunityController {
     @PutMapping("/comments/{commentId}")
     public ResponseEntity<CommentDto> updateComment(
             @PathVariable Long commentId,
-            @RequestBody CommentRequest request,
+            @Valid @RequestBody CommentRequest request,
             HttpSession session) {
         String username = getUsernameFromSession(session);
         CommentDto comment = communityService.updateComment(commentId, username, request.getContent());
