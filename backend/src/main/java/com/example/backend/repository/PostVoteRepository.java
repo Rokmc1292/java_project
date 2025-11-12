@@ -18,4 +18,6 @@ public interface PostVoteRepository extends JpaRepository<PostVote, Long> {
 
     // 게시글의 전체 투표 수 조회
     long countByPost(Post post);
+
+    void deleteByPost(Post post);  // ⭐ 이 줄 추가
 }

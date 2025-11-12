@@ -26,4 +26,5 @@ public class CommentDto {
     private LocalDateTime createdAt;  // 작성일
     private LocalDateTime updatedAt;  // 수정일
     private List<CommentDto> replies; // 대댓글 목록
+    private Boolean isBest;  // ⭐ 추가
 }

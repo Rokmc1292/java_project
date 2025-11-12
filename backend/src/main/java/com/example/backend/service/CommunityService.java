@@ -12,6 +12,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import jakarta.servlet.http.HttpSession;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -131,7 +132,7 @@ public class CommunityService {
      * 게시글 상세 조회 (조회수 증가)
      */
     @Transactional
-    public PostDto getPost(Long postId) {
+    public PostDto getPost(Long postId, HttpSession session) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
 
@@ -140,9 +141,17 @@ public class CommunityService {
             throw new RuntimeException("블라인드 처리된 게시글입니다.");
         }
 
-        // 조회수 증가
-        post.setViewCount(post.getViewCount() + 1);
-        postRepository.save(post);
+        // 조회수 증가 (중복 방지 로직)
+        String viewKey = "viewed_post_" + postId;
+        Long lastViewTime = (Long) session.getAttribute(viewKey);
+        long currentTime = System.currentTimeMillis();
+
+        // 5분(300,000ms) 이내에 같은 게시글을 조회한 적이 없으면 조회수 증가
+        if (lastViewTime == null || (currentTime - lastViewTime) > 300000) {
+            post.setViewCount(post.getViewCount() + 1);
+            postRepository.save(post);
+            session.setAttribute(viewKey, currentTime);
+        }
 
         return convertToDto(post);
     }
@@ -211,6 +220,33 @@ public class CommunityService {
             throw new IllegalArgumentException("본인이 작성한 게시글만 삭제할 수 있습니다.");
         }
 
+        // ⭐ 게시글에 달린 모든 댓글 먼저 삭제
+        List<Comment> comments = commentRepository.findByPostAndParentCommentIsNullOrderByCreatedAtAsc(post);
+
+        // 대댓글 먼저 삭제
+        for (Comment comment : comments) {
+            List<Comment> replies = commentRepository.findByParentCommentOrderByCreatedAtAsc(comment);
+
+            // ⭐ 대댓글의 투표 먼저 삭제
+            for (Comment reply : replies) {
+                commentVoteRepository.deleteByComment(reply);
+            }
+            commentRepository.deleteAll(replies);
+
+            // ⭐ 부모 댓글의 투표 삭제
+            commentVoteRepository.deleteByComment(comment);
+        }
+
+        // 그 다음 부모 댓글 삭제
+        commentRepository.deleteAll(comments);
+
+        // ⭐ 게시글 관련 추천/비추천 데이터 삭제
+        postVoteRepository.deleteByPost(post);
+
+        // ⭐ 게시글 스크랩 데이터 삭제
+        postScrapRepository.deleteByPost(post);
+
+        // 마지막으로 게시글 삭제
         postRepository.delete(post);
     }
 
@@ -280,6 +316,9 @@ public class CommunityService {
 
         // 비추천수 증가
         post.setDislikeCount(post.getDislikeCount() + 1);
+
+        checkAndUpdatePopularStatus(post);
+
         postRepository.save(post);
     }
 
@@ -316,7 +355,8 @@ public class CommunityService {
      * 추천수가 기준 이상이면 인기글로 설정
      */
     private void checkAndUpdatePopularStatus(Post post) {
-        if (post.getLikeCount() >= POPULAR_POST_THRESHOLD) {
+        int netLikes = post.getLikeCount() - post.getDislikeCount();  // 순수 추천 수
+        if (netLikes >= POPULAR_POST_THRESHOLD) {
             post.setIsPopular(true);
         } else {
             post.setIsPopular(false);
@@ -333,12 +373,143 @@ public class CommunityService {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
 
-        // 최상위 댓글만 조회 (대댓글은 DTO 변환 시 포함)
-        List<Comment> comments = commentRepository.findByPostAndParentCommentIsNullAndIsDeletedFalseOrderByCreatedAtAsc(post);
+        // 삭제된 댓글도 포함하여 조회
+        List<Comment> comments = commentRepository.findByPostAndParentCommentIsNullOrderByCreatedAtAsc(post);
 
-        return comments.stream()
+        List<CommentDto> commentDtos = comments.stream()
                 .map(this::convertCommentToDto)
                 .collect(Collectors.toList());
+
+        // 모든 댓글에 대해 isBest 설정 (댓글과 대댓글 모두)
+        for (CommentDto comment : commentDtos) {
+            // 부모 댓글의 isBest 설정
+            int commentNetLikes = comment.getLikeCount() - comment.getDislikeCount();
+            if (!comment.getIsDeleted() && commentNetLikes >= 10) {
+                comment.setIsBest(true);
+            } else {
+                comment.setIsBest(false);
+            }
+
+            // 대댓글들의 isBest 설정
+            if (comment.getReplies() != null) {
+                for (CommentDto reply : comment.getReplies()) {
+                    int replyNetLikes = reply.getLikeCount() - reply.getDislikeCount();
+                    if (!reply.getIsDeleted() && replyNetLikes >= 10) {
+                        reply.setIsBest(true);
+                    } else {
+                        reply.setIsBest(false);
+                    }
+                }
+            }
+        }
+
+        return commentDtos;
+    }
+
+    /**
+     * 게시글의 댓글 목록 조회 (페이지네이션)
+     */
+    @Transactional(readOnly = true)
+    public Map<String, Object> getCommentsPaginated(Long postId, int page, int size) {
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new RuntimeException("게시글을 찾을 수 없습니다."));
+
+        // 전체 댓글 조회
+        List<Comment> allComments = commentRepository.findByPostAndParentCommentIsNullOrderByCreatedAtAsc(post);
+
+        List<CommentDto> allCommentDtos = allComments.stream()
+                .map(this::convertCommentToDto)
+                .collect(Collectors.toList());
+
+        // ⭐ 베스트 댓글 수집 (페이지와 상관없이)
+        List<CommentDto> bestComments = new ArrayList<>();
+
+        // 모든 댓글에 대해 isBest 설정 및 베스트 댓글 수집
+        for (CommentDto comment : allCommentDtos) {
+            // 부모 댓글의 isBest 설정
+            int commentNetLikes = comment.getLikeCount() - comment.getDislikeCount();
+            if (!comment.getIsDeleted() && commentNetLikes >= 10) {  // 1 → 10, 순수 추천 수 계산
+                comment.setIsBest(true);
+                bestComments.add(comment);
+            } else {
+                comment.setIsBest(false);
+            }
+
+            // 대댓글의 isBest 설정
+            if (comment.getReplies() != null) {
+                for (CommentDto reply : comment.getReplies()) {
+                    int replyNetLikes = reply.getLikeCount() - reply.getDislikeCount();
+                    if (!reply.getIsDeleted() && replyNetLikes >= 10) {  // 1 → 10, 순수 추천 수 계산
+                        reply.setIsBest(true);
+                        // ⭐ 대댓글도 베스트 댓글에 추가
+                        CommentDto bestReply = new CommentDto();
+                        bestReply.setCommentId(reply.getCommentId());
+                        bestReply.setPostId(reply.getPostId());
+                        bestReply.setUsername(reply.getUsername());
+                        bestReply.setNickname(reply.getNickname());
+                        bestReply.setContent(reply.getContent());
+                        bestReply.setLikeCount(reply.getLikeCount());
+                        bestReply.setDislikeCount(reply.getDislikeCount());
+                        bestReply.setIsDeleted(reply.getIsDeleted());
+                        bestReply.setCreatedAt(reply.getCreatedAt());
+                        bestReply.setUpdatedAt(reply.getUpdatedAt());
+                        bestReply.setIsBest(true);
+                        bestComments.add(bestReply);
+                    } else {
+                        reply.setIsBest(false);
+                    }
+                }
+            }
+        }
+
+        // ⭐ 베스트 댓글 추천순 정렬 후 상위 5개
+        bestComments.sort((c1, c2) -> {
+            int net1 = c1.getLikeCount() - c1.getDislikeCount();
+            int net2 = c2.getLikeCount() - c2.getDislikeCount();
+            return Integer.compare(net2, net1);
+        });
+        List<CommentDto> topBestComments = bestComments.stream()
+                .limit(5)
+                .collect(Collectors.toList());
+
+        // ⭐ 총 댓글 개수 계산 (대댓글 포함, 삭제된 댓글 제외)
+        int totalCommentsCount = 0;
+        for (CommentDto comment : allCommentDtos) {
+            if (!comment.getIsDeleted()) {
+                totalCommentsCount++;
+            }
+            if (comment.getReplies() != null) {
+                for (CommentDto reply : comment.getReplies()) {
+                    if (!reply.getIsDeleted()) {
+                        totalCommentsCount++;
+                    }
+                }
+            }
+        }
+
+        // 페이지네이션 적용
+        int totalComments = allCommentDtos.size();
+        int totalPages = (int) Math.ceil((double) totalComments / size);
+        int fromIndex = page * size;
+        int toIndex = Math.min(fromIndex + size, totalComments);
+
+        List<CommentDto> pagedComments;
+        if (fromIndex < totalComments) {
+            pagedComments = allCommentDtos.subList(fromIndex, toIndex);
+        } else {
+            pagedComments = new ArrayList<>();
+        }
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("comments", pagedComments);
+        result.put("bestComments", topBestComments);
+        result.put("currentPage", page);
+        result.put("totalPages", totalPages);
+        result.put("totalComments", totalCommentsCount);
+        result.put("hasNext", page < totalPages - 1);
+        result.put("hasPrevious", page > 0);
+
+        return result;
     }
 
     /**
@@ -410,11 +581,6 @@ public class CommunityService {
         if (!comment.getUser().getUsername().equals(username)) {
             throw new IllegalArgumentException("본인이 작성한 댓글만 삭제할 수 있습니다.");
         }
-
-        // 댓글 수 감소
-        Post post = comment.getPost();
-        post.setCommentCount(post.getCommentCount() - 1);
-        postRepository.save(post);
 
         // 소프트 삭제
         comment.setIsDeleted(true);
@@ -768,7 +934,10 @@ public class CommunityService {
         dto.setViewCount(post.getViewCount());
         dto.setLikeCount(post.getLikeCount());
         dto.setDislikeCount(post.getDislikeCount());
-        dto.setCommentCount(post.getCommentCount());
+
+        // ⭐ 실제 댓글 개수 계산 (대댓글 포함, 삭제된 댓글 제외)
+        int actualCommentCount = calculateActualCommentCount(post);
+        dto.setCommentCount(actualCommentCount);
         dto.setIsNotice(post.getIsNotice());
         dto.setIsPopular(post.getIsPopular());
         dto.setIsBest(post.getIsBest());
@@ -776,6 +945,30 @@ public class CommunityService {
         dto.setUpdatedAt(post.getUpdatedAt());
 
         return dto;
+    }
+    /**
+     * 실제 댓글 개수 계산 (대댓글 포함, 삭제된 댓글 제외)
+     */
+    private int calculateActualCommentCount(Post post) {
+        List<Comment> allComments = commentRepository.findByPostAndParentCommentIsNullOrderByCreatedAtAsc(post);
+
+        int count = 0;
+        for (Comment comment : allComments) {
+            // 부모 댓글이 삭제되지 않았으면 카운트
+            if (!comment.getIsDeleted()) {
+                count++;
+            }
+
+            // 대댓글 카운트
+            List<Comment> replies = commentRepository.findByParentCommentOrderByCreatedAtAsc(comment);
+            for (Comment reply : replies) {
+                if (!reply.getIsDeleted()) {
+                    count++;
+                }
+            }
+        }
+
+        return count;
     }
 
     /**
@@ -794,9 +987,9 @@ public class CommunityService {
         dto.setCreatedAt(comment.getCreatedAt());
         dto.setUpdatedAt(comment.getUpdatedAt());
 
-        // 대댓글 조회 및 변환
+        // ⭐ 대댓글 조회 및 변환 (삭제된 대댓글도 포함)
         if (comment.getParentComment() == null) {
-            List<Comment> replies = commentRepository.findByParentCommentAndIsDeletedFalseOrderByCreatedAtAsc(comment);
+            List<Comment> replies = commentRepository.findByParentCommentOrderByCreatedAtAsc(comment);
             dto.setReplies(replies.stream()
                     .map(this::convertCommentToDto)
                     .collect(Collectors.toList()));

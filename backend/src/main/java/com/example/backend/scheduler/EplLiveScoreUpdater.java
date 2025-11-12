@@ -21,7 +21,7 @@ import java.util.List;
 
 /**
  * EPL 실시간 점수 업데이터
- * 30초마다 오늘의 SCHEDULED/LIVE 경기를 크롤링하여 상태와 점수 업데이트
+ * 30초마다 LIVE 상태 경기의 점수를 크롤링하여 업데이트
  */
 @Component
 @RequiredArgsConstructor
@@ -172,36 +172,27 @@ public class EplLiveScoreUpdater {
 
             int updatedCount = 0;
             int finishedCount = 0;
-            int liveStartedCount = 0;
-            int notFoundCount = 0;
 
             for (Match match : eplLiveMatches) {
                 try {
-                    String beforeStatus = match.getStatus();
-                    String homeTeam = match.getHomeTeam().getTeamName();
-                    String awayTeam = match.getAwayTeam().getTeamName();
-
                     // 웹에서 해당 경기 찾기
-                    WebElement matchElement = findMatchElement(matchElements, match);
+                    WebElement matchElement = findMatchElement(matchElements, liveMatch);
 
                     if (matchElement != null) {
                         // 점수 및 상태 업데이트
-                        boolean updated = updateMatchScore(matchElement, match);
+                        boolean updated = updateMatchScore(matchElement, liveMatch);
 
                         if (updated) {
                             updatedCount++;
 
-                            // SCHEDULED -> LIVE 전환 확인
-                            if ("SCHEDULED".equals(beforeStatus) && "LIVE".equals(match.getStatus())) {
-                                liveStartedCount++;
-                                log.info("🟢 경기 시작: {} vs {}", homeTeam, awayTeam);
-                            }
-
                             // 경기가 종료되었는지 확인
-                            if ("FINISHED".equals(match.getStatus())) {
+                            if ("FINISHED".equals(liveMatch.getStatus())) {
                                 finishedCount++;
-                                log.info("🏁 경기 종료: {} {} - {} {}", homeTeam,
-                                        match.getHomeScore(), match.getAwayScore(), awayTeam);
+                                log.info("🏁 경기 종료: {} {} - {} {}",
+                                        liveMatch.getHomeTeam().getTeamName(),
+                                        liveMatch.getHomeScore(),
+                                        liveMatch.getAwayScore(),
+                                        liveMatch.getAwayTeam().getTeamName());
                             }
                         }
                     } else {
@@ -230,15 +221,12 @@ public class EplLiveScoreUpdater {
                     }
 
                 } catch (Exception e) {
-                    log.warn("⚠️ 경기 업데이트 실패: {} vs {}",
-                            match.getHomeTeam().getTeamName(),
-                            match.getAwayTeam().getTeamName(), e);
+                    log.warn("⚠️ 경기 업데이트 실패: {}", liveMatch.getMatchId(), e);
                 }
             }
 
-            if (updatedCount > 0 || notFoundCount > 0) {
-                log.info("✅ [실시간 업데이트] 업데이트: {}개, 시작: {}개, 종료: {}개, 미발견: {}개",
-                        updatedCount, liveStartedCount, finishedCount, notFoundCount);
+            if (updatedCount > 0) {
+                log.info("✅ [실시간 업데이트] {}개 경기 업데이트 완료 (종료: {}개)", updatedCount, finishedCount);
             }
 
         } catch (Exception e) {
@@ -263,8 +251,6 @@ public class EplLiveScoreUpdater {
         String homeTeamName = dbMatch.getHomeTeam().getTeamName();
         String awayTeamName = dbMatch.getAwayTeam().getTeamName();
 
-        log.debug("🔍 매칭 시도: DB[{} vs {}]", homeTeamName, awayTeamName);
-
         for (WebElement matchElement : matchElements) {
             try {
                 List<WebElement> teamItems = matchElement.findElements(By.cssSelector(".MatchBoxHeadToHeadArea_team_item__9ZknX"));
@@ -273,11 +259,8 @@ public class EplLiveScoreUpdater {
                     String webHomeTeam = teamItems.get(0).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
                     String webAwayTeam = teamItems.get(1).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
 
-                    log.debug("   웹[{} vs {}]", webHomeTeam, webAwayTeam);
-
                     // 팀 이름이 일치하면 해당 경기
                     if (homeTeamName.equals(webHomeTeam) && awayTeamName.equals(webAwayTeam)) {
-                        log.debug("   ✅ 매칭 성공!");
                         return matchElement;
                     }
                 }
@@ -287,7 +270,6 @@ public class EplLiveScoreUpdater {
             }
         }
 
-        log.debug("   ❌ 매칭 실패: 웹에서 해당 경기를 찾지 못함");
         return null;
     }
 
@@ -301,76 +283,64 @@ public class EplLiveScoreUpdater {
             String statusText = matchElement.findElement(By.cssSelector(".MatchBox_status__xU6\\+d")).getText().strip();
             String newStatus = crawlerService.convertStatus(statusText);
 
-            // ⚠️ 중요: FINISHED 경기는 상태를 변경하지 않음 (보호)
-            String currentStatus = match.getStatus();
-            if ("FINISHED".equals(currentStatus) && !"FINISHED".equals(newStatus)) {
-                // FINISHED 경기를 다른 상태로 변경하려는 시도 차단
-                return false;
-            }
-
             // 점수 추출
             List<WebElement> scores = matchElement.findElements(By.cssSelector(".MatchBoxHeadToHeadArea_score__TChmp"));
 
-            Integer newHomeScore = null;
-            Integer newAwayScore = null;
-
-            // 점수가 있으면 파싱 (LIVE 또는 FINISHED 경기)
             if (scores.size() >= 2) {
                 try {
                     String homeScoreText = scores.get(0).getText().trim();
                     String awayScoreText = scores.get(1).getText().trim();
 
-                    if (!homeScoreText.isEmpty() && !awayScoreText.isEmpty()) {
-                        newHomeScore = Integer.parseInt(homeScoreText);
-                        newAwayScore = Integer.parseInt(awayScoreText);
+                    if (homeScoreText.isEmpty() || awayScoreText.isEmpty()) {
+                        log.warn("⚠️ 점수 텍스트가 비어있음");
+                        return false;
                     }
+
+                    Integer newHomeScore = Integer.parseInt(homeScoreText);
+                    Integer newAwayScore = Integer.parseInt(awayScoreText);
+
+                    // 점수나 상태가 변경되었는지 확인
+                    Integer currentHomeScore = match.getHomeScore();
+                    Integer currentAwayScore = match.getAwayScore();
+
+                    boolean scoreChanged = (currentHomeScore == null || !currentHomeScore.equals(newHomeScore))
+                            || (currentAwayScore == null || !currentAwayScore.equals(newAwayScore));
+                    boolean statusChanged = !newStatus.equals(match.getStatus());
+
+                    // ⚠️ 중요: FINISHED 경기는 상태를 변경하지 않음 (보호)
+                    String currentStatus = match.getStatus();
+
+                    if ("FINISHED".equals(currentStatus) && !"FINISHED".equals(newStatus)) {
+                        // FINISHED 경기를 다른 상태로 변경하려는 시도 차단
+                        log.warn("⚠️ FINISHED 경기 보호: {} vs {} (크롤링 상태: {} → 무시)",
+                                match.getHomeTeam().getTeamName(),
+                                match.getAwayTeam().getTeamName(),
+                                newStatus);
+                        return false;
+                    }
+
+                    if (scoreChanged || statusChanged) {
+                        // 점수 및 상태 업데이트
+                        match.setHomeScore(newHomeScore);
+                        match.setAwayScore(newAwayScore);
+                        match.setStatus(newStatus);
+                        match.setUpdatedAt(LocalDateTime.now());
+
+                        matchRepository.save(match);
+
+                        log.info("🔄 점수 업데이트: {} {} - {} {} (상태: {})",
+                                match.getHomeTeam().getTeamName(),
+                                newHomeScore,
+                                newAwayScore,
+                                match.getAwayTeam().getTeamName(),
+                                newStatus);
+
+                        return true;
+                    }
+
                 } catch (NumberFormatException e) {
                     log.warn("⚠️ 점수 파싱 실패: {}", e.getMessage());
                 }
-            }
-
-            // 점수나 상태가 변경되었는지 확인
-            Integer currentHomeScore = match.getHomeScore();
-            Integer currentAwayScore = match.getAwayScore();
-
-            boolean scoreChanged = false;
-            if (newHomeScore != null && newAwayScore != null) {
-                scoreChanged = (currentHomeScore == null || !currentHomeScore.equals(newHomeScore))
-                        || (currentAwayScore == null || !currentAwayScore.equals(newAwayScore));
-            }
-
-            boolean statusChanged = !newStatus.equals(match.getStatus());
-
-            // 상태가 변경되거나 점수가 변경된 경우 업데이트
-            if (scoreChanged || statusChanged) {
-                // 상태 업데이트
-                match.setStatus(newStatus);
-
-                // 점수 업데이트 (있는 경우에만)
-                if (newHomeScore != null && newAwayScore != null) {
-                    match.setHomeScore(newHomeScore);
-                    match.setAwayScore(newAwayScore);
-                }
-
-                match.setUpdatedAt(LocalDateTime.now());
-                matchRepository.save(match);
-
-                if (newHomeScore != null && newAwayScore != null) {
-                    log.info("🔄 점수 업데이트: {} {} - {} {} (상태: {})",
-                            match.getHomeTeam().getTeamName(),
-                            newHomeScore,
-                            newAwayScore,
-                            match.getAwayTeam().getTeamName(),
-                            newStatus);
-                } else {
-                    log.info("🔄 상태 업데이트: {} vs {} (상태: {} → {})",
-                            match.getHomeTeam().getTeamName(),
-                            match.getAwayTeam().getTeamName(),
-                            currentStatus,
-                            newStatus);
-                }
-
-                return true;
             }
 
         } catch (Exception e) {
@@ -383,37 +353,33 @@ public class EplLiveScoreUpdater {
     /**
      * 경기 시작 시간 기준으로 SCHEDULED -> LIVE 상태 변경
      * 5분마다 실행하여 경기 시작 확인
-     * EPL 리그만 처리
      */
     @Scheduled(fixedDelay = 300000, initialDelay = 60000)
     @Transactional
     public void checkMatchStartTime() {
         LocalDateTime now = LocalDateTime.now();
 
-        // SCHEDULED 상태이면서 EPL 리그(league_id = 1)인 경기 조회
+        // SCHEDULED 상태이면서 경기 시작 시간이 지난 경기 조회
         List<Match> scheduledMatches = matchRepository.findByStatus("SCHEDULED");
 
         int updatedCount = 0;
 
         for (Match match : scheduledMatches) {
-            // EPL 경기만 처리
-            if (match.getLeague().getLeagueId().equals(1L)) {
-                // 경기 시작 시간이 현재 시간보다 이전이면 LIVE로 변경
-                if (match.getMatchDate().isBefore(now)) {
-                    match.setStatus("LIVE");
-                    matchRepository.save(match);
-                    updatedCount++;
+            // 경기 시작 시간이 현재 시간보다 이전이면 LIVE로 변경
+            if (match.getMatchDate().isBefore(now)) {
+                match.setStatus("LIVE");
+                matchRepository.save(match);
+                updatedCount++;
 
-                    log.info("🟢 경기 시작: {} vs {} ({})",
-                            match.getHomeTeam().getTeamName(),
-                            match.getAwayTeam().getTeamName(),
-                            match.getMatchDate());
-                }
+                log.info("🟢 경기 시작: {} vs {} ({})",
+                        match.getHomeTeam().getTeamName(),
+                        match.getAwayTeam().getTeamName(),
+                        match.getMatchDate());
             }
         }
 
         if (updatedCount > 0) {
-            log.info("✅ {}개 EPL 경기가 LIVE 상태로 변경됨", updatedCount);
+            log.info("✅ {}개 경기가 LIVE 상태로 변경됨", updatedCount);
         }
     }
 }

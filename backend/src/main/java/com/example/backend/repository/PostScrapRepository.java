@@ -20,4 +20,6 @@ public interface PostScrapRepository extends JpaRepository<PostScrap, Long> {
 
     // 사용자의 스크랩 목록 조회 (최신순)
     Page<PostScrap> findByUserOrderByCreatedAtDesc(User user, Pageable pageable);
+
+    void deleteByPost(Post post);  // ⭐ 이 줄 추가
 }
