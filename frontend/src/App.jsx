@@ -20,6 +20,7 @@ import Predictions from './pages/Predictions';
 import PredictionDetail from './pages/PredictionDetail';
 import PredictionRanking from './pages/PredictionRanking';
 import AdminPage from './pages/AdminPage';
+import { checkAuth } from './api/auth';
 import './App.css';
 
 function App() {
@@ -31,6 +32,21 @@ function App() {
         if (hasVisited) {
             setShowSplash(false);
         }
+    }, []);
+
+    // 앱 시작 시 로그인 상태 확인 및 유지
+    useEffect(() => {
+        const initAuth = async () => {
+            try {
+                // 서버 세션 확인 및 localStorage 갱신
+                await checkAuth();
+            } catch (error) {
+                // 세션이 없거나 만료된 경우 localStorage 정리
+                localStorage.removeItem('user');
+            }
+        };
+
+        initAuth();
     }, []);
 
     const handleSplashFinish = () => {
