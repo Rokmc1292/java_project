@@ -53,11 +53,16 @@ function Login() {
       // 로그인 API 호출
       const result = await login(formData);
 
-      // 로그인 성공 시 사용자 정보를 localStorage에 저장
-      localStorage.setItem('user', JSON.stringify(result));
+      // 응답이 { user: {...} } 형태면 user만 저장
+      const user = result?.user ?? result;
+      localStorage.setItem('user', JSON.stringify(user));
 
-      alert(`${result.nickname}님, 환영합니다!`);
-      navigate('/'); // 홈(경기 일정)으로 이동
+      // 팝업 없이 조용하게 페이지 이동
+      if (user.isAdmin) {
+          navigate('/admin');
+      } else {
+          navigate('/');
+      }
     } catch (error) {
       setError(error.message || '로그인에 실패했습니다.');
     } finally {

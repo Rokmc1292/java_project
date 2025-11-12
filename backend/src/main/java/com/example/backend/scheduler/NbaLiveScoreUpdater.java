@@ -7,7 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,22 +32,98 @@ public class NbaLiveScoreUpdater {
     private final NbaCrawlerService crawlerService;
 
     /**
-     * 15초마다 실시간 점수 업데이트
-     * fixedDelay: 이전 실행이 끝난 후 15초 대기
+     * 서버 시작 시 LIVE 상태로 남아있는 경기들을 체크하고 업데이트
+     * 서버가 중단되었다가 다시 시작되면 LIVE 상태 경기가 실제로는 이미 종료되었을 수 있음
+     */
+    @EventListener(ApplicationReadyEvent.class)
+    @Transactional
+    public void checkStuckLiveMatchesOnStartup() {
+        log.info("🔍 [NBA] 서버 시작 - LIVE 상태 경기 점검 시작");
+
+        try {
+            // NBA 리그의 LIVE 상태 경기 조회
+            List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+            List<Match> nbaLiveMatches = liveMatches.stream()
+                    .filter(m -> m.getLeague().getLeagueId().equals(2L))
+                    .toList();
+
+            if (nbaLiveMatches.isEmpty()) {
+                log.info("✅ [NBA] LIVE 상태 경기 없음");
+                return;
+            }
+
+            log.info("⚠️ [NBA] LIVE 상태 경기 {}개 발견 - 업데이트 시작", nbaLiveMatches.size());
+
+            // 과거 경기들만 필터링 (경기 시작 시간 + 4시간이 현재보다 이전 - NBA는 좀 더 길게)
+            LocalDateTime now = LocalDateTime.now();
+            List<Match> stuckMatches = nbaLiveMatches.stream()
+                    .filter(m -> m.getMatchDate().plusHours(4).isBefore(now))
+                    .toList();
+
+            if (stuckMatches.isEmpty()) {
+                log.info("✅ [NBA] 모든 LIVE 경기가 정상 범위 내");
+                return;
+            }
+
+            log.info("🔄 [NBA] 과거 LIVE 경기 {}개 발견 - FINISHED로 업데이트", stuckMatches.size());
+
+            // 각 경기를 FINISHED로 업데이트
+            for (Match match : stuckMatches) {
+                try {
+                    updateStuckMatch(match);
+                } catch (Exception e) {
+                    log.error("❌ [NBA] 경기 업데이트 실패: {} vs {} - {}",
+                            match.getHomeTeam().getTeamName(),
+                            match.getAwayTeam().getTeamName(),
+                            e.getMessage());
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("❌ [NBA] LIVE 상태 경기 점검 실패", e);
+        }
+    }
+
+    /**
+     * 멈춰있는 LIVE 경기를 FINISHED로 업데이트
+     */
+    private void updateStuckMatch(Match match) {
+        log.info("🔄 업데이트 중: {} vs {} ({})",
+                match.getHomeTeam().getTeamName(),
+                match.getAwayTeam().getTeamName(),
+                match.getMatchDate());
+
+        match.setStatus("FINISHED");
+        match.setUpdatedAt(LocalDateTime.now());
+        matchRepository.save(match);
+
+        log.info("✅ 업데이트 완료: {} {} - {} {} (FINISHED)",
+                match.getHomeTeam().getTeamName(),
+                match.getHomeScore(),
+                match.getAwayScore(),
+                match.getAwayTeam().getTeamName());
+    }
+
+    /**
+     * 10초마다 실시간 점수 업데이트
+     * fixedDelay: 이전 실행이 끝난 후 10초 대기
      * initialDelay: 서버 시작 후 10초 뒤 첫 실행
      */
-    @Scheduled(fixedDelay = 15000, initialDelay = 10000)
+    @Scheduled(fixedDelay = 10000, initialDelay = 10000)
     @Transactional
     public void updateLiveScores() {
-        // NBA 리그의 오늘 경기 조회 (SCHEDULED 또는 LIVE 상태)
-        List<Match> todayMatches = matchRepository.findTodayMatchesByLeague(2L, LocalDateTime.now());
+        // NBA 리그의 LIVE 경기 조회 (날짜 관계없이 LIVE 상태만 추적)
+        List<Match> liveMatches = matchRepository.findByStatus("LIVE");
+        List<Match> nbaLiveMatches = liveMatches.stream()
+                .filter(m -> m.getLeague().getLeagueId().equals(2L))
+                .toList();
 
-        if (todayMatches.isEmpty()) {
-            // 오늘 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
+        if (nbaLiveMatches.isEmpty()) {
+            // LIVE 경기가 없으면 로그 출력 안함 (너무 많은 로그 방지)
             return;
         }
 
-        log.info("🏀 [실시간 업데이트] 오늘 NBA 경기 {}개 발견, 크롤링 시작", todayMatches.size());
+        log.info("🏀 [실시간 업데이트] NBA LIVE 경기 {}개 발견, 크롤링 시작", nbaLiveMatches.size());
 
         WebDriver driver = null;
 
@@ -54,19 +133,74 @@ public class NbaLiveScoreUpdater {
 
             // 네이버 스포츠 NBA 일정 페이지 (오늘 날짜)
             String baseUrl = "https://m.sports.naver.com/basketball/schedule/index?category=nba";
-            driver.get(baseUrl);
-            Thread.sleep(1500);  // 페이지 로딩 대기
 
-            // 오늘 경기 목록 찾기
-            List<WebElement> matchElements = driver.findElements(By.cssSelector(".MatchBox_match_item__WiPhj"));
-            log.info("📋 웹에서 {}개 경기 요소 발견", matchElements.size());
+            // 페이지 로드 재시도 로직 (최대 3번)
+            List<WebElement> matchElements = null;
+            int maxRetries = 3;
+
+            for (int retry = 0; retry < maxRetries; retry++) {
+                try {
+                    driver.get(baseUrl);
+                    log.debug("🌐 페이지 로딩 중... (시도 {}/{})", retry + 1, maxRetries);
+
+                    // 페이지가 완전히 로드될 때까지 대기 (최대 15초)
+                    wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("body")));
+                    Thread.sleep(2000);  // 동적 콘텐츠 로딩 대기 (증가)
+
+                    // 경기 목록 찾기 - 명시적 대기 사용
+                    try {
+                        wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(
+                            By.cssSelector(".MatchBox_match_item__WiPhj")));
+                        matchElements = driver.findElements(By.cssSelector(".MatchBox_match_item__WiPhj"));
+
+                        if (matchElements != null && !matchElements.isEmpty()) {
+                            log.info("📋 웹에서 {}개 경기 요소 발견", matchElements.size());
+                            break;  // 성공적으로 찾았으면 종료
+                        }
+                    } catch (Exception e) {
+                        log.warn("⚠️ CSS 셀렉터로 경기를 찾지 못함 (시도 {}/{})", retry + 1, maxRetries);
+                    }
+
+                    // 요소를 찾지 못한 경우 디버깅 정보 출력
+                    if (matchElements == null || matchElements.isEmpty()) {
+                        log.warn("⚠️ 경기 요소를 찾지 못함. 현재 URL: {}", driver.getCurrentUrl());
+
+                        // 페이지 소스의 일부를 로깅 (디버깅용)
+                        String pageSource = driver.getPageSource();
+                        if (pageSource.length() > 500) {
+                            log.debug("📄 페이지 소스 샘플: {}", pageSource.substring(0, 500));
+                        }
+
+                        // MatchBox 관련 요소가 있는지 확인
+                        List<WebElement> anyMatchBox = driver.findElements(By.cssSelector("[class*='MatchBox']"));
+                        log.debug("🔍 MatchBox 관련 요소 수: {}", anyMatchBox.size());
+
+                        if (retry < maxRetries - 1) {
+                            log.info("🔄 페이지 재로딩 시도...");
+                            Thread.sleep(2000);  // 재시도 전 대기
+                        }
+                    }
+
+                } catch (Exception e) {
+                    log.warn("⚠️ 페이지 로딩 중 오류 (시도 {}/{}): {}", retry + 1, maxRetries, e.getMessage());
+                    if (retry < maxRetries - 1) {
+                        Thread.sleep(2000);  // 재시도 전 대기
+                    }
+                }
+            }
+
+            // 재시도 후에도 요소를 찾지 못한 경우
+            if (matchElements == null || matchElements.isEmpty()) {
+                log.error("❌ {}번 시도 후에도 경기 요소를 찾지 못했습니다. 크롤링을 건너뜁니다.", maxRetries);
+                return;
+            }
 
             int updatedCount = 0;
             int finishedCount = 0;
             int liveStartedCount = 0;
             int notFoundCount = 0;
 
-            for (Match match : todayMatches) {
+            for (Match match : nbaLiveMatches) {
                 try {
                     String beforeStatus = match.getStatus();
                     String homeTeam = match.getHomeTeam().getTeamName();
@@ -98,9 +232,26 @@ public class NbaLiveScoreUpdater {
                     } else {
                         // 매칭 실패 - 웹에서 경기를 찾지 못함
                         notFoundCount++;
-                        log.warn("❌ 웹에서 경기를 찾지 못함: {} vs {} (상태: {}, 점수: {}-{})",
-                                homeTeam, awayTeam, beforeStatus,
-                                match.getHomeScore(), match.getAwayScore());
+
+                        // 경기 시작 시간 + 4시간이 지났으면 자동으로 FINISHED 처리
+                        LocalDateTime matchEndTime = match.getMatchDate().plusHours(4);
+                        LocalDateTime now = LocalDateTime.now();
+
+                        if (matchEndTime.isBefore(now) && "LIVE".equals(beforeStatus)) {
+                            match.setStatus("FINISHED");
+                            match.setUpdatedAt(now);
+                            matchRepository.save(match);
+                            finishedCount++;
+                            log.info("🏁 과거 경기 종료 처리: {} {} - {} {} (웹에서 경기 찾지 못함, 마지막 점수 유지)",
+                                    homeTeam,
+                                    match.getHomeScore() != null ? match.getHomeScore() : 0,
+                                    match.getAwayScore() != null ? match.getAwayScore() : 0,
+                                    awayTeam);
+                        } else {
+                            log.warn("❌ 웹에서 경기를 찾지 못함: {} vs {} (상태: {}, 점수: {}-{})",
+                                    homeTeam, awayTeam, beforeStatus,
+                                    match.getHomeScore(), match.getAwayScore());
+                        }
                     }
 
                 } catch (Exception e) {
@@ -119,7 +270,12 @@ public class NbaLiveScoreUpdater {
             log.error("❌ [실시간 업데이트] 실패", e);
         } finally {
             if (driver != null) {
-                driver.quit();
+                try {
+                    driver.quit();
+                    log.debug("🔌 WebDriver 종료 완료");
+                } catch (Exception e) {
+                    log.warn("⚠️ WebDriver 종료 중 오류: {}", e.getMessage());
+                }
             }
         }
     }

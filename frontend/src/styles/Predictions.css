@@ -482,6 +482,30 @@
   background-color: #f44336;
 }
 
+/* ==================== 예상 점수 표시 ==================== */
+.expected-points {
+  margin-top: 8px;
+  font-size: 14px;
+  color: #666;
+  text-align: center;
+  padding: 8px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+  border: 1px solid #e0e0e0;
+}
+
+.points-win {
+  color: #4caf50;
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.points-lose {
+  color: #f44336;
+  font-weight: bold;
+  font-size: 15px;
+}
+
 /* ==================== 예측 폼 ==================== */
 .result-buttons {
   display: flex;
@@ -500,10 +524,17 @@
   font-size: 18px;
   font-weight: bold;
   transition: all 0.3s;
+  line-height: 1.4;
 }
 
 .result-btn:hover {
   background-color: #e0e0e0;
+}
+
+.team-name-small {
+  font-size: 14px;
+  font-weight: normal;
+  opacity: 0.8;
 }
 
 .result-btn.active.home {

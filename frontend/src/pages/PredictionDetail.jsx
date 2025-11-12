@@ -113,8 +113,8 @@ function PredictionDetail() {
       return;
     }
 
-    if (comment.trim().length < 10) {
-      alert('코멘트는 최소 10자 이상 작성해주세요.');
+    if (comment.trim().length < 2) {
+      alert('코멘트는 최소 2자 이상 작성해주세요.');
       return;
     }
 
@@ -297,7 +297,9 @@ function PredictionDetail() {
             {/* 홈승 비율 */}
             <div className="vote-bar-container">
               <div className="vote-bar-header">
-                <span className="vote-label">홈팀 승</span>
+                <span className="vote-label">
+                  홈팀 승 ({match.teams?.home?.name || '홈팀'})
+                </span>
                 <span className="vote-percentage home">
                   {statistics.homePercentage.toFixed(1)}% ({statistics.homeVotes}명)
                 </span>
@@ -307,6 +309,10 @@ function PredictionDetail() {
                   className="vote-bar-fill home"
                   style={{ width: `${statistics.homePercentage}%` }}
                 ></div>
+              </div>
+              <div className="expected-points">
+                적중 시: <span className="points-win">+{statistics.homeWinPoints}점</span> /
+                실패 시: <span className="points-lose">{statistics.homeLosePoints}점</span>
               </div>
             </div>
 
@@ -324,12 +330,18 @@ function PredictionDetail() {
                   style={{ width: `${statistics.drawPercentage}%` }}
                 ></div>
               </div>
+              <div className="expected-points">
+                적중 시: <span className="points-win">+{statistics.drawWinPoints}점</span> /
+                실패 시: <span className="points-lose">{statistics.drawLosePoints}점</span>
+              </div>
             </div>
 
             {/* 원정승 비율 */}
             <div className="vote-bar-container">
               <div className="vote-bar-header">
-                <span className="vote-label">원정팀 승</span>
+                <span className="vote-label">
+                  원정팀 승 ({match.teams?.away?.name || '원정팀'})
+                </span>
                 <span className="vote-percentage away">
                   {statistics.awayPercentage.toFixed(1)}% ({statistics.awayVotes}명)
                 </span>
@@ -339,6 +351,10 @@ function PredictionDetail() {
                   className="vote-bar-fill away"
                   style={{ width: `${statistics.awayPercentage}%` }}
                 ></div>
+              </div>
+              <div className="expected-points">
+                적중 시: <span className="points-win">+{statistics.awayWinPoints}점</span> /
+                실패 시: <span className="points-lose">{statistics.awayLosePoints}점</span>
               </div>
             </div>
           </div>
@@ -355,7 +371,8 @@ function PredictionDetail() {
                 onClick={() => setSelectedResult('HOME')}
                 className={`result-btn home ${selectedResult === 'HOME' ? 'active' : ''}`}
               >
-                홈팀 승
+                홈팀 승<br />
+                <span className="team-name-small">({match.teams?.home?.name || '홈팀'})</span>
               </button>
 
               <button
@@ -369,14 +386,15 @@ function PredictionDetail() {
                 onClick={() => setSelectedResult('AWAY')}
                 className={`result-btn away ${selectedResult === 'AWAY' ? 'active' : ''}`}
               >
-                원정팀 승
+                원정팀 승<br />
+                <span className="team-name-small">({match.teams?.away?.name || '원정팀'})</span>
               </button>
             </div>
 
             {/* 코멘트 입력 */}
             <div className="comment-input-section">
               <label className="comment-label">
-                코멘트 작성 (필수, 최소 10자)
+                코멘트 작성 (필수, 최소 2자)
               </label>
               <textarea
                 value={comment}
@@ -384,15 +402,15 @@ function PredictionDetail() {
                 placeholder="예측 이유를 작성해주세요..."
                 className="comment-textarea"
               />
-              <div className={`character-count ${comment.length < 10 ? 'invalid' : 'valid'}`}>
-                {comment.length} / 최소 10자
+              <div className={`character-count ${comment.length < 2 ? 'invalid' : 'valid'}`}>
+                {comment.length} / 최소 2자
               </div>
             </div>
 
             {/* 제출 버튼 */}
             <button
               onClick={handleSubmit}
-              disabled={submitting || !selectedResult || comment.trim().length < 10}
+              disabled={submitting || !selectedResult || comment.trim().length < 2}
               className="submit-btn"
             >
               {submitting ? '제출 중...' : '예측 제출하기'}

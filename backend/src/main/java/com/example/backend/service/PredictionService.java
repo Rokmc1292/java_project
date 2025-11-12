@@ -33,22 +33,22 @@ public class PredictionService {
     private final UserRepository userRepository;
     // NotificationService 제거
 
-    // ========== 예측 경기 목록 (D-30 경기) ==========
+    // ========== 예측 경기 목록 (D-7 경기) ==========
 
     /**
-     * 예측 가능한 경기 목록 조회 (30일 전 경기)
-     * 현재 시간부터 30일 후까지의 경기를 조회
+     * 예측 가능한 경기 목록 조회 (7일 이내 경기)
+     * 현재 시간부터 7일 후까지의 경기를 조회
      */
     @Transactional(readOnly = true)
     public Page<MatchDto> getPredictableMatches(String sportName, Pageable pageable) {
         LocalDateTime now = LocalDateTime.now();
-        LocalDateTime thirtyDaysLater = now.plusDays(30);
+        LocalDateTime sevenDaysLater = now.plusDays(7);
 
         Page<Match> matches;
         if (sportName != null && !sportName.equals("ALL")) {
-            matches = matchRepository.findPredictableMatchesBySport(sportName, now, thirtyDaysLater, pageable);
+            matches = matchRepository.findPredictableMatchesBySport(sportName, now, sevenDaysLater, pageable);
         } else {
-            matches = matchRepository.findPredictableMatches(now, thirtyDaysLater, pageable);
+            matches = matchRepository.findPredictableMatches(now, sevenDaysLater, pageable);
         }
 
         return matches.map(this::convertMatchToDto);
@@ -266,18 +266,62 @@ public class PredictionService {
         String actualResult = determineMatchResult(match);
         List<Prediction> predictions = predictionRepository.findByMatchOrderByLikeCountDescCreatedAtDesc(match);
 
+        // 예측 통계 가져오기 (배당률 계산용)
+        PredictionStatistics stats = predictionStatisticsRepository.findByMatch(match)
+                .orElseGet(() -> {
+                    PredictionStatistics newStats = new PredictionStatistics();
+                    newStats.setMatch(match);
+                    newStats.setHomeVotes(0);
+                    newStats.setDrawVotes(0);
+                    newStats.setAwayVotes(0);
+                    newStats.setTotalVotes(0);
+                    return newStats;
+                });
+
+        // 각 선택지의 비율 계산
+        double homeRatio = stats.getTotalVotes() > 0 ? (double) stats.getHomeVotes() / stats.getTotalVotes() : 0.33;
+        double drawRatio = stats.getTotalVotes() > 0 ? (double) stats.getDrawVotes() / stats.getTotalVotes() : 0.33;
+        double awayRatio = stats.getTotalVotes() > 0 ? (double) stats.getAwayVotes() / stats.getTotalVotes() : 0.33;
+
         for (Prediction prediction : predictions) {
             boolean isCorrect = prediction.getPredictedResult().equals(actualResult);
             prediction.setIsCorrect(isCorrect);
             predictionRepository.save(prediction);
 
+            // 배당률 + 참여자 수 기반 점수 계산
             User user = prediction.getUser();
+            int pointsChange = 0;
+            int totalVotes = stats.getTotalVotes();
+
             if (isCorrect) {
-                user.setTierScore(user.getTierScore() + 10);
+                // 적중 시: 선택한 비율과 참여자 수에 따라 점수 차등 지급
+                switch (prediction.getPredictedResult()) {
+                    case "HOME":
+                        pointsChange = calculateWinPoints(homeRatio, totalVotes);
+                        break;
+                    case "DRAW":
+                        pointsChange = calculateWinPoints(drawRatio, totalVotes);
+                        break;
+                    case "AWAY":
+                        pointsChange = calculateWinPoints(awayRatio, totalVotes);
+                        break;
+                }
             } else {
-                user.setTierScore(Math.max(0, user.getTierScore() - 10));
+                // 실패 시: 선택한 비율과 참여자 수에 따라 점수 차등 감점
+                switch (prediction.getPredictedResult()) {
+                    case "HOME":
+                        pointsChange = calculateLosePoints(homeRatio, totalVotes);
+                        break;
+                    case "DRAW":
+                        pointsChange = calculateLosePoints(drawRatio, totalVotes);
+                        break;
+                    case "AWAY":
+                        pointsChange = calculateLosePoints(awayRatio, totalVotes);
+                        break;
+                }
             }
 
+            user.setTierScore(Math.max(0, user.getTierScore() + pointsChange));
             updateUserTier(user);
             userRepository.save(user);
 
@@ -485,16 +529,60 @@ public class PredictionService {
         dto.setTotalVotes(stats.getTotalVotes());
 
         if (stats.getTotalVotes() > 0) {
-            dto.setHomePercentage((double) stats.getHomeVotes() / stats.getTotalVotes() * 100);
-            dto.setDrawPercentage((double) stats.getDrawVotes() / stats.getTotalVotes() * 100);
-            dto.setAwayPercentage((double) stats.getAwayVotes() / stats.getTotalVotes() * 100);
+            double homeRatio = (double) stats.getHomeVotes() / stats.getTotalVotes();
+            double drawRatio = (double) stats.getDrawVotes() / stats.getTotalVotes();
+            double awayRatio = (double) stats.getAwayVotes() / stats.getTotalVotes();
+
+            dto.setHomePercentage(homeRatio * 100);
+            dto.setDrawPercentage(drawRatio * 100);
+            dto.setAwayPercentage(awayRatio * 100);
+
+            // 예상 점수 계산 (배당률 + 참여자 수 고려)
+            int totalVotes = stats.getTotalVotes();
+            dto.setHomeWinPoints(calculateWinPoints(homeRatio, totalVotes));
+            dto.setHomeLosePoints(calculateLosePoints(homeRatio, totalVotes));
+            dto.setDrawWinPoints(calculateWinPoints(drawRatio, totalVotes));
+            dto.setDrawLosePoints(calculateLosePoints(drawRatio, totalVotes));
+            dto.setAwayWinPoints(calculateWinPoints(awayRatio, totalVotes));
+            dto.setAwayLosePoints(calculateLosePoints(awayRatio, totalVotes));
         } else {
             dto.setHomePercentage(0.0);
             dto.setDrawPercentage(0.0);
             dto.setAwayPercentage(0.0);
+
+            // 투표가 없을 때는 기본 점수
+            dto.setHomeWinPoints(10);
+            dto.setHomeLosePoints(-10);
+            dto.setDrawWinPoints(10);
+            dto.setDrawLosePoints(-10);
+            dto.setAwayWinPoints(10);
+            dto.setAwayLosePoints(-10);
         }
 
         return dto;
+    }
+
+    /**
+     * 배당률 기반 적중 점수 계산 (참여자 수 고려)
+     * 공식: 10 + (90 * (1 - 선택 비율) * 참여자 보정 계수)
+     * 참여자 보정 계수 = min(1.0, totalVotes / 10.0)
+     * - 10명 이상: 최대 배당 효과
+     * - 5명: 50% 배당 효과
+     * - 1명: 10% 배당 효과
+     */
+    private Integer calculateWinPoints(double ratio, int totalVotes) {
+        double participantFactor = Math.min(1.0, totalVotes / 10.0);
+        return (int) Math.round(10 + (90 * (1 - ratio) * participantFactor));
+    }
+
+    /**
+     * 배당률 기반 실패 점수 계산 (참여자 수 고려)
+     * 공식: -(10 + (90 * 선택 비율 * 참여자 보정 계수))
+     * 참여자 보정 계수 = min(1.0, totalVotes / 10.0)
+     */
+    private Integer calculateLosePoints(double ratio, int totalVotes) {
+        double participantFactor = Math.min(1.0, totalVotes / 10.0);
+        return -(int) Math.round(10 + (90 * ratio * participantFactor));
     }
 
     /**
