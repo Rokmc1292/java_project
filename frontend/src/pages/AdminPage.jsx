@@ -36,6 +36,9 @@ function AdminPage() {
     const [postsPage, setPostsPage] = useState(0);
     const [postsTotalPages, setPostsTotalPages] = useState(0);
 
+    // 크롤링 관리
+    const [crawlLoading, setCrawlLoading] = useState({});
+
     // 관리자 권한 체크
     useEffect(() => {
         const userData = localStorage.getItem('user');
@@ -197,6 +200,60 @@ function AdminPage() {
         return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
     };
 
+    // 크롤링 실행
+    const handleCrawl = async (league) => {
+        if (!window.confirm(`${league} 크롤링을 시작하시겠습니까?`)) return;
+
+        setCrawlLoading(prev => ({ ...prev, [league]: true }));
+
+        try {
+            const endpoint = league === 'all-leagues'
+                ? '/api/admin/crawl/all-leagues'
+                : `/api/admin/crawl/${league}`;
+
+            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                alert(data.message);
+            } else {
+                alert(`크롤링 실패: ${data.message}`);
+            }
+        } catch (error) {
+            console.error('크롤링 실행 실패:', error);
+            alert('크롤링 실행 중 오류가 발생했습니다.');
+        } finally {
+            setCrawlLoading(prev => ({ ...prev, [league]: false }));
+        }
+    };
+
+    // 실시간 점수 업데이트
+    const handleLiveUpdate = async (league) => {
+        if (!window.confirm(`${league} 실시간 점수 업데이트를 시작하시겠습니까?`)) return;
+
+        setCrawlLoading(prev => ({ ...prev, [`live-${league}`]: true }));
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/admin/live/${league}`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                alert(data.message);
+            } else {
+                alert(`업데이트 실패: ${data.message}`);
+            }
+        } catch (error) {
+            console.error('실시간 업데이트 실패:', error);
+            alert('실시간 업데이트 중 오류가 발생했습니다.');
+        } finally {
+            setCrawlLoading(prev => ({ ...prev, [`live-${league}`]: false }));
+        }
+    };
+
     return (
         <div>
             <Navbar />
@@ -230,8 +287,8 @@ function AdminPage() {
                         📝 게시글 관리
                     </button>
                     <button
-                        className="admin-tab"
-                        onClick={() => navigate('/admin/crawl')}
+                        className={`admin-tab ${activeTab === 'crawl' ? 'active' : ''}`}
+                        onClick={() => setActiveTab('crawl')}
                     >
                         🔄 크롤링 관리
                     </button>
@@ -568,6 +625,201 @@ function AdminPage() {
                                 </button>
                             </div>
                         )}
+                    </div>
+                )}
+
+                {/* 크롤링 관리 */}
+                {!loading && activeTab === 'crawl' && (
+                    <div className="crawl-content">
+                        {/* 전체 리그 크롤링 */}
+                        <div className="crawl-section-highlight">
+                            <h2>전체 리그 크롤링</h2>
+                            <div className="crawl-card-all">
+                                <div className="crawl-info">
+                                    <h3>모든 리그 일괄 크롤링</h3>
+                                    <p>EPL, NBA, Bundesliga, La Liga, Serie A, Ligue 1, KBL 전체 리그의 일정을 순차적으로 크롤링합니다.</p>
+                                    <p className="warning-text">완료까지 상당한 시간이 소요될 수 있습니다.</p>
+                                </div>
+                                <button
+                                    className="crawl-btn-all"
+                                    onClick={() => handleCrawl('all-leagues')}
+                                    disabled={crawlLoading['all-leagues']}
+                                >
+                                    {crawlLoading['all-leagues'] ? '크롤링 중...' : '전체 리그 크롤링 시작'}
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 개별 리그 크롤링 */}
+                        <div className="crawl-section">
+                            <h2>개별 리그 크롤링</h2>
+                            <div className="crawl-grid">
+                                {/* EPL */}
+                                <div className="crawl-card">
+                                    <h3>EPL (프리미어리그)</h3>
+                                    <p>잉글랜드 프리미어리그 일정 크롤링</p>
+                                    <div className="crawl-actions">
+                                        <button
+                                            className="crawl-btn"
+                                            onClick={() => handleCrawl('epl')}
+                                            disabled={crawlLoading['epl']}
+                                        >
+                                            {crawlLoading['epl'] ? '크롤링 중...' : '일정 크롤링'}
+                                        </button>
+                                        <button
+                                            className="live-btn"
+                                            onClick={() => handleLiveUpdate('epl')}
+                                            disabled={crawlLoading['live-epl']}
+                                        >
+                                            {crawlLoading['live-epl'] ? '업데이트 중...' : '실시간 업데이트'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* NBA */}
+                                <div className="crawl-card">
+                                    <h3>NBA</h3>
+                                    <p>미국 프로농구 일정 크롤링</p>
+                                    <div className="crawl-actions">
+                                        <button
+                                            className="crawl-btn"
+                                            onClick={() => handleCrawl('nba')}
+                                            disabled={crawlLoading['nba']}
+                                        >
+                                            {crawlLoading['nba'] ? '크롤링 중...' : '일정 크롤링'}
+                                        </button>
+                                        <button
+                                            className="live-btn"
+                                            onClick={() => handleLiveUpdate('nba')}
+                                            disabled={crawlLoading['live-nba']}
+                                        >
+                                            {crawlLoading['live-nba'] ? '업데이트 중...' : '실시간 업데이트'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Bundesliga */}
+                                <div className="crawl-card">
+                                    <h3>Bundesliga (분데스리가)</h3>
+                                    <p>독일 분데스리가 일정 크롤링</p>
+                                    <div className="crawl-actions">
+                                        <button
+                                            className="crawl-btn"
+                                            onClick={() => handleCrawl('bundesliga')}
+                                            disabled={crawlLoading['bundesliga']}
+                                        >
+                                            {crawlLoading['bundesliga'] ? '크롤링 중...' : '일정 크롤링'}
+                                        </button>
+                                        <button
+                                            className="live-btn"
+                                            onClick={() => handleLiveUpdate('bundesliga')}
+                                            disabled={crawlLoading['live-bundesliga']}
+                                        >
+                                            {crawlLoading['live-bundesliga'] ? '업데이트 중...' : '실시간 업데이트'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* La Liga */}
+                                <div className="crawl-card">
+                                    <h3>La Liga (라리가)</h3>
+                                    <p>스페인 라리가 일정 크롤링</p>
+                                    <div className="crawl-actions">
+                                        <button
+                                            className="crawl-btn"
+                                            onClick={() => handleCrawl('laliga')}
+                                            disabled={crawlLoading['laliga']}
+                                        >
+                                            {crawlLoading['laliga'] ? '크롤링 중...' : '일정 크롤링'}
+                                        </button>
+                                        <button
+                                            className="live-btn"
+                                            onClick={() => handleLiveUpdate('laliga')}
+                                            disabled={crawlLoading['live-laliga']}
+                                        >
+                                            {crawlLoading['live-laliga'] ? '업데이트 중...' : '실시간 업데이트'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Serie A */}
+                                <div className="crawl-card">
+                                    <h3>Serie A (세리에 A)</h3>
+                                    <p>이탈리아 세리에 A 일정 크롤링</p>
+                                    <div className="crawl-actions">
+                                        <button
+                                            className="crawl-btn"
+                                            onClick={() => handleCrawl('seriea')}
+                                            disabled={crawlLoading['seriea']}
+                                        >
+                                            {crawlLoading['seriea'] ? '크롤링 중...' : '일정 크롤링'}
+                                        </button>
+                                        <button
+                                            className="live-btn"
+                                            onClick={() => handleLiveUpdate('seriea')}
+                                            disabled={crawlLoading['live-seriea']}
+                                        >
+                                            {crawlLoading['live-seriea'] ? '업데이트 중...' : '실시간 업데이트'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Ligue 1 */}
+                                <div className="crawl-card">
+                                    <h3>Ligue 1 (리그 1)</h3>
+                                    <p>프랑스 리그 1 일정 크롤링</p>
+                                    <div className="crawl-actions">
+                                        <button
+                                            className="crawl-btn"
+                                            onClick={() => handleCrawl('ligue1')}
+                                            disabled={crawlLoading['ligue1']}
+                                        >
+                                            {crawlLoading['ligue1'] ? '크롤링 중...' : '일정 크롤링'}
+                                        </button>
+                                        <button
+                                            className="live-btn"
+                                            onClick={() => handleLiveUpdate('ligue1')}
+                                            disabled={crawlLoading['live-ligue1']}
+                                        >
+                                            {crawlLoading['live-ligue1'] ? '업데이트 중...' : '실시간 업데이트'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* KBL */}
+                                <div className="crawl-card">
+                                    <h3>KBL (한국프로농구)</h3>
+                                    <p>한국 프로농구 일정 크롤링</p>
+                                    <div className="crawl-actions">
+                                        <button
+                                            className="crawl-btn"
+                                            onClick={() => handleCrawl('kbl')}
+                                            disabled={crawlLoading['kbl']}
+                                        >
+                                            {crawlLoading['kbl'] ? '크롤링 중...' : '일정 크롤링'}
+                                        </button>
+                                        <button
+                                            className="live-btn"
+                                            onClick={() => handleLiveUpdate('kbl')}
+                                            disabled={crawlLoading['live-kbl']}
+                                        >
+                                            {crawlLoading['live-kbl'] ? '업데이트 중...' : '실시간 업데이트'}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 안내 메시지 */}
+                        <div className="crawl-notice">
+                            <h3>크롤링 안내</h3>
+                            <ul>
+                                <li>크롤링은 백그라운드에서 실행되며, 완료까지 수 분이 소요될 수 있습니다.</li>
+                                <li>전체 리그 크롤링은 모든 리그를 순차적으로 실행하므로 상당한 시간이 소요됩니다.</li>
+                                <li>실시간 업데이트는 현재 진행 중인 경기의 점수를 업데이트합니다.</li>
+                                <li>크롤링 중 브라우저를 닫아도 서버에서 계속 실행됩니다.</li>
+                            </ul>
+                        </div>
                     </div>
                 )}
             </div>

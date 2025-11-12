@@ -20,7 +20,6 @@ import Predictions from './pages/Predictions';
 import PredictionDetail from './pages/PredictionDetail';
 import PredictionRanking from './pages/PredictionRanking';
 import AdminPage from './pages/AdminPage';
-import AdminCrawlPage from './pages/AdminCrawlPage';
 import './App.css';
 
 function App() {
@@ -84,9 +83,6 @@ function App() {
 
                     {/* 관리자 페이지 */}
                     <Route path="/admin" element={<AdminPage />} />
-
-                    {/* 관리자 크롤링 페이지 */}
-                    <Route path="/admin/crawl" element={<AdminCrawlPage />} />
 
                     {/* 404 페이지 */}
                     <Route path="*" element={

@@ -353,9 +353,191 @@
     cursor: pointer;
 }
 
+/* 크롤링 관리 탭 */
+.crawl-content {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.crawl-section-highlight {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.crawl-section-highlight h2 {
+    color: white;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.crawl-section h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.crawl-card-all {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.crawl-info h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.crawl-info p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
+.warning-text {
+    color: #ff6b6b;
+    font-weight: 500;
+    font-size: 13px;
+}
+
+.crawl-btn-all {
+    width: 100%;
+    padding: 15px 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    transition: all 0.3s;
+}
+
+.crawl-btn-all:hover:not(:disabled) {
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    transform: scale(1.02);
+}
+
+.crawl-btn-all:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.crawl-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+.crawl-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.crawl-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+.crawl-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.crawl-card p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.crawl-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.crawl-btn,
+.live-btn {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s;
+}
+
+.crawl-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.crawl-btn:hover:not(:disabled) {
+    background-color: #45a049;
+    transform: scale(1.02);
+}
+
+.live-btn {
+    background-color: #2196F3;
+    color: white;
+}
+
+.live-btn:hover:not(:disabled) {
+    background-color: #0b7dda;
+    transform: scale(1.02);
+}
+
+.crawl-btn:disabled,
+.live-btn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.crawl-notice {
+    background-color: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.crawl-notice h3 {
+    color: #856404;
+    margin-bottom: 15px;
+    font-size: 18px;
+}
+
+.crawl-notice ul {
+    list-style-type: disc;
+    padding-left: 20px;
+    color: #856404;
+}
+
+.crawl-notice li {
+    margin-bottom: 8px;
+    line-height: 1.6;
+}
+
 /* 반응형 디자인 */
 @media (max-width: 1200px) {
     .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .crawl-grid {
         grid-template-columns: repeat(2, 1fr);
     }
 }
@@ -389,5 +571,17 @@
     .title-cell,
     .description-cell {
         max-width: 150px;
+    }
+
+    .crawl-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .crawl-actions {
+        flex-direction: column;
+    }
+
+    .crawl-section-highlight {
+        padding: 20px;
     }
 }
