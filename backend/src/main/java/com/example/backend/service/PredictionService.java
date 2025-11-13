@@ -129,6 +129,11 @@ public class PredictionService {
             throw new RuntimeException("이미 시작된 경기는 예측할 수 없습니다.");
         }
 
+        // 농구 경기는 무승부가 없음 (연장전으로 승부 결정)
+        if (isBasketballMatch(match) && "DRAW".equals(request.getPredictedResult())) {
+            throw new RuntimeException("농구 경기는 무승부가 없습니다. HOME 또는 AWAY를 선택해주세요.");
+        }
+
         // 중복 예측 방지
         predictionRepository.findByMatchAndUser(match, user)
                 .ifPresent(p -> {
@@ -154,6 +159,11 @@ public class PredictionService {
      * 예측 통계 업데이트
      */
     private void updatePredictionStatistics(Match match, String predictedResult) {
+        // 농구 경기는 무승부가 없음
+        if (isBasketballMatch(match) && "DRAW".equals(predictedResult)) {
+            throw new RuntimeException("농구 경기는 무승부 예측이 불가능합니다.");
+        }
+
         PredictionStatistics stats = predictionStatisticsRepository.findByMatch(match)
                 .orElseGet(() -> {
                     PredictionStatistics newStats = new PredictionStatistics();
@@ -505,6 +515,20 @@ public class PredictionService {
     }
 
     /**
+     * 농구 경기 여부 확인
+     * 농구는 연장전으로 무승부가 없는 종목
+     */
+    private boolean isBasketballMatch(Match match) {
+        if (match.getLeague() == null || match.getLeague().getSport() == null) {
+            return false;
+        }
+
+        // sport_id가 2이거나 sportName이 "BASKETBALL"인 경우
+        Sport sport = match.getLeague().getSport();
+        return sport.getSportId() == 2L || "BASKETBALL".equalsIgnoreCase(sport.getSportName());
+    }
+
+    /**
      * MMA 경기 종료 후 예측 결과 판정
      */
     @Transactional
@@ -765,26 +789,30 @@ public class PredictionService {
     private PredictionStatisticsDto convertStatisticsToDto(PredictionStatistics stats) {
         PredictionStatisticsDto dto = new PredictionStatisticsDto();
         dto.setMatchId(stats.getMatch().getMatchId());
+
+        // 농구 경기는 무승부가 없음
+        boolean isBasketball = isBasketballMatch(stats.getMatch());
+
         dto.setHomeVotes(stats.getHomeVotes());
-        dto.setDrawVotes(stats.getDrawVotes());
+        dto.setDrawVotes(isBasketball ? 0 : stats.getDrawVotes());
         dto.setAwayVotes(stats.getAwayVotes());
         dto.setTotalVotes(stats.getTotalVotes());
 
         if (stats.getTotalVotes() > 0) {
             double homeRatio = (double) stats.getHomeVotes() / stats.getTotalVotes();
-            double drawRatio = (double) stats.getDrawVotes() / stats.getTotalVotes();
+            double drawRatio = isBasketball ? 0.0 : (double) stats.getDrawVotes() / stats.getTotalVotes();
             double awayRatio = (double) stats.getAwayVotes() / stats.getTotalVotes();
 
             dto.setHomePercentage(homeRatio * 100);
-            dto.setDrawPercentage(drawRatio * 100);
+            dto.setDrawPercentage(isBasketball ? 0.0 : drawRatio * 100);
             dto.setAwayPercentage(awayRatio * 100);
 
             // 예상 점수 계산 (배당률 + 참여자 수 고려)
             int totalVotes = stats.getTotalVotes();
             dto.setHomeWinPoints(calculateWinPoints(homeRatio, totalVotes));
             dto.setHomeLosePoints(calculateLosePoints(homeRatio, totalVotes));
-            dto.setDrawWinPoints(calculateWinPoints(drawRatio, totalVotes));
-            dto.setDrawLosePoints(calculateLosePoints(drawRatio, totalVotes));
+            dto.setDrawWinPoints(isBasketball ? 0 : calculateWinPoints(drawRatio, totalVotes));
+            dto.setDrawLosePoints(isBasketball ? 0 : calculateLosePoints(drawRatio, totalVotes));
             dto.setAwayWinPoints(calculateWinPoints(awayRatio, totalVotes));
             dto.setAwayLosePoints(calculateLosePoints(awayRatio, totalVotes));
         } else {
@@ -795,8 +823,8 @@ public class PredictionService {
             // 투표가 없을 때는 기본 점수
             dto.setHomeWinPoints(10);
             dto.setHomeLosePoints(-10);
-            dto.setDrawWinPoints(10);
-            dto.setDrawLosePoints(-10);
+            dto.setDrawWinPoints(isBasketball ? 0 : 10);
+            dto.setDrawLosePoints(isBasketball ? 0 : -10);
             dto.setAwayWinPoints(10);
             dto.setAwayLosePoints(-10);
         }
