@@ -127,44 +127,81 @@ public class PredictionService {
     // ========== 예측 참여 ==========
 
     /**
-     * 승부예측 생성
+     * 승부예측 생성 (일반 경기 + MMA 경기 통합)
      */
     @Transactional
     public PredictionDto createPrediction(String username, PredictionRequest request) {
-        Match match = matchRepository.findById(request.getMatchId())
-                .orElseThrow(() -> new RuntimeException("경기를 찾을 수 없습니다."));
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 경기 시작 시간 확인
-        if (match.getMatchDate().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("이미 시작된 경기는 예측할 수 없습니다.");
+        // 먼저 Match 테이블 확인
+        Optional<Match> matchOpt = matchRepository.findById(request.getMatchId());
+        if (matchOpt.isPresent()) {
+            Match match = matchOpt.get();
+
+            // 경기 시작 시간 확인
+            if (match.getMatchDate().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("이미 시작된 경기는 예측할 수 없습니다.");
+            }
+
+            // 농구 경기는 무승부가 없음 (연장전으로 승부 결정)
+            if (isBasketballMatch(match) && "DRAW".equals(request.getPredictedResult())) {
+                throw new RuntimeException("농구 경기는 무승부가 없습니다. HOME 또는 AWAY를 선택해주세요.");
+            }
+
+            // 중복 예측 방지
+            predictionRepository.findByMatchAndUser(match, user)
+                    .ifPresent(p -> {
+                        throw new RuntimeException("이미 이 경기에 대한 예측을 하셨습니다.");
+                    });
+
+            // 예측 생성
+            Prediction prediction = new Prediction();
+            prediction.setMatch(match);
+            prediction.setUser(user);
+            prediction.setPredictedResult(request.getPredictedResult());
+            prediction.setComment(request.getComment());
+
+            Prediction savedPrediction = predictionRepository.save(prediction);
+
+            // 예측 통계 업데이트
+            updatePredictionStatistics(match, request.getPredictedResult());
+
+            return convertToDto(savedPrediction);
         }
 
-        // 농구 경기는 무승부가 없음 (연장전으로 승부 결정)
-        if (isBasketballMatch(match) && "DRAW".equals(request.getPredictedResult())) {
-            throw new RuntimeException("농구 경기는 무승부가 없습니다. HOME 또는 AWAY를 선택해주세요.");
+        // Match에 없으면 MmaFight 테이블 확인
+        Optional<MmaFight> fightOpt = mmaFightRepository.findById(request.getMatchId());
+        if (fightOpt.isPresent()) {
+            MmaFight fight = fightOpt.get();
+
+            // 경기 시작 시간 확인
+            if (fight.getFightDate().isBefore(LocalDateTime.now())) {
+                throw new RuntimeException("이미 시작된 경기는 예측할 수 없습니다.");
+            }
+
+            // 중복 예측 방지
+            mmaPredictionRepository.findByFightAndUser(fight, user)
+                    .ifPresent(p -> {
+                        throw new RuntimeException("이미 이 경기에 대한 예측을 하셨습니다.");
+                    });
+
+            // MMA 예측 생성
+            MmaPrediction prediction = new MmaPrediction();
+            prediction.setFight(fight);
+            prediction.setUser(user);
+            prediction.setPredictedResult(request.getPredictedResult());
+            prediction.setComment(request.getComment());
+
+            MmaPrediction savedPrediction = mmaPredictionRepository.save(prediction);
+
+            // 예측 통계 업데이트
+            updateMmaPredictionStatistics(fight, request.getPredictedResult());
+
+            return convertMmaPredictionToDto(savedPrediction);
         }
 
-        // 중복 예측 방지
-        predictionRepository.findByMatchAndUser(match, user)
-                .ifPresent(p -> {
-                    throw new RuntimeException("이미 이 경기에 대한 예측을 하셨습니다.");
-                });
-
-        // 예측 생성
-        Prediction prediction = new Prediction();
-        prediction.setMatch(match);
-        prediction.setUser(user);
-        prediction.setPredictedResult(request.getPredictedResult());
-        prediction.setComment(request.getComment());
-
-        Prediction savedPrediction = predictionRepository.save(prediction);
-
-        // 예측 통계 업데이트
-        updatePredictionStatistics(match, request.getPredictedResult());
-
-        return convertToDto(savedPrediction);
+        throw new RuntimeException("경기를 찾을 수 없습니다.");
     }
 
     /**
@@ -398,61 +435,105 @@ public class PredictionService {
     // ========== 코멘트 추천/비추천 ==========
 
     /**
-     * 예측 코멘트 추천
+     * 예측 코멘트 추천 (일반 예측 + MMA 예측 통합)
      */
     @Transactional
     public void likePrediction(Long predictionId, String username) {
-        Prediction prediction = predictionRepository.findById(predictionId)
-                .orElseThrow(() -> new RuntimeException("예측을 찾을 수 없습니다."));
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        if (prediction.getUser().equals(user)) {
-            throw new RuntimeException("자신의 예측은 추천할 수 없습니다.");
+        // 먼저 일반 Prediction 확인
+        Optional<Prediction> predictionOpt = predictionRepository.findById(predictionId);
+        if (predictionOpt.isPresent()) {
+            Prediction prediction = predictionOpt.get();
+
+            if (prediction.getUser().equals(user)) {
+                throw new RuntimeException("자신의 예측은 추천할 수 없습니다.");
+            }
+
+            predictionVoteRepository.findByPredictionAndUser(prediction, user)
+                    .ifPresent(vote -> {
+                        throw new RuntimeException("이미 투표하셨습니다.");
+                    });
+
+            PredictionVote vote = new PredictionVote();
+            vote.setPrediction(prediction);
+            vote.setUser(user);
+            vote.setVoteType("LIKE");
+            predictionVoteRepository.save(vote);
+
+            prediction.setLikeCount(prediction.getLikeCount() + 1);
+            predictionRepository.save(prediction);
+            return;
         }
 
-        predictionVoteRepository.findByPredictionAndUser(prediction, user)
-                .ifPresent(vote -> {
-                    throw new RuntimeException("이미 투표하셨습니다.");
-                });
+        // MmaPrediction 확인
+        Optional<MmaPrediction> mmaPredictionOpt = mmaPredictionRepository.findById(predictionId);
+        if (mmaPredictionOpt.isPresent()) {
+            MmaPrediction prediction = mmaPredictionOpt.get();
 
-        PredictionVote vote = new PredictionVote();
-        vote.setPrediction(prediction);
-        vote.setUser(user);
-        vote.setVoteType("LIKE");
-        predictionVoteRepository.save(vote);
+            if (prediction.getUser().equals(user)) {
+                throw new RuntimeException("자신의 예측은 추천할 수 없습니다.");
+            }
 
-        prediction.setLikeCount(prediction.getLikeCount() + 1);
-        predictionRepository.save(prediction);
+            // MMA 예측의 경우 직접 like count 증가 (별도 vote 테이블이 없다면)
+            prediction.setLikeCount(prediction.getLikeCount() + 1);
+            mmaPredictionRepository.save(prediction);
+            return;
+        }
+
+        throw new RuntimeException("예측을 찾을 수 없습니다.");
     }
 
     /**
-     * 예측 코멘트 비추천
+     * 예측 코멘트 비추천 (일반 예측 + MMA 예측 통합)
      */
     @Transactional
     public void dislikePrediction(Long predictionId, String username) {
-        Prediction prediction = predictionRepository.findById(predictionId)
-                .orElseThrow(() -> new RuntimeException("예측을 찾을 수 없습니다."));
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        if (prediction.getUser().equals(user)) {
-            throw new RuntimeException("자신의 예측은 비추천할 수 없습니다.");
+        // 먼저 일반 Prediction 확인
+        Optional<Prediction> predictionOpt = predictionRepository.findById(predictionId);
+        if (predictionOpt.isPresent()) {
+            Prediction prediction = predictionOpt.get();
+
+            if (prediction.getUser().equals(user)) {
+                throw new RuntimeException("자신의 예측은 비추천할 수 없습니다.");
+            }
+
+            predictionVoteRepository.findByPredictionAndUser(prediction, user)
+                    .ifPresent(vote -> {
+                        throw new RuntimeException("이미 투표하셨습니다.");
+                    });
+
+            PredictionVote vote = new PredictionVote();
+            vote.setPrediction(prediction);
+            vote.setUser(user);
+            vote.setVoteType("DISLIKE");
+            predictionVoteRepository.save(vote);
+
+            prediction.setDislikeCount(prediction.getDislikeCount() + 1);
+            predictionRepository.save(prediction);
+            return;
         }
 
-        predictionVoteRepository.findByPredictionAndUser(prediction, user)
-                .ifPresent(vote -> {
-                    throw new RuntimeException("이미 투표하셨습니다.");
-                });
+        // MmaPrediction 확인
+        Optional<MmaPrediction> mmaPredictionOpt = mmaPredictionRepository.findById(predictionId);
+        if (mmaPredictionOpt.isPresent()) {
+            MmaPrediction prediction = mmaPredictionOpt.get();
 
-        PredictionVote vote = new PredictionVote();
-        vote.setPrediction(prediction);
-        vote.setUser(user);
-        vote.setVoteType("DISLIKE");
-        predictionVoteRepository.save(vote);
+            if (prediction.getUser().equals(user)) {
+                throw new RuntimeException("자신의 예측은 비추천할 수 없습니다.");
+            }
 
-        prediction.setDislikeCount(prediction.getDislikeCount() + 1);
-        predictionRepository.save(prediction);
+            // MMA 예측의 경우 직접 dislike count 증가
+            prediction.setDislikeCount(prediction.getDislikeCount() + 1);
+            mmaPredictionRepository.save(prediction);
+            return;
+        }
+
+        throw new RuntimeException("예측을 찾을 수 없습니다.");
     }
 
     // ========== 결과 처리 (경기 종료 후) ==========
