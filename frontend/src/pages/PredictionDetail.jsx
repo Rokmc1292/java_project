@@ -249,7 +249,7 @@ function PredictionDetail() {
                 <img
                   src={`${API_BASE_URL}/${match.teams.home.logo}`}
                   alt={match.teams.home.name}
-                  className="team-logo-large"
+                  className={`team-logo-large ${match.sportType === 'MMA' ? 'fighter-image' : ''}`}
                 />
               ) : (
                 <div className="team-logo-large-placeholder">🏠</div>
@@ -268,7 +268,7 @@ function PredictionDetail() {
                 <img
                   src={`${API_BASE_URL}/${match.teams.away.logo}`}
                   alt={match.teams.away.name}
-                  className="team-logo-large"
+                  className={`team-logo-large ${match.sportType === 'MMA' ? 'fighter-image' : ''}`}
                 />
               ) : (
                 <div className="team-logo-large-placeholder">✈️</div>
@@ -316,25 +316,27 @@ function PredictionDetail() {
               </div>
             </div>
 
-            {/* 무승부 비율 */}
-            <div className="vote-bar-container">
-              <div className="vote-bar-header">
-                <span className="vote-label">무승부</span>
-                <span className="vote-percentage draw">
-                  {statistics.drawPercentage.toFixed(1)}% ({statistics.drawVotes}명)
-                </span>
+            {/* 무승부 비율 - MMA 경기가 아닐 때만 표시 */}
+            {match.sportType !== 'MMA' && (
+              <div className="vote-bar-container">
+                <div className="vote-bar-header">
+                  <span className="vote-label">무승부</span>
+                  <span className="vote-percentage draw">
+                    {statistics.drawPercentage.toFixed(1)}% ({statistics.drawVotes}명)
+                  </span>
+                </div>
+                <div className="vote-bar">
+                  <div
+                    className="vote-bar-fill draw"
+                    style={{ width: `${statistics.drawPercentage}%` }}
+                  ></div>
+                </div>
+                <div className="expected-points">
+                  적중 시: <span className="points-win">+{statistics.drawWinPoints}점</span> /
+                  실패 시: <span className="points-lose">{statistics.drawLosePoints}점</span>
+                </div>
               </div>
-              <div className="vote-bar">
-                <div
-                  className="vote-bar-fill draw"
-                  style={{ width: `${statistics.drawPercentage}%` }}
-                ></div>
-              </div>
-              <div className="expected-points">
-                적중 시: <span className="points-win">+{statistics.drawWinPoints}점</span> /
-                실패 시: <span className="points-lose">{statistics.drawLosePoints}점</span>
-              </div>
-            </div>
+            )}
 
             {/* 원정승 비율 */}
             <div className="vote-bar-container">
@@ -368,25 +370,27 @@ function PredictionDetail() {
             {/* 결과 선택 버튼 */}
             <div className="result-buttons">
               <button
-                onClick={() => setSelectedResult('HOME')}
-                className={`result-btn home ${selectedResult === 'HOME' ? 'active' : ''}`}
+                onClick={() => setSelectedResult(match.sportType === 'MMA' ? 'FIGHTER1' : 'HOME')}
+                className={`result-btn home ${selectedResult === (match.sportType === 'MMA' ? 'FIGHTER1' : 'HOME') ? 'active' : ''}`}
               >
-                홈팀 승<br />
+                {match.sportType === 'MMA' ? 'Fighter 1 승' : '홈팀 승'}<br />
                 <span className="team-name-small">({match.teams?.home?.name || '홈팀'})</span>
               </button>
 
-              <button
-                onClick={() => setSelectedResult('DRAW')}
-                className={`result-btn draw ${selectedResult === 'DRAW' ? 'active' : ''}`}
-              >
-                무승부
-              </button>
+              {match.sportType !== 'MMA' && (
+                <button
+                  onClick={() => setSelectedResult('DRAW')}
+                  className={`result-btn draw ${selectedResult === 'DRAW' ? 'active' : ''}`}
+                >
+                  무승부
+                </button>
+              )}
 
               <button
-                onClick={() => setSelectedResult('AWAY')}
-                className={`result-btn away ${selectedResult === 'AWAY' ? 'active' : ''}`}
+                onClick={() => setSelectedResult(match.sportType === 'MMA' ? 'FIGHTER2' : 'AWAY')}
+                className={`result-btn away ${selectedResult === (match.sportType === 'MMA' ? 'FIGHTER2' : 'AWAY') ? 'active' : ''}`}
               >
-                원정팀 승<br />
+                {match.sportType === 'MMA' ? 'Fighter 2 승' : '원정팀 승'}<br />
                 <span className="team-name-small">({match.teams?.away?.name || '원정팀'})</span>
               </button>
             </div>

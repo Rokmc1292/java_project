@@ -183,7 +183,7 @@ function Predictions() {
                       <img
                         src={`${API_BASE_URL}/${match.teams.home.logo}`}
                         alt={match.teams.home.name}
-                        className="team-logo"
+                        className={`team-logo ${match.sportType === 'MMA' ? 'fighter-image' : ''}`}
                       />
                     ) : (
                       <div className="team-logo-placeholder">🏠</div>
@@ -205,7 +205,7 @@ function Predictions() {
                       <img
                         src={`${API_BASE_URL}/${match.teams.away.logo}`}
                         alt={match.teams.away.name}
-                        className="team-logo"
+                        className={`team-logo ${match.sportType === 'MMA' ? 'fighter-image' : ''}`}
                       />
                     ) : (
                       <div className="team-logo-placeholder">✈️</div>
