@@ -276,10 +276,23 @@ public class SerieALiveScoreUpdater {
             String statusText = matchElement.findElement(By.cssSelector(".MatchBox_status__xU6\\+d")).getText().strip();
             String newStatus = crawlerService.convertStatus(statusText);
 
-            // ⚠️ 중요: FINISHED 경기는 상태를 변경하지 않음 (보호)
+            // ⚠️ 중요: 상태 전환 보호 로직
             String currentStatus = match.getStatus();
+
+            // 1. FINISHED 경기는 상태를 변경하지 않음
             if ("FINISHED".equals(currentStatus) && !"FINISHED".equals(newStatus)) {
-                // FINISHED 경기를 다른 상태로 변경하려는 시도 차단
+                log.warn("⚠️ FINISHED 경기 보호: {} vs {} (크롤링 상태: {} → 무시)",
+                        match.getHomeTeam().getTeamName(),
+                        match.getAwayTeam().getTeamName(),
+                        newStatus);
+                return false;
+            }
+
+            // 2. LIVE 경기는 SCHEDULED로 역전되지 않음 (FINISHED로만 전환 가능)
+            if ("LIVE".equals(currentStatus) && "SCHEDULED".equals(newStatus)) {
+                log.warn("⚠️ LIVE 경기 보호: {} vs {} (SCHEDULED로 역전 차단)",
+                        match.getHomeTeam().getTeamName(),
+                        match.getAwayTeam().getTeamName());
                 return false;
             }
 
