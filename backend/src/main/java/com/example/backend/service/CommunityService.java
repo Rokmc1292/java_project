@@ -387,6 +387,7 @@ public class CommunityService {
             if (!comment.getIsDeleted() && commentNetLikes >= 10) {
                 comment.setIsBest(true);
             } else {
+
                 comment.setIsBest(false);
             }
 
