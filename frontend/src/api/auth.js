@@ -100,31 +100,19 @@ export const getCurrentUser = async () => {
 };
 
 /**
- * 로그인 상태 및 권한 확인 (백엔드의 /api/auth/check 사용 시)
- * 서버가 { username, nickname, isAdmin, ... } 형태로 반환하도록 구현되어 있어야 함
+ * 로그인 상태 확인 (백엔드의 /api/auth/me 엔드포인트 사용)
+ * 서버 세션을 확인하여 현재 로그인한 사용자 정보를 가져옴
  * 성공 시 프론트 보관 정보 갱신
  */
 export const checkAuth = async () => {
     try {
-        // apiGet 사용
-        try {
-            const res = await apiGet('/api/auth/check');
-            // 서버 응답이 사용자 객체 형태라면 그대로 저장
-            saveUserData(res);
-            return res;
-        } catch {
-            // fetch 폴백
-            const r = await fetch('http://localhost:8080/api/auth/check', {
-                method: 'GET',
-                credentials: 'include',
-            });
-            if (!r.ok) throw new Error('UNAUTHORIZED');
-            const data = await r.json();
-            saveUserData(data);
-            return data;
-        }
+        // getCurrentUser()를 사용하여 /api/auth/me 호출
+        const userData = await getCurrentUser();
+        // 서버 응답이 사용자 객체 형태라면 그대로 저장
+        saveUserData(userData);
+        return userData;
     } catch (err) {
-        // 인증 아님 → 클라이언트 보관 정보 제거
+        // 인증 실패 → 클라이언트 보관 정보 제거
         try {
             saveUserData(null);
         } catch {

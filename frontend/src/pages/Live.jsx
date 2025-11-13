@@ -41,7 +41,9 @@ function Live() {
   const fetchLiveMatches = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/live/matches`);
+      const response = await fetch(`${API_BASE_URL}/api/live/matches`, {
+        credentials: 'include'  // 세션 쿠키 포함
+      });
       const data = await response.json();
       setLiveMatches(data || []);
     } catch (error) {
@@ -57,7 +59,8 @@ function Live() {
     setSelectedMatch(match);
     try {
       const response = await fetch(
-        `${API_BASE_URL}/api/live/chatroom/match/${match.matchId}`
+        `${API_BASE_URL}/api/live/chatroom/match/${match.matchId}`,
+        { credentials: 'include' }  // 세션 쿠키 포함
       );
       const data = await response.json();
       const chatroomId = data.chatroomId;
@@ -65,7 +68,8 @@ function Live() {
 
       // 채팅 메시지 조회
       const messagesResponse = await fetch(
-        `${API_BASE_URL}/api/live/chatroom/${chatroomId}/messages`
+        `${API_BASE_URL}/api/live/chatroom/${chatroomId}/messages`,
+        { credentials: 'include' }  // 세션 쿠키 포함
       );
       const messagesData = await messagesResponse.json();
       setMessages(messagesData || []);
@@ -94,6 +98,7 @@ function Live() {
           headers: {
             'Content-Type': 'application/json',
           },
+          credentials: 'include',  // 세션 쿠키 포함
           body: JSON.stringify({
             username: user.username,
             message: newMessage
@@ -104,7 +109,8 @@ function Live() {
       if (response.ok) {
         // 메시지 전송 성공 후 목록 새로고침
         const messagesResponse = await fetch(
-          `${API_BASE_URL}/api/live/chatroom/${currentChatroomId}/messages`
+          `${API_BASE_URL}/api/live/chatroom/${currentChatroomId}/messages`,
+          { credentials: 'include' }  // 세션 쿠키 포함
         );
         const messagesData = await messagesResponse.json();
         setMessages(messagesData || []);
