@@ -32,13 +32,14 @@ public class EplLiveScoreUpdater {
     private final EplCrawlerService crawlerService;
 
     /**
-     * 서버 시작 시 LIVE 상태로 남아있는 경기들을 체크하고 업데이트
-     * 서버가 중단되었다가 다시 시작되면 LIVE 상태 경기가 실제로는 이미 종료되었을 수 있음
+     * 서버 시작 시 LIVE 상태로 남아있는 경기들을 즉시 크롤링하여 업데이트
+     * 로컬 개발 환경과 24시간 서버 모두에서 정상 작동하도록 개선
+     * 서버가 중단되었다가 다시 시작되면 실제 경기 상태를 확인하여 동기화
      */
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void checkStuckLiveMatchesOnStartup() {
-        log.info("🔍 [EPL] 서버 시작 - LIVE 상태 경기 점검 시작");
+        log.info("🔍 [EPL] 서버 시작 - LIVE 상태 경기 즉시 크롤링 시작");
 
         try {
             // EPL 리그의 LIVE 상태 경기 조회
@@ -52,29 +53,85 @@ public class EplLiveScoreUpdater {
                 return;
             }
 
-            log.info("⚠️ [EPL] LIVE 상태 경기 {}개 발견 - 업데이트 시작", eplLiveMatches.size());
+            log.info("⚠️ [EPL] LIVE 상태 경기 {}개 발견 - 즉시 크롤링 시작", eplLiveMatches.size());
 
-            // 과거 경기들만 필터링 (경기 시작 시간 + 3시간이 현재보다 이전)
-            LocalDateTime now = LocalDateTime.now();
-            List<Match> stuckMatches = eplLiveMatches.stream()
-                    .filter(m -> m.getMatchDate().plusHours(3).isBefore(now))
-                    .toList();
+            // 즉시 크롤링 수행하여 실제 상태 확인
+            WebDriver driver = null;
+            try {
+                driver = crawlerService.setupDriver();
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-            if (stuckMatches.isEmpty()) {
-                log.info("✅ [EPL] 모든 LIVE 경기가 정상 범위 내");
-                return;
-            }
+                String baseUrl = "https://sports.news.naver.com/wfootball/schedule/index?category=epl";
+                driver.get(baseUrl);
+                wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("body")));
+                Thread.sleep(2000);
 
-            log.info("📌 [EPL] 과거 LIVE 경기 {}개 - updateLiveScores()에서 크롤링 예정", stuckMatches.size());
-            for (Match match : stuckMatches) {
-                log.info("   - {} vs {} ({})",
-                        match.getHomeTeam().getTeamName(),
-                        match.getAwayTeam().getTeamName(),
-                        match.getMatchDate());
+                List<WebElement> matchElements = driver.findElements(By.cssSelector(".MatchBox_match_item__WiPhj"));
+
+                if (matchElements.isEmpty()) {
+                    log.warn("⚠️ [EPL] 웹에서 경기 요소를 찾지 못함 - 시간 기반 처리");
+                    // 웹에서 찾지 못한 경우, 모든 LIVE 경기를 시간 기반으로 처리
+                    LocalDateTime now = LocalDateTime.now();
+                    for (Match match : eplLiveMatches) {
+                        if (match.getMatchDate().plusHours(3).isBefore(now)) {
+                            match.setStatus("FINISHED");
+                            match.setUpdatedAt(now);
+                            matchRepository.save(match);
+                            log.info("🏁 [EPL] 과거 경기 종료 처리: {} vs {}",
+                                    match.getHomeTeam().getTeamName(),
+                                    match.getAwayTeam().getTeamName());
+                        }
+                    }
+                    return;
+                }
+
+                log.info("📋 [EPL] 웹에서 {}개 경기 요소 발견", matchElements.size());
+
+                int updatedCount = 0;
+                int finishedCount = 0;
+                LocalDateTime now = LocalDateTime.now();
+
+                for (Match match : eplLiveMatches) {
+                    WebElement matchElement = findMatchElement(matchElements, match);
+
+                    if (matchElement != null) {
+                        // 웹에서 찾았으면 실제 상태로 업데이트
+                        boolean updated = updateMatchScore(matchElement, match);
+                        if (updated) {
+                            updatedCount++;
+                            if ("FINISHED".equals(match.getStatus())) {
+                                finishedCount++;
+                            }
+                        }
+                    } else {
+                        // 웹에서 찾지 못한 경기는 시간 기반으로 처리
+                        if (match.getMatchDate().plusHours(3).isBefore(now)) {
+                            match.setStatus("FINISHED");
+                            match.setUpdatedAt(now);
+                            matchRepository.save(match);
+                            finishedCount++;
+                            log.info("🏁 [EPL] 과거 경기 종료 처리: {} vs {}",
+                                    match.getHomeTeam().getTeamName(),
+                                    match.getAwayTeam().getTeamName());
+                        }
+                    }
+                }
+
+                log.info("✅ [EPL] 서버 시작 크롤링 완료 - 업데이트: {}개, 종료: {}개",
+                        updatedCount, finishedCount);
+
+            } finally {
+                if (driver != null) {
+                    try {
+                        driver.quit();
+                    } catch (Exception e) {
+                        log.warn("⚠️ WebDriver 종료 중 오류: {}", e.getMessage());
+                    }
+                }
             }
 
         } catch (Exception e) {
-            log.error("❌ [EPL] LIVE 상태 경기 점검 실패", e);
+            log.error("❌ [EPL] LIVE 상태 경기 크롤링 실패", e);
         }
     }
 
