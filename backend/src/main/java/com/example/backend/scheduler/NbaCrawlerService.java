@@ -174,15 +174,27 @@ public class NbaCrawlerService {
             return "POSTPONED";
         }
 
-        // 진행 중인 경기 (쿼터 표시 등)
-        // "1Q", "2Q", "3Q", "4Q", "OT" 등
-        if (statusText.matches("\\d+Q") || "OT".equals(statusText) || statusText.contains("연장")) {
+        // 진행 중인 경기 (농구)
+        // 1) 쿼터 표시: "1Q", "2Q", "3Q", "4Q", "1쿼터", "2쿼터", "3쿼터", "4쿼터"
+        // 2) 하프타임: "HT", "Half Time"
+        // 3) 연장: "OT", "Overtime"
+        if (statusText.matches("\\d+Q")
+                || "1Q".equals(statusText)
+                || "2Q".equals(statusText)
+                || "3Q".equals(statusText)
+                || "4Q".equals(statusText)
+                || "HT".equals(statusText)
+                || "Half Time".equals(statusText)
+                || "OT".equals(statusText)
+                || statusText.contains("연장")
+                || statusText.contains("쿼터")) {
             return "LIVE";
         }
 
-        // 알 수 없는 상태는 SCHEDULED로 처리 (안전한 기본값)
-        log.warn("⚠️ 알 수 없는 경기 상태: '{}', SCHEDULED로 처리", statusText);
-        return "SCHEDULED";
+        // 알 수 없는 상태 - 일단 로그만 남기고 그대로 반환하여 호출측에서 판단하도록
+        log.warn("⚠️ 알 수 없는 경기 상태: '{}'", statusText);
+        // 기본값을 LIVE로 변경 - 점수가 있는데 알 수 없는 상태면 대부분 경기중
+        return "LIVE";
     }
 
     /**
