@@ -228,6 +228,22 @@ public class AdminPageController {
                 reportMap.put("status", report.getStatus());
                 reportMap.put("createdAt", report.getCreatedAt());
 
+                // 신고 대상 컨텐츠 가져오기
+                String targetContent = null;
+                String targetAuthor = null;
+                if ("POST".equals(report.getTargetType())) {
+                    postRepository.findById(report.getTargetId()).ifPresent(post -> {
+                        reportMap.put("targetContent", post.getTitle());
+                        reportMap.put("targetAuthor", post.getUser().getNickname());
+                    });
+                } else if ("COMMENT".equals(report.getTargetType())) {
+                    commentRepository.findById(report.getTargetId()).ifPresent(comment -> {
+                        reportMap.put("targetContent", comment.getContent());
+                        reportMap.put("targetAuthor", comment.getUser().getNickname());
+                        reportMap.put("targetDeleted", comment.getIsDeleted());
+                    });
+                }
+
                 // 신고자 정보
                 Map<String, Object> reporterMap = new HashMap<>();
                 reporterMap.put("userId", report.getReporter().getUserId());

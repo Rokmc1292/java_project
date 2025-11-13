@@ -100,6 +100,22 @@ const mypageApi = {
   },
 
   /**
+   * 사용자 스크랩한 게시글 조회 (페이징)
+   */
+  getScrapedPosts: async (page = 0, size = 10) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/mypage/scraps`, {
+        params: { page, size },
+        withCredentials: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error('스크랩 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
    * 닉네임 변경
    */
   updateNickname: async (nickname) => {

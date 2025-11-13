@@ -25,6 +25,7 @@ public class MyPageService {
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
     private final UserSettingsRepository userSettingsRepository;
+    private final PostScrapRepository postScrapRepository;
 
     public UserProfileDto getUserProfile(String username) {
         User user = userRepository.findByUsername(username)
@@ -165,6 +166,28 @@ public class MyPageService {
             dto.setLikeCount(comment.getLikeCount());
             dto.setIsDeleted(comment.getIsDeleted());
             dto.setCreatedAt(comment.getCreatedAt());
+            return dto;
+        });
+    }
+
+    public Page<UserPostDto> getScrapedPosts(String username, Pageable pageable) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다"));
+
+        Page<PostScrap> scraps = postScrapRepository.findByUserOrderByCreatedAtDesc(user, pageable);
+
+        return scraps.map(scrap -> {
+            Post post = scrap.getPost();
+            UserPostDto dto = new UserPostDto();
+            dto.setPostId(post.getPostId());
+            dto.setCategoryName(post.getCategory().getCategoryName());
+            dto.setTitle(post.getTitle());
+            dto.setViewCount(post.getViewCount());
+            dto.setLikeCount(post.getLikeCount());
+            dto.setCommentCount(post.getCommentCount());
+            dto.setIsPopular(post.getIsPopular());
+            dto.setIsBest(post.getIsBest());
+            dto.setCreatedAt(post.getCreatedAt());
             return dto;
         });
     }

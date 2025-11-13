@@ -18,6 +18,9 @@ const ActivitySection = () => {
   const [comments, setComments] = useState([]);
   const [commentsPage, setCommentsPage] = useState(0);
   const [commentsTotalPages, setCommentsTotalPages] = useState(0);
+  const [scraps, setScraps] = useState([]);
+  const [scrapsPage, setScrapsPage] = useState(0);
+  const [scrapsTotalPages, setScrapsTotalPages] = useState(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -42,6 +45,11 @@ const ActivitySection = () => {
         setComments(data.content);
         setCommentsTotalPages(data.totalPages);
         setCommentsPage(0);
+      } else if (activeTab === 'scraps') {
+        const data = await mypageApi.getScrapedPosts(0, 10);
+        setScraps(data.content);
+        setScrapsTotalPages(data.totalPages);
+        setScrapsPage(0);
       }
     } catch (error) {
       console.error('활동 내역 로드 실패:', error);
@@ -65,6 +73,10 @@ const ActivitySection = () => {
         const data = await mypageApi.getUserComments(newPage, 10);
         setComments(data.content);
         setCommentsPage(newPage);
+      } else if (activeTab === 'scraps') {
+        const data = await mypageApi.getScrapedPosts(newPage, 10);
+        setScraps(data.content);
+        setScrapsPage(newPage);
       }
     } catch (error) {
       console.error('페이지 로드 실패:', error);
@@ -99,6 +111,7 @@ const ActivitySection = () => {
         <button className={`activity-tab-button ${activeTab === 'predictions' ? 'active' : ''}`} onClick={() => setActiveTab('predictions')}>나의 예측</button>
         <button className={`activity-tab-button ${activeTab === 'posts' ? 'active' : ''}`} onClick={() => setActiveTab('posts')}>작성한 글</button>
         <button className={`activity-tab-button ${activeTab === 'comments' ? 'active' : ''}`} onClick={() => setActiveTab('comments')}>작성한 댓글</button>
+        <button className={`activity-tab-button ${activeTab === 'scraps' ? 'active' : ''}`} onClick={() => setActiveTab('scraps')}>스크랩한 글</button>
       </div>
 
       {loading && <div className="activity-loading"><div className="spinner"></div></div>}
@@ -215,6 +228,43 @@ const ActivitySection = () => {
                   <button disabled={commentsPage === 0} onClick={() => handlePageChange(commentsPage - 1)} className="page-button">이전</button>
                   <span className="page-info">{commentsPage + 1} / {commentsTotalPages}</span>
                   <button disabled={commentsPage >= commentsTotalPages - 1} onClick={() => handlePageChange(commentsPage + 1)} className="page-button">다음</button>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {!loading && activeTab === 'scraps' && (
+        <div className="posts-list">
+          {scraps.length === 0 ? (
+            <div className="empty-state">
+              <p>스크랩한 게시글이 없습니다.</p>
+              <button className="go-community-button" onClick={() => navigate('/community')}>커뮤니티 가기</button>
+            </div>
+          ) : (
+            <>
+              {scraps.map((post) => (
+                <div key={post.postId} className="post-card" onClick={() => navigate(`/community/post/${post.postId}`)}>
+                  <div className="post-header">
+                    <span className="category-badge">{post.categoryName}</span>
+                    {post.isBest && <span className="best-badge">베스트</span>}
+                    {post.isPopular && <span className="popular-badge">인기</span>}
+                  </div>
+                  <h4 className="post-title">{post.title}</h4>
+                  <div className="post-stats">
+                    <span className="stat">👁️ {post.viewCount}</span>
+                    <span className="stat">👍 {post.likeCount}</span>
+                    <span className="stat">💬 {post.commentCount}</span>
+                  </div>
+                  <div className="post-footer"><span className="created-at">{formatDateTime(post.createdAt)}</span></div>
+                </div>
+              ))}
+              {scrapsTotalPages > 1 && (
+                <div className="pagination">
+                  <button disabled={scrapsPage === 0} onClick={() => handlePageChange(scrapsPage - 1)} className="page-button">이전</button>
+                  <span className="page-info">{scrapsPage + 1} / {scrapsTotalPages}</span>
+                  <button disabled={scrapsPage >= scrapsTotalPages - 1} onClick={() => handlePageChange(scrapsPage + 1)} className="page-button">다음</button>
                 </div>
               )}
             </>

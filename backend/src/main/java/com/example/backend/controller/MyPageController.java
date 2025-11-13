@@ -117,6 +117,22 @@ public class MyPageController {
     }
 
     /**
+     * 사용자 스크랩한 게시글 조회 (페이징)
+     * GET /api/mypage/scraps?page=0&size=10
+     */
+    @GetMapping("/scraps")
+    public ResponseEntity<Page<UserPostDto>> getScrapedPosts(
+            HttpSession session,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        String username = getUsernameFromSession(session);
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+        Page<UserPostDto> scraps = myPageService.getScrapedPosts(username, pageable);
+        return ResponseEntity.ok(scraps);
+    }
+
+    /**
      * 닉네임 변경
      * PUT /api/mypage/nickname
      */
