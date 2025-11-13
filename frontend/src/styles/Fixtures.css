@@ -247,6 +247,7 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 15px;
+  min-height: 170px;
 }
 
 /* 팀 정보 */
@@ -267,9 +268,11 @@
 }
 
 .team-logo {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
+  width: 120px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .team-details {
@@ -393,8 +396,8 @@
   }
 
   .team-logo {
-    width: 50px;
-    height: 50px;
+    width: 100px;
+    height: 120px;
   }
 
   .team-name {
