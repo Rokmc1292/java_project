@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -88,16 +89,26 @@ public class PredictionService {
     }
 
     /**
-     * 사용자가 이미 예측한 경기인지 확인 (일반 경기)
+     * 사용자가 이미 예측한 경기인지 확인 (일반 경기 + MMA 경기 지원)
      */
     @Transactional(readOnly = true)
     public boolean hasUserPredicted(Long matchId, String username) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("경기를 찾을 수 없습니다."));
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        return predictionRepository.findByMatchAndUser(match, user).isPresent();
+        // 먼저 Match 테이블 확인
+        Optional<Match> matchOpt = matchRepository.findById(matchId);
+        if (matchOpt.isPresent()) {
+            return predictionRepository.findByMatchAndUser(matchOpt.get(), user).isPresent();
+        }
+
+        // Match에 없으면 MmaFight 테이블 확인
+        Optional<MmaFight> fightOpt = mmaFightRepository.findById(matchId);
+        if (fightOpt.isPresent()) {
+            return mmaPredictionRepository.findByFightAndUser(fightOpt.get(), user).isPresent();
+        }
+
+        throw new RuntimeException("경기를 찾을 수 없습니다.");
     }
 
     /**
@@ -251,37 +262,66 @@ public class PredictionService {
     // ========== 예측 조회 ==========
 
     /**
-     * 특정 경기의 모든 예측 조회
+     * 특정 경기의 모든 예측 조회 (일반 경기 + MMA 경기 지원)
      */
     @Transactional(readOnly = true)
     public Page<PredictionDto> getPredictionsByMatch(Long matchId, Pageable pageable) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("경기를 찾을 수 없습니다."));
+        // 먼저 Match 테이블 확인
+        Optional<Match> matchOpt = matchRepository.findById(matchId);
+        if (matchOpt.isPresent()) {
+            return predictionRepository.findByMatchOrderByLikeCountDescCreatedAtDesc(matchOpt.get(), pageable)
+                    .map(this::convertToDto);
+        }
 
-        return predictionRepository.findByMatchOrderByLikeCountDescCreatedAtDesc(match, pageable)
-                .map(this::convertToDto);
+        // Match에 없으면 MmaFight 테이블 확인
+        Optional<MmaFight> fightOpt = mmaFightRepository.findById(matchId);
+        if (fightOpt.isPresent()) {
+            return mmaPredictionRepository.findByFightOrderByLikeCountDescCreatedAtDesc(fightOpt.get(), pageable)
+                    .map(this::convertMmaPredictionToDto);
+        }
+
+        throw new RuntimeException("경기를 찾을 수 없습니다.");
     }
 
     /**
-     * 특정 경기의 예측 통계 조회
+     * 특정 경기의 예측 통계 조회 (일반 경기 + MMA 경기 지원)
      */
     @Transactional(readOnly = true)
     public PredictionStatisticsDto getPredictionStatistics(Long matchId) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("경기를 찾을 수 없습니다."));
+        // 먼저 Match 테이블 확인
+        Optional<Match> matchOpt = matchRepository.findById(matchId);
+        if (matchOpt.isPresent()) {
+            Match match = matchOpt.get();
+            PredictionStatistics stats = predictionStatisticsRepository.findByMatch(match)
+                    .orElseGet(() -> {
+                        PredictionStatistics newStats = new PredictionStatistics();
+                        newStats.setMatch(match);
+                        newStats.setHomeVotes(0);
+                        newStats.setDrawVotes(0);
+                        newStats.setAwayVotes(0);
+                        newStats.setTotalVotes(0);
+                        return newStats;
+                    });
+            return convertStatisticsToDto(stats);
+        }
 
-        PredictionStatistics stats = predictionStatisticsRepository.findByMatch(match)
-                .orElseGet(() -> {
-                    PredictionStatistics newStats = new PredictionStatistics();
-                    newStats.setMatch(match);
-                    newStats.setHomeVotes(0);
-                    newStats.setDrawVotes(0);
-                    newStats.setAwayVotes(0);
-                    newStats.setTotalVotes(0);
-                    return newStats;
-                });
+        // Match에 없으면 MmaFight 테이블 확인
+        Optional<MmaFight> fightOpt = mmaFightRepository.findById(matchId);
+        if (fightOpt.isPresent()) {
+            MmaFight fight = fightOpt.get();
+            MmaPredictionStatistics stats = mmaPredictionStatisticsRepository.findByFight(fight)
+                    .orElseGet(() -> {
+                        MmaPredictionStatistics newStats = new MmaPredictionStatistics();
+                        newStats.setFight(fight);
+                        newStats.setFighter1Votes(0);
+                        newStats.setFighter2Votes(0);
+                        newStats.setTotalVotes(0);
+                        return newStats;
+                    });
+            return convertMmaStatisticsToDto(stats);
+        }
 
-        return convertStatisticsToDto(stats);
+        throw new RuntimeException("경기를 찾을 수 없습니다.");
     }
 
     /**
