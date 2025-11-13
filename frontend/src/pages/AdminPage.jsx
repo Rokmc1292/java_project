@@ -493,7 +493,8 @@ function AdminPage() {
                             <tr>
                                 <th>ID</th>
                                 <th>유형</th>
-                                <th>대상 ID</th>
+                                <th>신고 대상 내용</th>
+                                <th>작성자</th>
                                 <th>신고자</th>
                                 <th>사유</th>
                                 <th>설명</th>
@@ -507,7 +508,21 @@ function AdminPage() {
                                 <tr key={report.reportId}>
                                     <td>{report.reportId}</td>
                                     <td><span className="type-badge">{report.targetType}</span></td>
-                                    <td>{report.targetId}</td>
+                                    <td className="description-cell">
+                                        {report.targetDeleted ? (
+                                            <span style={{color: '#999', fontStyle: 'italic'}}>
+                                                [삭제된 {report.targetType === 'COMMENT' ? '댓글' : '게시글'}]
+                                            </span>
+                                        ) : (
+                                            <div>
+                                                <strong>{report.targetType === 'COMMENT' ? '댓글' : '게시글'} #{report.targetId}:</strong>
+                                                <div style={{marginTop: '4px', color: '#555'}}>
+                                                    {report.targetContent || '(내용 없음)'}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </td>
+                                    <td>{report.targetAuthor || '-'}</td>
                                     <td>{report.reporter.nickname}</td>
                                     <td>{report.reason}</td>
                                     <td className="description-cell">{report.description}</td>
@@ -519,13 +534,14 @@ function AdminPage() {
                                     </td>
                                     <td>{formatDate(report.createdAt)}</td>
                                     <td>
-                                        {report.status === 'PENDING' && (
+                                        {report.status === 'PENDING' && !report.targetDeleted && (
                                             <div className="action-buttons">
                                                 <button
                                                     onClick={() => processReport(report.reportId, 'PROCESSED')}
                                                     className="admin-action-btn approve"
+                                                    title={report.targetType === 'COMMENT' ? '댓글 삭제' : '게시글 블라인드'}
                                                 >
-                                                    승인
+                                                    {report.targetType === 'COMMENT' ? '댓글 삭제' : '승인'}
                                                 </button>
                                                 <button
                                                     onClick={() => processReport(report.reportId, 'REJECTED')}
@@ -534,6 +550,9 @@ function AdminPage() {
                                                     거부
                                                 </button>
                                             </div>
+                                        )}
+                                        {report.targetDeleted && (
+                                            <span style={{color: '#999', fontSize: '12px'}}>이미 삭제됨</span>
                                         )}
                                     </td>
                                 </tr>
