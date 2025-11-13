@@ -26,20 +26,20 @@ public class MatchService {
 
     /**
      * 특정 경기 상세 정보 조회
-     * Match 테이블을 먼저 확인하고, 없으면 MmaFight 테이블 확인
+     * MmaFight 테이블을 먼저 확인하여 ID 충돌 방지
      */
     @Transactional(readOnly = true)
     public MatchDto getMatchById(Long matchId) {
-        // 먼저 Match 테이블 확인
-        Optional<Match> matchOpt = matchRepository.findById(matchId);
-        if (matchOpt.isPresent()) {
-            return convertToDto(matchOpt.get());
-        }
-
-        // Match에 없으면 MmaFight 테이블 확인
+        // 먼저 MmaFight 테이블 확인 (ID 충돌 방지)
         Optional<MmaFight> fightOpt = mmaFightRepository.findById(matchId);
         if (fightOpt.isPresent()) {
             return convertMmaFightToDto(fightOpt.get());
+        }
+
+        // MmaFight에 없으면 Match 테이블 확인
+        Optional<Match> matchOpt = matchRepository.findById(matchId);
+        if (matchOpt.isPresent()) {
+            return convertToDto(matchOpt.get());
         }
 
         throw new RuntimeException("경기를 찾을 수 없습니다.");
