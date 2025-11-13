@@ -31,27 +31,108 @@ public class Ligue1LiveScoreUpdater {
     private final MatchRepository matchRepository;
     private final Ligue1CrawlerService crawlerService;
 
+    /**
+     * 서버 시작 시 LIVE 상태로 남아있는 경기들을 즉시 크롤링하여 업데이트
+     * 로컬 개발 환경과 24시간 서버 모두에서 정상 작동하도록 개선
+     * 서버가 중단되었다가 다시 시작되면 실제 경기 상태를 확인하여 동기화
+     */
     @EventListener(ApplicationReadyEvent.class)
     @Transactional
     public void checkStuckLiveMatchesOnStartup() {
-        log.info("🔍 [Ligue1] 서버 시작 - LIVE 상태 경기 점검 시작");
+        log.info("🔍 [Ligue1] 서버 시작 - LIVE 상태 경기 즉시 크롤링 시작");
+
         try {
+            // 리그 1 리그의 LIVE 상태 경기 조회
             List<Match> liveMatches = matchRepository.findByStatus("LIVE");
             List<Match> leagueMatches = liveMatches.stream()
-                    .filter(m -> m.getLeague().getLeagueId().equals(9L)).toList();
-            if (leagueMatches.isEmpty()) { log.info("✅ [Ligue1] LIVE 상태 경기 없음"); return; }
-            log.info("⚠️ [Ligue1] LIVE 상태 경기 {}개 발견", leagueMatches.size());
-            LocalDateTime now = LocalDateTime.now();
-            List<Match> stuckMatches = leagueMatches.stream()
-                    .filter(m -> m.getMatchDate().plusHours(3).isBefore(now)).toList();
-            if (stuckMatches.isEmpty()) { log.info("✅ [Ligue1] 모든 LIVE 경기가 정상 범위 내"); return; }
-            log.info("🔄 [Ligue1] 과거 LIVE 경기 {}개 발견 - FINISHED로 업데이트", stuckMatches.size());
-            for (Match match : stuckMatches) {
-                match.setStatus("FINISHED"); match.setUpdatedAt(LocalDateTime.now()); matchRepository.save(match);
-                log.info("✅ 업데이트: {} {} - {} {}", match.getHomeTeam().getTeamName(),
-                    match.getHomeScore(), match.getAwayScore(), match.getAwayTeam().getTeamName());
+                    .filter(m -> m.getLeague().getLeagueId().equals(9L))
+                    .toList();
+
+            if (leagueMatches.isEmpty()) {
+                log.info("✅ [Ligue1] LIVE 상태 경기 없음");
+                return;
             }
-        } catch (Exception e) { log.error("❌ [Ligue1] LIVE 경기 점검 실패", e); }
+
+            log.info("⚠️ [Ligue1] LIVE 상태 경기 {}개 발견 - 즉시 크롤링 시작", leagueMatches.size());
+
+            // 즉시 크롤링 수행하여 실제 상태 확인
+            WebDriver driver = null;
+            try {
+                driver = crawlerService.setupDriver();
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+
+                String baseUrl = "https://sports.news.naver.com/wfootball/schedule/index?category=ligue1";
+                driver.get(baseUrl);
+                wait.until(ExpectedConditions.presenceOfElementLocated(By.cssSelector("body")));
+                Thread.sleep(2000);
+
+                List<WebElement> matchElements = driver.findElements(By.cssSelector(".MatchBox_match_item__WiPhj"));
+
+                if (matchElements.isEmpty()) {
+                    log.warn("⚠️ [Ligue1] 웹에서 경기 요소를 찾지 못함 - 시간 기반 처리");
+                    // 웹에서 찾지 못한 경우, 모든 LIVE 경기를 시간 기반으로 처리
+                    LocalDateTime now = LocalDateTime.now();
+                    for (Match match : leagueMatches) {
+                        if (match.getMatchDate().plusHours(3).isBefore(now)) {
+                            match.setStatus("FINISHED");
+                            match.setUpdatedAt(now);
+                            matchRepository.save(match);
+                            log.info("🏁 [Ligue1] 과거 경기 종료 처리: {} vs {}",
+                                    match.getHomeTeam().getTeamName(),
+                                    match.getAwayTeam().getTeamName());
+                        }
+                    }
+                    return;
+                }
+
+                log.info("📋 [Ligue1] 웹에서 {}개 경기 요소 발견", matchElements.size());
+
+                int updatedCount = 0;
+                int finishedCount = 0;
+                LocalDateTime now = LocalDateTime.now();
+
+                for (Match match : leagueMatches) {
+                    WebElement matchElement = findMatchElement(matchElements, match);
+
+                    if (matchElement != null) {
+                        // 웹에서 찾았으면 실제 상태로 업데이트
+                        boolean updated = updateMatchScore(matchElement, match);
+                        if (updated) {
+                            updatedCount++;
+                            if ("FINISHED".equals(match.getStatus())) {
+                                finishedCount++;
+                            }
+                        }
+                    } else {
+                        // 웹에서 찾지 못한 경기는 시간 기반으로 처리
+                        if (match.getMatchDate().plusHours(3).isBefore(now)) {
+                            match.setStatus("FINISHED");
+                            match.setUpdatedAt(now);
+                            matchRepository.save(match);
+                            finishedCount++;
+                            log.info("🏁 [Ligue1] 과거 경기 종료 처리: {} vs {}",
+                                    match.getHomeTeam().getTeamName(),
+                                    match.getAwayTeam().getTeamName());
+                        }
+                    }
+                }
+
+                log.info("✅ [Ligue1] 서버 시작 크롤링 완료 - 업데이트: {}개, 종료: {}개",
+                        updatedCount, finishedCount);
+
+            } finally {
+                if (driver != null) {
+                    try {
+                        driver.quit();
+                    } catch (Exception e) {
+                        log.warn("⚠️ WebDriver 종료 중 오류: {}", e.getMessage());
+                    }
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("❌ [Ligue1] LIVE 상태 경기 크롤링 실패", e);
+        }
     }
 
     /**
