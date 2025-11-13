@@ -1,9 +1,12 @@
 package com.example.backend.dto;
 
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 public class NewsDto {
     private Long newsId;
     private String sportName;
@@ -15,4 +18,6 @@ public class NewsDto {
     private String sourceName;
     private LocalDateTime publishedAt;
     private Integer viewCount;
+    private Integer likeCount;
+    private Boolean isLiked; // 현재 사용자가 좋아요 눌렀는지
 }

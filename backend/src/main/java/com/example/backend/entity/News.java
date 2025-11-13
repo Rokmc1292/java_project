@@ -45,6 +45,9 @@ public class News {
     @Column(name = "view_count")
     private Integer viewCount = 0;
 
+    @Column(name = "like_count")
+    private Integer likeCount = 0;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
