@@ -92,6 +92,7 @@ public class NewsLikeService {
                     dto.setPublishedAt(news.getPublishedAt());
                     dto.setViewCount(news.getViewCount());
                     dto.setLikeCount(news.getLikeCount());
+                    dto.setIsLiked(true);  // 좋아요한 뉴스이므로 항상 true
                     return dto;
                 });
     }
