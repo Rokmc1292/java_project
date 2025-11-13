@@ -357,33 +357,37 @@ public class EplLiveScoreUpdater {
     /**
      * 경기 시작 시간 기준으로 SCHEDULED -> LIVE 상태 변경
      * 5분마다 실행하여 경기 시작 확인
+     * EPL 리그만 처리
      */
     @Scheduled(fixedDelay = 300000, initialDelay = 60000)
     @Transactional
     public void checkMatchStartTime() {
         LocalDateTime now = LocalDateTime.now();
 
-        // SCHEDULED 상태이면서 경기 시작 시간이 지난 경기 조회
+        // SCHEDULED 상태이면서 EPL 리그(league_id = 1)인 경기 조회
         List<Match> scheduledMatches = matchRepository.findByStatus("SCHEDULED");
 
         int updatedCount = 0;
 
         for (Match match : scheduledMatches) {
-            // 경기 시작 시간이 현재 시간보다 이전이면 LIVE로 변경
-            if (match.getMatchDate().isBefore(now)) {
-                match.setStatus("LIVE");
-                matchRepository.save(match);
-                updatedCount++;
+            // EPL 경기만 처리
+            if (match.getLeague().getLeagueId().equals(1L)) {
+                // 경기 시작 시간이 현재 시간보다 이전이면 LIVE로 변경
+                if (match.getMatchDate().isBefore(now)) {
+                    match.setStatus("LIVE");
+                    matchRepository.save(match);
+                    updatedCount++;
 
-                log.info("🟢 경기 시작: {} vs {} ({})",
-                        match.getHomeTeam().getTeamName(),
-                        match.getAwayTeam().getTeamName(),
-                        match.getMatchDate());
+                    log.info("🟢 경기 시작: {} vs {} ({})",
+                            match.getHomeTeam().getTeamName(),
+                            match.getAwayTeam().getTeamName(),
+                            match.getMatchDate());
+                }
             }
         }
 
         if (updatedCount > 0) {
-            log.info("✅ {}개 경기가 LIVE 상태로 변경됨", updatedCount);
+            log.info("✅ {}개 EPL 경기가 LIVE 상태로 변경됨", updatedCount);
         }
     }
 }
