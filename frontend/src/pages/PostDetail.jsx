@@ -386,7 +386,11 @@ function PostDetail() {
                 </div>
 
                 <div style={{ marginBottom: '10px', whiteSpace: 'pre-wrap' }}>
-                    {comment.content}
+                    {comment.isDeleted ? (
+                        <span style={{ color: '#999', fontStyle: 'italic' }}>삭제된 댓글입니다.</span>
+                    ) : (
+                        comment.content
+                    )}
                 </div>
 
                 {!comment.isDeleted && (

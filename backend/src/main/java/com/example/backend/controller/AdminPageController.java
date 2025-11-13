@@ -290,8 +290,10 @@ public class AdminPageController {
                     });
                 } else if ("COMMENT".equals(report.getTargetType())) {
                     commentRepository.findById(report.getTargetId()).ifPresent(comment -> {
+                        log.info("댓글 삭제 처리 - commentId: {}, 이전 상태: {}", comment.getCommentId(), comment.getIsDeleted());
                         comment.setIsDeleted(true);
                         commentRepository.save(comment);
+                        log.info("댓글 삭제 완료 - commentId: {}, 현재 상태: {}", comment.getCommentId(), comment.getIsDeleted());
                     });
                 }
 
