@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,12 +26,23 @@ public class MatchService {
 
     /**
      * 특정 경기 상세 정보 조회
+     * Match 테이블을 먼저 확인하고, 없으면 MmaFight 테이블 확인
      */
     @Transactional(readOnly = true)
     public MatchDto getMatchById(Long matchId) {
-        Match match = matchRepository.findById(matchId)
-                .orElseThrow(() -> new RuntimeException("경기를 찾을 수 없습니다."));
-        return convertToDto(match);
+        // 먼저 Match 테이블 확인
+        Optional<Match> matchOpt = matchRepository.findById(matchId);
+        if (matchOpt.isPresent()) {
+            return convertToDto(matchOpt.get());
+        }
+
+        // Match에 없으면 MmaFight 테이블 확인
+        Optional<MmaFight> fightOpt = mmaFightRepository.findById(matchId);
+        if (fightOpt.isPresent()) {
+            return convertMmaFightToDto(fightOpt.get());
+        }
+
+        throw new RuntimeException("경기를 찾을 수 없습니다.");
     }
 
     @Transactional(readOnly = true)
