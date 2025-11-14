@@ -73,12 +73,10 @@ const MyPage = () => {
    * 로그아웃 처리
    */
   const handleLogout = () => {
-    if (window.confirm('로그아웃 하시겠습니까?')) {
-      // 로컬 스토리지에서 사용자 정보 삭제
-      localStorage.removeItem('user');
-      // 로그인 페이지로 이동
-      navigate('/login');
-    }
+    // 로컬 스토리지에서 사용자 정보 삭제
+    localStorage.removeItem('user');
+    // 로그인 페이지로 이동
+    navigate('/login');
   };
 
   if (loading) {
