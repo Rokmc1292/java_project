@@ -399,7 +399,9 @@ public class NbaScheduleCrawler {
 
                 // 이미 존재하는 경기인지 확인 (중복 방지)
                 // 날짜(연/월/일)가 정확히 같은 경기들을 먼저 찾음
-                List<Match> existingMatches = matchRepository.findByMatchDate(dto.getMatchDate());
+                LocalDateTime startOfDay = dto.getMatchDate().toLocalDate().atStartOfDay();
+                LocalDateTime startOfNextDay = startOfDay.plusDays(1);
+                List<Match> existingMatches = matchRepository.findByMatchDate(startOfDay, startOfNextDay);
 
                 // 같은 팀 조합의 경기 필터링
                 List<Match> sameTeamMatches = existingMatches.stream()

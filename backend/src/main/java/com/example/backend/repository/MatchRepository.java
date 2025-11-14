@@ -16,9 +16,10 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
 
     /**
      * 특정 날짜의 경기 조회 (전체 종목)
+     * 날짜 범위로 검색하여 정확한 날짜 매칭 보장
      */
-    @Query("SELECT m FROM Match m WHERE DATE(m.matchDate) = DATE(:date) ORDER BY m.matchDate ASC")
-    List<Match> findByMatchDate(@Param("date") LocalDateTime date);
+    @Query("SELECT m FROM Match m WHERE m.matchDate >= :startOfDay AND m.matchDate < :startOfNextDay ORDER BY m.matchDate ASC")
+    List<Match> findByMatchDate(@Param("startOfDay") LocalDateTime startOfDay, @Param("startOfNextDay") LocalDateTime startOfNextDay);
 
     /**
      * 특정 날짜의 경기 조회 (종목별)
