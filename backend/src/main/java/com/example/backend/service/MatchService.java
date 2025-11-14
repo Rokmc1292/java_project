@@ -48,11 +48,12 @@ public class MatchService {
     @Transactional(readOnly = true)
     public List<MatchDto> getMatchesByDate(LocalDate date, String sportType) {
         LocalDateTime dateTime = date.atStartOfDay();
+        LocalDateTime nextDay = dateTime.plusDays(1);
         List<MatchDto> result = new ArrayList<>();
 
         if (sportType == null || sportType.isEmpty() || sportType.equals("ALL")) {
             // 전체 종목 조회: Match + MmaFight
-            List<Match> matches = matchRepository.findByMatchDate(dateTime);
+            List<Match> matches = matchRepository.findByMatchDate(dateTime, nextDay);
             result.addAll(convertMatchesToDto(matches));
 
             List<MmaFight> mmaFights = mmaFightRepository.findByFightDate(date);
