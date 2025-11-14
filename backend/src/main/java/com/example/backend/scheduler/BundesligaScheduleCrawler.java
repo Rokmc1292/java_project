@@ -373,7 +373,9 @@ public class BundesligaScheduleCrawler {
 
                 // 날짜 기반 LIVE 매칭 로직 (수정됨)
                 // 1단계: 정확한 날짜(년/월/일)로 경기 찾기
-                List<Match> existingMatches = matchRepository.findByMatchDate(dto.getMatchDate());
+                LocalDateTime startOfDay = dto.getMatchDate().toLocalDate().atStartOfDay();
+                LocalDateTime startOfNextDay = startOfDay.plusDays(1);
+                List<Match> existingMatches = matchRepository.findByMatchDate(startOfDay, startOfNextDay);
 
                 // 2단계: 같은 팀 조합 필터링
                 List<Match> sameTeamMatches = existingMatches.stream()
