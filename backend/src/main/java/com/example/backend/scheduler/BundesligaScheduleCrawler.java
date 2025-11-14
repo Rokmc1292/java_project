@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 분데스리가 전체 시즌 일정 크롤러
@@ -370,28 +371,23 @@ public class BundesligaScheduleCrawler {
                 Team homeTeam = entityManager.getReference(Team.class, homeTeamId);
                 Team awayTeam = entityManager.getReference(Team.class, awayTeamId);
 
-                // 이미 존재하는 경기인지 확인 (중복 방지)
+                // 날짜 기반 LIVE 매칭 로직 (수정됨)
+                // 1단계: 정확한 날짜(년/월/일)로 경기 찾기
+                List<Match> existingMatches = matchRepository.findByMatchDate(dto.getMatchDate());
+
+                // 2단계: 같은 팀 조합 필터링
+                List<Match> sameTeamMatches = existingMatches.stream()
+                        .filter(m -> m.getHomeTeam().getTeamId().equals(homeTeamId)
+                                && m.getAwayTeam().getTeamId().equals(awayTeamId))
+                        .collect(Collectors.toList());
+
+                // 3단계: 여러 경기가 있으면 LIVE 우선, 없으면 첫 번째 경기
                 Match existingMatch = null;
-
-                // LIVE/FINISHED 경기인 경우, 같은 팀 조합의 LIVE/SCHEDULED 경기를 우선 찾음
-                if ("LIVE".equals(dto.getStatus()) || "FINISHED".equals(dto.getStatus())) {
-                    List<Match> liveOrScheduledMatches = matchRepository.findLiveOrScheduledMatchByTeams(
-                            homeTeamId, awayTeamId, dto.getMatchDate());
-                    if (!liveOrScheduledMatches.isEmpty()) {
-                        existingMatch = liveOrScheduledMatches.get(0);
-                        log.debug("  🎯 LIVE/SCHEDULED 경기 매칭: {} vs {} (DB 상태: {})",
-                                dto.getHomeTeamName(), dto.getAwayTeamName(), existingMatch.getStatus());
-                    }
-                }
-
-                // LIVE/SCHEDULED 매칭 실패 시 날짜로 매칭
-                if (existingMatch == null) {
-                    List<Match> existingMatches = matchRepository.findByMatchDate(dto.getMatchDate());
-                    existingMatch = existingMatches.stream()
-                            .filter(m -> m.getHomeTeam().getTeamId().equals(homeTeamId)
-                                    && m.getAwayTeam().getTeamId().equals(awayTeamId))
+                if (!sameTeamMatches.isEmpty()) {
+                    existingMatch = sameTeamMatches.stream()
+                            .filter(m -> "LIVE".equals(m.getStatus()))
                             .findFirst()
-                            .orElse(null);
+                            .orElse(sameTeamMatches.get(0));
                 }
 
                 if (existingMatch != null) {

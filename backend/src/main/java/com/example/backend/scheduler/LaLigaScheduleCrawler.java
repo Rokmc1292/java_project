@@ -371,27 +371,22 @@ public class LaLigaScheduleCrawler {
                 Team awayTeam = entityManager.getReference(Team.class, awayTeamId);
 
                 // 이미 존재하는 경기인지 확인 (중복 방지)
+                // 날짜(연/월/일)가 정확히 같은 경기들을 먼저 찾음
+                List<Match> existingMatches = matchRepository.findByMatchDate(dto.getMatchDate());
+
+                // 같은 팀 조합의 경기 필터링
+                List<Match> sameTeamMatches = existingMatches.stream()
+                        .filter(m -> m.getHomeTeam().getTeamId().equals(homeTeamId)
+                                && m.getAwayTeam().getTeamId().equals(awayTeamId))
+                        .collect(Collectors.toList());
+
+                // 같은 날짜, 같은 팀 조합의 경기가 여러 개 있을 경우 LIVE 우선 선택
                 Match existingMatch = null;
-
-                // LIVE/FINISHED 경기인 경우, 같은 팀 조합의 LIVE/SCHEDULED 경기를 우선 찾음
-                if ("LIVE".equals(dto.getStatus()) || "FINISHED".equals(dto.getStatus())) {
-                    List<Match> liveOrScheduledMatches = matchRepository.findLiveOrScheduledMatchByTeams(
-                            homeTeamId, awayTeamId, dto.getMatchDate());
-                    if (!liveOrScheduledMatches.isEmpty()) {
-                        existingMatch = liveOrScheduledMatches.get(0);
-                        log.debug("  🎯 LIVE/SCHEDULED 경기 매칭: {} vs {} (DB 상태: {})",
-                                dto.getHomeTeamName(), dto.getAwayTeamName(), existingMatch.getStatus());
-                    }
-                }
-
-                // LIVE/SCHEDULED 매칭 실패 시 날짜로 매칭
-                if (existingMatch == null) {
-                    List<Match> existingMatches = matchRepository.findByMatchDate(dto.getMatchDate());
-                    existingMatch = existingMatches.stream()
-                            .filter(m -> m.getHomeTeam().getTeamId().equals(homeTeamId)
-                                    && m.getAwayTeam().getTeamId().equals(awayTeamId))
+                if (!sameTeamMatches.isEmpty()) {
+                    existingMatch = sameTeamMatches.stream()
+                            .filter(m -> "LIVE".equals(m.getStatus()))
                             .findFirst()
-                            .orElse(null);
+                            .orElse(sameTeamMatches.get(0)); // LIVE가 없으면 첫 번째 경기
                 }
 
                 if (existingMatch != null) {
