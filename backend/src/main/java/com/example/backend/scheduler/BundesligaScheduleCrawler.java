@@ -189,7 +189,7 @@ public class BundesligaScheduleCrawler {
 
                         for (WebElement match : matches) {
                             try {
-                                MatchCrawlDto matchDto = extractMatchData(match, dateText, year);
+                                MatchCrawlDto matchDto = extractMatchData(match, dateText, year, month);
                                 if (matchDto != null) {
                                     monthMatches.add(matchDto);
                                 }
@@ -228,7 +228,7 @@ public class BundesligaScheduleCrawler {
     /**
      * 개별 경기 데이터 추출
      */
-    private MatchCrawlDto extractMatchData(WebElement matchElement, String dateText, int year) {
+    private MatchCrawlDto extractMatchData(WebElement matchElement, String dateText, int year, int targetMonth) {
         try {
             // 경기 시간
             String matchTime = matchElement.findElement(By.cssSelector(".MatchBox_time__Zt5-d")).getText().strip();
@@ -276,7 +276,7 @@ public class BundesligaScheduleCrawler {
             // SCHEDULED, POSTPONED 등은 무조건 점수를 null로 유지
 
             // 날짜 파싱
-            LocalDateTime matchDate = parseDate(dateText, matchTime, year);
+            LocalDateTime matchDate = parseDate(dateText, matchTime, year, targetMonth);
             if (matchDate == null) {
                 return null;
             }
@@ -301,12 +301,13 @@ public class BundesligaScheduleCrawler {
     /**
      * 날짜 파싱
      * "3월 15일(토)" + "14:30" -> LocalDateTime
+     * targetMonth를 기준으로 연도를 자동 조정 (연말/연초 경기 처리)
      */
-    private LocalDateTime parseDate(String dateText, String timeText, int year) {
+    private LocalDateTime parseDate(String dateText, String timeText, int year, int targetMonth) {
         try {
             // "3월 15일(토)" -> 3, 15 추출
             String datePart = dateText.split("\\(")[0].strip();
-            int month = Integer.parseInt(datePart.split("월")[0]);
+            int parsedMonth = Integer.parseInt(datePart.split("월")[0]);
             int day = Integer.parseInt(datePart.split("월")[1].replace("일", "").strip());
 
             // "14:30" -> 14, 30 추출
@@ -315,7 +316,17 @@ public class BundesligaScheduleCrawler {
             int hour = Integer.parseInt(timeParts[0]);
             int minute = Integer.parseInt(timeParts[1]);
 
-            return LocalDateTime.of(year, month, day, hour, minute);
+            // 연도 자동 조정
+            // 예: 12월 크롤링 중 1월 경기가 나오면 다음 해로 조정
+            // 예: 1월 크롤링 중 12월 경기가 나오면 이전 해로 조정
+            int adjustedYear = year;
+            if (targetMonth == 12 && parsedMonth == 1) {
+                adjustedYear = year + 1;
+            } else if (targetMonth == 1 && parsedMonth == 12) {
+                adjustedYear = year - 1;
+            }
+
+            return LocalDateTime.of(adjustedYear, parsedMonth, day, hour, minute);
 
         } catch (Exception e) {
             log.warn("⚠️ 날짜 파싱 오류: {} | {}", dateText, timeText);
