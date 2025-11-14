@@ -371,12 +371,28 @@ public class Ligue1ScheduleCrawler {
                 Team awayTeam = entityManager.getReference(Team.class, awayTeamId);
 
                 // 이미 존재하는 경기인지 확인 (중복 방지)
-                List<Match> existingMatches = matchRepository.findByMatchDate(dto.getMatchDate());
-                Match existingMatch = existingMatches.stream()
-                        .filter(m -> m.getHomeTeam().getTeamId().equals(homeTeamId)
-                                && m.getAwayTeam().getTeamId().equals(awayTeamId))
-                        .findFirst()
-                        .orElse(null);
+                Match existingMatch = null;
+
+                // LIVE/FINISHED 경기인 경우, 같은 팀 조합의 LIVE/SCHEDULED 경기를 우선 찾음
+                if ("LIVE".equals(dto.getStatus()) || "FINISHED".equals(dto.getStatus())) {
+                    List<Match> liveOrScheduledMatches = matchRepository.findLiveOrScheduledMatchByTeams(
+                            homeTeamId, awayTeamId, dto.getMatchDate());
+                    if (!liveOrScheduledMatches.isEmpty()) {
+                        existingMatch = liveOrScheduledMatches.get(0);
+                        log.debug("  🎯 LIVE/SCHEDULED 경기 매칭: {} vs {} (DB 상태: {})",
+                                dto.getHomeTeamName(), dto.getAwayTeamName(), existingMatch.getStatus());
+                    }
+                }
+
+                // LIVE/SCHEDULED 매칭 실패 시 날짜로 매칭
+                if (existingMatch == null) {
+                    List<Match> existingMatches = matchRepository.findByMatchDate(dto.getMatchDate());
+                    existingMatch = existingMatches.stream()
+                            .filter(m -> m.getHomeTeam().getTeamId().equals(homeTeamId)
+                                    && m.getAwayTeam().getTeamId().equals(awayTeamId))
+                            .findFirst()
+                            .orElse(null);
+                }
 
                 if (existingMatch != null) {
                     // 기존 경기 업데이트

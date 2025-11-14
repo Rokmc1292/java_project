@@ -100,4 +100,21 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
             @Param("leagueId") long leagueId,
             @Param("date") LocalDateTime date
     );
+
+    /**
+     * 같은 팀 조합의 LIVE/SCHEDULED 경기 조회 (실시간 크롤링용)
+     * LIVE 경기를 우선으로 찾고, 없으면 최근 SCHEDULED 경기를 반환
+     */
+    @Query("SELECT m FROM Match m " +
+            "WHERE m.homeTeam.teamId = :homeTeamId " +
+            "AND m.awayTeam.teamId = :awayTeamId " +
+            "AND (m.status = 'LIVE' OR m.status = 'SCHEDULED') " +
+            "ORDER BY " +
+            "CASE WHEN m.status = 'LIVE' THEN 0 ELSE 1 END, " +
+            "ABS(FUNCTION('TIMESTAMPDIFF', SECOND, m.matchDate, :targetDate)) ASC")
+    List<Match> findLiveOrScheduledMatchByTeams(
+            @Param("homeTeamId") Long homeTeamId,
+            @Param("awayTeamId") Long awayTeamId,
+            @Param("targetDate") LocalDateTime targetDate
+    );
 }
