@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Navbar from '../components/Navbar';
+import { Client } from '@stomp/stompjs';
+import SockJS from 'sockjs-client';
 
 // 환경변수에서 API Base URL 가져오기
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -16,6 +18,7 @@ function Live() {
   const [loading, setLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [currentChatroomId, setCurrentChatroomId] = useState(null);
+  const stompClientRef = useRef(null);
 
   // 로그인 상태 확인
   useEffect(() => {
@@ -78,8 +81,8 @@ function Live() {
     }
   };
 
-  // 채팅 메시지 전송
-  const sendMessage = async () => {
+  // 채팅 메시지 전송 (WebSocket)
+  const sendMessage = () => {
     if (!user) {
       alert('로그인 후 채팅에 참여할 수 있습니다.');
       return;
@@ -90,38 +93,23 @@ function Live() {
       return;
     }
 
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/live/chatroom/${currentChatroomId}/messages`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',  // 세션 쿠키 포함
-          body: JSON.stringify({
-            username: user.username,
-            message: newMessage
-          })
-        }
-      );
+    const client = stompClientRef.current;
 
-      if (response.ok) {
-        // 메시지 전송 성공 후 목록 새로고침
-        const messagesResponse = await fetch(
-          `${API_BASE_URL}/api/live/chatroom/${currentChatroomId}/messages`,
-          { credentials: 'include' }  // 세션 쿠키 포함
-        );
-        const messagesData = await messagesResponse.json();
-        setMessages(messagesData || []);
-        setNewMessage(''); // 입력창 초기화
-      } else {
-        const error = await response.json();
-        alert(error.message || '메시지 전송에 실패했습니다.');
-      }
-    } catch (error) {
-      console.error('메시지 전송 오류:', error);
-      alert('메시지 전송 중 오류가 발생했습니다.');
+    if (client && client.connected) {
+      // WebSocket을 통해 메시지 전송
+      client.publish({
+        destination: `/app/chat/${currentChatroomId}`,
+        body: JSON.stringify({
+          username: user.username,
+          message: newMessage
+        })
+      });
+
+      console.log('메시지 전송:', newMessage);
+      setNewMessage(''); // 입력창 초기화
+    } else {
+      console.error('WebSocket 연결이 끊어졌습니다.');
+      alert('채팅 연결이 끊어졌습니다. 페이지를 새로고침해주세요.');
     }
   };
 
@@ -144,10 +132,11 @@ function Live() {
     }
   }, [liveMatches]);
 
-  // 채팅방에 있을 때 3초마다 메시지 자동 새로고침
+  // WebSocket 연결 및 채팅방 구독
   useEffect(() => {
-    if (currentChatroomId) {
-      const fetchMessages = async () => {
+    if (currentChatroomId && user) {
+      // 기존 메시지 불러오기
+      const fetchInitialMessages = async () => {
         try {
           const messagesResponse = await fetch(
             `${API_BASE_URL}/api/live/chatroom/${currentChatroomId}/messages`,
@@ -156,14 +145,50 @@ function Live() {
           const messagesData = await messagesResponse.json();
           setMessages(messagesData || []);
         } catch (error) {
-          console.error('메시지 조회 실패:', error);
+          console.error('초기 메시지 조회 실패:', error);
         }
       };
 
-      const interval = setInterval(fetchMessages, 3000);  // 3초마다
-      return () => clearInterval(interval);
+      fetchInitialMessages();
+
+      // WebSocket 연결
+      const client = new Client({
+        webSocketFactory: () => new SockJS(`${API_BASE_URL}/ws`),
+        reconnectDelay: 5000,
+        heartbeatIncoming: 4000,
+        heartbeatOutgoing: 4000,
+        debug: (str) => {
+          console.log('STOMP Debug:', str);
+        },
+        onConnect: () => {
+          console.log('WebSocket 연결 성공!');
+
+          // 채팅방 구독
+          client.subscribe(`/topic/chatroom/${currentChatroomId}`, (message) => {
+            const receivedMessage = JSON.parse(message.body);
+            console.log('메시지 수신:', receivedMessage);
+
+            // 새 메시지를 messages 배열에 추가
+            setMessages((prevMessages) => [...prevMessages, receivedMessage]);
+          });
+        },
+        onStompError: (frame) => {
+          console.error('STOMP 에러:', frame);
+        }
+      });
+
+      client.activate();
+      stompClientRef.current = client;
+
+      // 컴포넌트 언마운트 시 연결 해제
+      return () => {
+        if (client && client.connected) {
+          client.deactivate();
+          console.log('WebSocket 연결 해제');
+        }
+      };
     }
-  }, [currentChatroomId]);
+  }, [currentChatroomId, user]);
 
   return (
     <div>
@@ -485,6 +510,7 @@ function Live() {
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                   placeholder="메시지를 입력하세요..."
                   style={{
                     flex: 1,
