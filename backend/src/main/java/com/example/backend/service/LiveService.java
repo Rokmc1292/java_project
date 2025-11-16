@@ -62,7 +62,7 @@ public class LiveService {
         Chatroom chatroom = chatroomRepository.findById(chatroomId)
                 .orElseThrow(() -> new RuntimeException("채팅방을 찾을 수 없습니다."));
 
-        List<ChatMessage> messages = chatMessageRepository.findByChatroomOrderByCreatedAtDesc(chatroom);
+        List<ChatMessage> messages = chatMessageRepository.findByChatroomOrderByCreatedAtAsc(chatroom);
 
         return messages.stream()
                 .map(this::convertToDto)
