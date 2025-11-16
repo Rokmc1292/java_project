@@ -19,6 +19,21 @@ function Live() {
   const [user, setUser] = useState(null);
   const [currentChatroomId, setCurrentChatroomId] = useState(null);
   const stompClientRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  // 시간 포맷 함수 (HH:mm)
+  const formatTime = (dateString) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
+  // 메시지 자동 스크롤
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
 
   // 로그인 상태 확인
   useEffect(() => {
@@ -460,47 +475,55 @@ function Live() {
                     채팅 메시지가 없습니다. 첫 메시지를 남겨보세요!
                   </div>
                 ) : (
-                  messages.map((msg) => (
-                    <div key={msg.messageId} style={{
-                      marginBottom: '12px',
-                      padding: '10px',
-                      backgroundColor: msg.isAdmin ? '#fff3cd' : 'white',
-                      border: msg.isAdmin ? '2px solid #ffc107' : '1px solid #e0e0e0',
-                      borderRadius: '8px'
-                    }}>
-                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>
-                        {msg.isAdmin && (
-                          <span style={{
-                            marginRight: '5px',
-                            padding: '3px 8px',
-                            backgroundColor: '#dc3545',
-                            color: 'white',
-                            borderRadius: '3px',
-                            fontSize: '10px',
-                            fontWeight: 'bold'
-                          }}>
-                            관리자
+                  <>
+                    {messages.map((msg) => (
+                      <div key={msg.messageId} style={{
+                        marginBottom: '12px',
+                        padding: '10px',
+                        backgroundColor: msg.isAdmin ? '#fff3cd' : 'white',
+                        border: msg.isAdmin ? '2px solid #ffc107' : '1px solid #e0e0e0',
+                        borderRadius: '8px'
+                      }}>
+                        <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <div>
+                            {msg.isAdmin && (
+                              <span style={{
+                                marginRight: '5px',
+                                padding: '3px 8px',
+                                backgroundColor: '#dc3545',
+                                color: 'white',
+                                borderRadius: '3px',
+                                fontSize: '10px',
+                                fontWeight: 'bold'
+                              }}>
+                                관리자
+                              </span>
+                            )}
+                            <span style={{ fontWeight: 'bold', color: msg.isAdmin ? '#d32f2f' : '#333' }}>
+                              {msg.nickname}
+                            </span>
+                            <span style={{
+                              marginLeft: '5px',
+                              padding: '2px 6px',
+                              backgroundColor: '#646cff',
+                              color: 'white',
+                              borderRadius: '3px',
+                              fontSize: '10px'
+                            }}>
+                              {msg.userTier}
+                            </span>
+                          </div>
+                          <span style={{ fontSize: '11px', color: '#999' }}>
+                            {formatTime(msg.createdAt)}
                           </span>
-                        )}
-                        <span style={{ fontWeight: 'bold', color: msg.isAdmin ? '#d32f2f' : '#333' }}>
-                          {msg.nickname}
-                        </span>
-                        <span style={{
-                          marginLeft: '5px',
-                          padding: '2px 6px',
-                          backgroundColor: '#646cff',
-                          color: 'white',
-                          borderRadius: '3px',
-                          fontSize: '10px'
-                        }}>
-                          {msg.userTier}
-                        </span>
+                        </div>
+                        <div style={{ marginTop: '5px', color: '#333', fontWeight: msg.isAdmin ? 'bold' : 'normal' }}>
+                          {msg.message}
+                        </div>
                       </div>
-                      <div style={{ marginTop: '5px', color: '#333', fontWeight: msg.isAdmin ? 'bold' : 'normal' }}>
-                        {msg.message}
-                      </div>
-                    </div>
-                  ))
+                    ))}
+                    <div ref={messagesEndRef} />
+                  </>
                 )}
               </div>
 

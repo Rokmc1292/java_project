@@ -104,7 +104,23 @@ function Fixtures() {
 
   // 승/패 팀 스타일 결정
   const getTeamStyle = (match, isHome) => {
-    if (match.detail.status !== 'FINISHED' || !match.score) {
+    if (match.detail.status !== 'FINISHED') {
+      return {};
+    }
+
+    // MMA 경기인 경우 winner 필드로 승자 판단
+    if (match.sportType === 'MMA' && match.detail.winner) {
+      const fighterName = isHome ? match.teams.home.name : match.teams.away.name;
+      const isWinner = match.detail.winner === fighterName;
+
+      return {
+        color: isWinner ? '#2e7d32' : '#c62828',
+        fontWeight: 'bold'
+      };
+    }
+
+    // 일반 경기인 경우 점수로 승자 판단
+    if (!match.score) {
       return {};
     }
 
