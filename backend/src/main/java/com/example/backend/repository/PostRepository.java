@@ -45,7 +45,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> searchByContentExcludingBlinded(@Param("keyword") String keyword, Pageable pageable);
 
     // 작성자(닉네임)로 검색 (블라인드 제외)
-    @Query("SELECT p FROM Post p WHERE p.nickname LIKE CONCAT('%', :keyword, '%') AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.user.nickname LIKE CONCAT('%', :keyword, '%') AND p.isBlinded = false ORDER BY p.createdAt DESC")
     Page<Post> searchByNicknameExcludingBlinded(@Param("keyword") String keyword, Pageable pageable);
 
     // 인기글 (전체)
