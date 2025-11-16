@@ -144,6 +144,27 @@ function Live() {
     }
   }, [liveMatches]);
 
+  // 채팅방에 있을 때 3초마다 메시지 자동 새로고침
+  useEffect(() => {
+    if (currentChatroomId) {
+      const fetchMessages = async () => {
+        try {
+          const messagesResponse = await fetch(
+            `${API_BASE_URL}/api/live/chatroom/${currentChatroomId}/messages`,
+            { credentials: 'include' }
+          );
+          const messagesData = await messagesResponse.json();
+          setMessages(messagesData || []);
+        } catch (error) {
+          console.error('메시지 조회 실패:', error);
+        }
+      };
+
+      const interval = setInterval(fetchMessages, 3000);  // 3초마다
+      return () => clearInterval(interval);
+    }
+  }, [currentChatroomId]);
+
   return (
     <div>
       <Navbar />
@@ -415,9 +436,28 @@ function Live() {
                   </div>
                 ) : (
                   messages.map((msg) => (
-                    <div key={msg.messageId} style={{ marginBottom: '10px' }}>
-                      <div style={{ fontSize: '12px', color: '#888' }}>
-                        <span style={{ fontWeight: 'bold', color: '#333' }}>
+                    <div key={msg.messageId} style={{
+                      marginBottom: '12px',
+                      padding: '10px',
+                      backgroundColor: msg.isAdmin ? '#fff3cd' : 'white',
+                      border: msg.isAdmin ? '2px solid #ffc107' : '1px solid #e0e0e0',
+                      borderRadius: '8px'
+                    }}>
+                      <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px' }}>
+                        {msg.isAdmin && (
+                          <span style={{
+                            marginRight: '5px',
+                            padding: '3px 8px',
+                            backgroundColor: '#dc3545',
+                            color: 'white',
+                            borderRadius: '3px',
+                            fontSize: '10px',
+                            fontWeight: 'bold'
+                          }}>
+                            관리자
+                          </span>
+                        )}
+                        <span style={{ fontWeight: 'bold', color: msg.isAdmin ? '#d32f2f' : '#333' }}>
                           {msg.nickname}
                         </span>
                         <span style={{
@@ -431,7 +471,7 @@ function Live() {
                           {msg.userTier}
                         </span>
                       </div>
-                      <div style={{ marginTop: '5px', color: '#333' }}>
+                      <div style={{ marginTop: '5px', color: '#333', fontWeight: msg.isAdmin ? 'bold' : 'normal' }}>
                         {msg.message}
                       </div>
                     </div>

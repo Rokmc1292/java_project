@@ -100,6 +100,7 @@ public class LiveService {
         dto.setUsername(chatMessage.getUser().getUsername());
         dto.setNickname(chatMessage.getUser().getNickname());
         dto.setUserTier(chatMessage.getUser().getTier());
+        dto.setIsAdmin(chatMessage.getUser().getIsAdmin());  // 관리자 여부 추가
         dto.setMessage(chatMessage.getMessage());
         dto.setMessageType(chatMessage.getMessageType());
         dto.setCreatedAt(chatMessage.getCreatedAt());

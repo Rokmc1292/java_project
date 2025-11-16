@@ -53,7 +53,8 @@ public class CommunityController {
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String categoryName,
             @RequestParam(required = false, defaultValue = "all") String type,
-            @RequestParam(required = false) String keyword,  // ⭐ 이 줄 추가
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false, defaultValue = "all") String searchType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
@@ -69,9 +70,9 @@ public class CommunityController {
 
         Page<PostDto> posts;
 
-        // ⭐ 검색어가 있으면 검색 API 호출
+        // 검색어가 있으면 검색 API 호출
         if (keyword != null && !keyword.trim().isEmpty()) {
-            posts = communityService.searchPosts(keyword, pageable);
+            posts = communityService.searchPosts(keyword, searchType, pageable);
         } else if ("popular".equals(type) || "인기글".equals(type)) {
             // 인기글 조회
             posts = communityService.getPopularPostsByCategory(categoryName, pageable);
@@ -92,11 +93,12 @@ public class CommunityController {
     @GetMapping("/posts/search")
     public ResponseEntity<Page<PostDto>> searchPosts(
             @RequestParam String keyword,
+            @RequestParam(required = false, defaultValue = "all") String searchType,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<PostDto> posts = communityService.searchPosts(keyword, pageable);
+        Page<PostDto> posts = communityService.searchPosts(keyword, searchType, pageable);
         return ResponseEntity.ok(posts);
     }
 

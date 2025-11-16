@@ -73,6 +73,15 @@ public interface MatchRepository extends JpaRepository<Match, Long> {
     );
 
     /**
+     * 예측 가능한 경기 조회 (D-2 경기, 전체 종목) - 페이징 없이 전체 조회
+     */
+    @Query("SELECT m FROM Match m WHERE m.matchDate BETWEEN :startDate AND :endDate AND m.status = 'SCHEDULED' ORDER BY m.matchDate ASC")
+    List<Match> findPredictableMatchesWithoutPaging(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
+    /**
      * 예측 가능한 경기 조회 (D-2 경기, 종목별)
      */
     @Query("SELECT m FROM Match m WHERE m.league.sport.sportName = :sportName AND m.matchDate BETWEEN :startDate AND :endDate AND m.status = 'SCHEDULED' ORDER BY m.matchDate ASC")

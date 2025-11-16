@@ -121,11 +121,33 @@ public class CommunityService {
 
     /**
      * 게시글 검색 (제목, 내용, 작성자) - 블라인드 제외
+     * @param keyword 검색 키워드
+     * @param searchType 검색 타입 (all, title, content, author)
+     * @param pageable 페이지 정보
      */
     @Transactional(readOnly = true)
-    public Page<PostDto> searchPosts(String keyword, Pageable pageable) {
-        return postRepository.searchByKeywordExcludingBlinded(keyword, pageable)
-                .map(this::convertToDto);
+    public Page<PostDto> searchPosts(String keyword, String searchType, Pageable pageable) {
+        if (searchType == null || searchType.isEmpty() || searchType.equals("all")) {
+            // 전체 검색 (제목 + 내용)
+            return postRepository.searchByKeywordExcludingBlinded(keyword, pageable)
+                    .map(this::convertToDto);
+        } else if (searchType.equals("title")) {
+            // 제목 검색
+            return postRepository.searchByTitleExcludingBlinded(keyword, pageable)
+                    .map(this::convertToDto);
+        } else if (searchType.equals("content")) {
+            // 내용 검색
+            return postRepository.searchByContentExcludingBlinded(keyword, pageable)
+                    .map(this::convertToDto);
+        } else if (searchType.equals("author")) {
+            // 작성자 검색
+            return postRepository.searchByNicknameExcludingBlinded(keyword, pageable)
+                    .map(this::convertToDto);
+        } else {
+            // 기본값: 전체 검색
+            return postRepository.searchByKeywordExcludingBlinded(keyword, pageable)
+                    .map(this::convertToDto);
+        }
     }
 
     /**
