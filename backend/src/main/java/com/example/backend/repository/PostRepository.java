@@ -29,23 +29,23 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByUser(User user, Pageable pageable);
 
     // 검색
-    @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword% OR p.content LIKE %:keyword% ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%') ORDER BY p.createdAt DESC")
     Page<Post> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     // 검색 (블라인드 제외)
-    @Query("SELECT p FROM Post p WHERE (p.title LIKE %:keyword% OR p.content LIKE %:keyword%) AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE (p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%')) AND p.isBlinded = false ORDER BY p.createdAt DESC")
     Page<Post> searchByKeywordExcludingBlinded(@Param("keyword") String keyword, Pageable pageable);
 
     // 제목으로 검색 (블라인드 제외)
-    @Query("SELECT p FROM Post p WHERE p.title LIKE %:keyword% AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.title LIKE CONCAT('%', :keyword, '%') AND p.isBlinded = false ORDER BY p.createdAt DESC")
     Page<Post> searchByTitleExcludingBlinded(@Param("keyword") String keyword, Pageable pageable);
 
     // 내용으로 검색 (블라인드 제외)
-    @Query("SELECT p FROM Post p WHERE p.content LIKE %:keyword% AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.content LIKE CONCAT('%', :keyword, '%') AND p.isBlinded = false ORDER BY p.createdAt DESC")
     Page<Post> searchByContentExcludingBlinded(@Param("keyword") String keyword, Pageable pageable);
 
     // 작성자(닉네임)로 검색 (블라인드 제외)
-    @Query("SELECT p FROM Post p WHERE p.nickname LIKE %:keyword% AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    @Query("SELECT p FROM Post p WHERE p.nickname LIKE CONCAT('%', :keyword, '%') AND p.isBlinded = false ORDER BY p.createdAt DESC")
     Page<Post> searchByNicknameExcludingBlinded(@Param("keyword") String keyword, Pageable pageable);
 
     // 인기글 (전체)
