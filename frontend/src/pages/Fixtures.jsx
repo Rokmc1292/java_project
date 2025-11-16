@@ -102,6 +102,29 @@ function Fixtures() {
     setSelectedDate(currentDate.toISOString().split('T')[0]);
   };
 
+  // 승/패 팀 스타일 결정
+  const getTeamStyle = (match, isHome) => {
+    if (match.detail.status !== 'FINISHED' || !match.score) {
+      return {};
+    }
+
+    const homeScore = match.score.home;
+    const awayScore = match.score.away;
+
+    if (homeScore == null || awayScore == null) {
+      return {};
+    }
+
+    const isWinner = isHome
+      ? homeScore > awayScore
+      : awayScore > homeScore;
+
+    return {
+      color: isWinner ? '#2e7d32' : '#c62828',
+      fontWeight: 'bold'
+    };
+  };
+
   return (
     <div>
       <Navbar />
@@ -198,7 +221,7 @@ function Fixtures() {
                       />
                     )}
                     <div className="team-details">
-                      <span className="team-name">{match.teams.home.name}</span>
+                      <span className="team-name" style={getTeamStyle(match, true)}>{match.teams.home.name}</span>
                       {match.teams.home.record && (
                         <span className="fighter-record">({match.teams.home.record})</span>
                       )}
@@ -231,7 +254,7 @@ function Fixtures() {
                   {/* 원정팀/파이터2 */}
                   <div className="team away-team">
                     <div className="team-details">
-                      <span className="team-name">{match.teams.away.name}</span>
+                      <span className="team-name" style={getTeamStyle(match, false)}>{match.teams.away.name}</span>
                       {match.teams.away.record && (
                         <span className="fighter-record">({match.teams.away.record})</span>
                       )}

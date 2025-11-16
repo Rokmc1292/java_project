@@ -64,9 +64,10 @@ public class PredictionService {
             List<MatchDto> pageContent = mmaMatches.subList(start, end);
             return new org.springframework.data.domain.PageImpl<>(pageContent, pageable, mmaMatches.size());
         } else if (sportName == null || sportName.equals("ALL")) {
-            // 전체 경기 조회 (Match + MmaFight)
-            Page<Match> matches = matchRepository.findPredictableMatches(now, sevenDaysLater, pageable);
-            List<MatchDto> allMatches = matches.stream()
+            // 전체 경기 조회 (Match + MmaFight) - 페이지네이션 수정
+            // 먼저 모든 경기를 조회
+            List<Match> allRegularMatches = matchRepository.findPredictableMatchesWithoutPaging(now, sevenDaysLater);
+            List<MatchDto> allMatches = allRegularMatches.stream()
                     .map(this::convertMatchToDto)
                     .collect(Collectors.toList());
 
@@ -80,7 +81,16 @@ public class PredictionService {
             // 날짜순 정렬
             allMatches.sort((a, b) -> a.getDetail().getMatchDate().compareTo(b.getDetail().getMatchDate()));
 
-            return new org.springframework.data.domain.PageImpl<>(allMatches, pageable, allMatches.size());
+            // 페이지네이션 적용
+            int start = (int) pageable.getOffset();
+            int end = Math.min((start + pageable.getPageSize()), allMatches.size());
+
+            if (start > allMatches.size()) {
+                return new org.springframework.data.domain.PageImpl<>(new ArrayList<>(), pageable, allMatches.size());
+            }
+
+            List<MatchDto> pageContent = allMatches.subList(start, end);
+            return new org.springframework.data.domain.PageImpl<>(pageContent, pageable, allMatches.size());
         } else {
             // 다른 종목 경기만 조회
             Page<Match> matches = matchRepository.findPredictableMatchesBySport(sportName, now, sevenDaysLater, pageable);

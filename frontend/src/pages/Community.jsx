@@ -20,11 +20,12 @@ function Community() {
   const [selectedCategory, setSelectedCategory] = useState('전체');
   const [activeTab, setActiveTab] = useState('all');
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchType, setSearchType] = useState('all');
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [showWriteModal, setShowWriteModal] = useState(false);
-  const [newPost, setNewPost] = useState({ 
-    title: '', 
+  const [newPost, setNewPost] = useState({
+    title: '',
     content: '',
     categoryName: '축구'
   });
@@ -46,14 +47,14 @@ function Community() {
                     response = await getPopularPostsByCategory(selectedCategory, page, 20);
                 }
             } else {
-                // ⭐ 검색 기능 수정
+                // 검색 기능 수정
                 if (selectedCategory === '전체') {
-                    response = await getPosts(page, 20, searchKeyword);
+                    response = await getPosts(page, 20, searchKeyword, searchType);
                 } else {
                     // 카테고리별 검색도 지원
                     if (searchKeyword) {
                         // 검색어가 있으면 전체 검색
-                        response = await getPosts(page, 20, searchKeyword);
+                        response = await getPosts(page, 20, searchKeyword, searchType);
                     } else {
                         // 검색어가 없으면 카테고리별 조회
                         response = await getPostsByCategory(selectedCategory, page, 20);
@@ -211,13 +212,30 @@ function Community() {
         {/* 검색창 */}
         {activeTab === 'all' && (
           <div className="search-container">
+            <select
+              className="search-type-select"
+              value={searchType}
+              onChange={(e) => setSearchType(e.target.value)}
+              style={{
+                padding: '10px',
+                borderRadius: '5px',
+                border: '1px solid #ddd',
+                marginRight: '10px',
+                fontSize: '14px'
+              }}
+            >
+              <option value="all">제목+내용</option>
+              <option value="title">제목</option>
+              <option value="content">내용</option>
+              <option value="author">작성자</option>
+            </select>
             <input
               type="text"
               className="search-input"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              placeholder="제목, 내용, 작성자로 검색"
+              placeholder="검색어를 입력하세요"
             />
             <button className="search-button" onClick={handleSearch}>
               🔍 검색

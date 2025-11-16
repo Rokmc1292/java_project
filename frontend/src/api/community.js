@@ -9,8 +9,8 @@ import { apiGet, apiPost, apiPut, apiDelete } from './api';
 /**
  * 전체 게시글 조회 (페이징, 검색)
  */
-export const getPosts = async (page = 0, size = 20, search = '') => {
-  const searchParam = search ? `&keyword=${encodeURIComponent(search)}` : '';
+export const getPosts = async (page = 0, size = 20, search = '', searchType = 'all') => {
+  const searchParam = search ? `&keyword=${encodeURIComponent(search)}&searchType=${searchType}` : '';
   return await apiGet(`/api/community/posts?page=${page}&size=${size}${searchParam}`);
 };
 

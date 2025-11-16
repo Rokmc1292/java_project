@@ -10,6 +10,7 @@ public class ChatMessageDto {
     private String username;
     private String nickname;
     private String userTier;
+    private Boolean isAdmin;  // 관리자 여부
     private String message;
     private String messageType;  // USER, SYSTEM
     private LocalDateTime createdAt;
