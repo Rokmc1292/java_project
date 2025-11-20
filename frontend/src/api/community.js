@@ -7,11 +7,12 @@ import { apiGet, apiPost, apiPut, apiDelete } from './api';
 // ========== 게시글 조회 ==========
 
 /**
- * 전체 게시글 조회 (페이징, 검색)
+ * 전체 게시글 조회 (페이징, 검색, 카테고리)
  */
-export const getPosts = async (page = 0, size = 20, search = '', searchType = 'all') => {
+export const getPosts = async (page = 0, size = 20, search = '', searchType = 'all', categoryName = '') => {
   const searchParam = search ? `&keyword=${encodeURIComponent(search)}&searchType=${searchType}` : '';
-  return await apiGet(`/api/community/posts?page=${page}&size=${size}${searchParam}`);
+  const categoryParam = categoryName && categoryName !== '전체' ? `&categoryName=${encodeURIComponent(categoryName)}` : '';
+  return await apiGet(`/api/community/posts?page=${page}&size=${size}${searchParam}${categoryParam}`);
 };
 
 /**
