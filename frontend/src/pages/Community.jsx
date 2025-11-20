@@ -45,15 +45,8 @@ function Community() {
           response = await getPopularPostsByCategory(selectedCategory, page, 20);
         }
       } else {
-        if (selectedCategory === '전체') {
-          response = await getPosts(page, 20, searchKeyword, searchType);
-        } else {
-          if (searchKeyword) {
-            response = await getPosts(page, 20, searchKeyword, searchType);
-          } else {
-            response = await getPostsByCategory(selectedCategory, page, 20);
-          }
-        }
+        // 검색어 여부와 상관없이 getPosts를 사용하고 categoryName을 전달
+        response = await getPosts(page, 20, searchKeyword, searchType, selectedCategory);
       }
 
       setPosts(response.content || []);
@@ -68,7 +61,6 @@ function Community() {
   };
 
   useEffect(() => {
-    setSearchKeyword('');
     fetchPosts(0);
   }, [selectedCategory, activeTab]);
 
