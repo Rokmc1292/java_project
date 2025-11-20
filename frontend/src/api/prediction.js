@@ -12,6 +12,30 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 // ========== 예측 경기 목록 ==========
 
 /**
+ * 오늘의 주요경기 조회 (예측 참여자 많은 순)
+ */
+export const getTodayTopMatches = async (limit = 3) => {
+  try {
+    return await apiGet(`/api/predictions/matches/today-top?limit=${limit}`);
+  } catch (error) {
+    console.error('오늘의 주요경기 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
+ * 주목할만한 승부예측 - 예측 참여자가 가장 많은 경기 1개
+ */
+export const getTopPredictedMatch = async () => {
+  try {
+    return await apiGet(`/api/predictions/matches/top-predicted`);
+  } catch (error) {
+    console.error('주목할만한 승부예측 조회 실패:', error);
+    throw error;
+  }
+};
+
+/**
  * 예측 가능한 경기 목록 조회 (D-2 경기)
  */
 export const getPredictableMatches = async (sport = 'ALL', page = 0, size = 20) => {

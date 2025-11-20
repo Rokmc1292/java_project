@@ -41,6 +41,29 @@ public class PredictionController {
     // ========== 예측 경기 목록 ==========
 
     /**
+     * 오늘의 주요경기 조회 (예측 참여자 많은 순)
+     */
+    @GetMapping("/matches/today-top")
+    public ResponseEntity<List<MatchDto>> getTodayTopMatches(
+            @RequestParam(defaultValue = "3") int limit
+    ) {
+        List<MatchDto> matches = predictionService.getTodayTopMatches(limit);
+        return ResponseEntity.ok(matches);
+    }
+
+    /**
+     * 주목할만한 승부예측 - 예측 참여자가 가장 많은 경기 1개
+     */
+    @GetMapping("/matches/top-predicted")
+    public ResponseEntity<MatchDto> getTopPredictedMatch() {
+        MatchDto match = predictionService.getTopPredictedMatch();
+        if (match == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(match);
+    }
+
+    /**
      * 예측 가능한 경기 목록 조회 (D-7 경기)
      */
     @GetMapping("/matches")

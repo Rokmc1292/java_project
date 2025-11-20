@@ -41,6 +41,76 @@ public class PredictionService {
     // ========== 예측 경기 목록 (D-7 경기) ==========
 
     /**
+     * 오늘의 주요경기 조회 (예측 참여자 많은 순)
+     * 오늘 날짜 경기만, 예측 수로 정렬 후 시간순
+     */
+    @Transactional(readOnly = true)
+    public List<MatchDto> getTodayTopMatches(int limit) {
+        LocalDateTime startOfDay = LocalDateTime.now().toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1);
+
+        // 일반 경기 조회
+        List<Match> regularMatches = matchRepository.findPredictableMatchesWithoutPaging(startOfDay, endOfDay);
+        List<MatchDto> allMatches = regularMatches.stream()
+                .map(this::convertMatchToDto)
+                .collect(Collectors.toList());
+
+        // MMA 경기 조회
+        List<MmaFight> mmaFights = mmaFightRepository.findByDateRange(startOfDay, endOfDay);
+        List<MatchDto> mmaMatches = mmaFights.stream()
+                .filter(fight -> fight.getStatus().equals("SCHEDULED"))
+                .map(this::convertMmaFightToMatchDto)
+                .collect(Collectors.toList());
+        allMatches.addAll(mmaMatches);
+
+        // 예측 수로 정렬 (내림차순), 같으면 시간순 (오름차순)
+        allMatches.sort((a, b) -> {
+            int countCompare = Integer.compare(
+                    b.getPredictionCount() != null ? b.getPredictionCount() : 0,
+                    a.getPredictionCount() != null ? a.getPredictionCount() : 0
+            );
+            if (countCompare != 0) {
+                return countCompare;
+            }
+            return a.getDetail().getMatchDate().compareTo(b.getDetail().getMatchDate());
+        });
+
+        return allMatches.stream().limit(limit).collect(Collectors.toList());
+    }
+
+    /**
+     * 주목할만한 승부예측 - 예측 참여자가 가장 많은 경기 1개
+     * 모든 날짜의 경기 포함
+     */
+    @Transactional(readOnly = true)
+    public MatchDto getTopPredictedMatch() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime sevenDaysLater = now.plusDays(7);
+
+        // 일반 경기 조회
+        List<Match> regularMatches = matchRepository.findPredictableMatchesWithoutPaging(now, sevenDaysLater);
+        List<MatchDto> allMatches = regularMatches.stream()
+                .map(this::convertMatchToDto)
+                .collect(Collectors.toList());
+
+        // MMA 경기 조회
+        List<MmaFight> mmaFights = mmaFightRepository.findByDateRange(now, sevenDaysLater);
+        List<MatchDto> mmaMatches = mmaFights.stream()
+                .filter(fight -> fight.getStatus().equals("SCHEDULED"))
+                .map(this::convertMmaFightToMatchDto)
+                .collect(Collectors.toList());
+        allMatches.addAll(mmaMatches);
+
+        // 예측 수가 가장 많은 경기 반환
+        return allMatches.stream()
+                .max((a, b) -> Integer.compare(
+                        a.getPredictionCount() != null ? a.getPredictionCount() : 0,
+                        b.getPredictionCount() != null ? b.getPredictionCount() : 0
+                ))
+                .orElse(null);
+    }
+
+    /**
      * 예측 가능한 경기 목록 조회 (7일 이내 경기)
      * 현재 시간부터 7일 후까지의 경기를 조회
      * MMA 경기 포함
@@ -1000,6 +1070,12 @@ public class PredictionService {
         MatchDto dto = new MatchDto();
         dto.setMatchId(match.getMatchId());
 
+        // 예측 참여자 수 조회
+        Integer predictionCount = predictionStatisticsRepository.findByMatch(match)
+                .map(PredictionStatistics::getTotalVotes)
+                .orElse(0);
+        dto.setPredictionCount(predictionCount);
+
         // 리그 정보
         if (match.getLeague() != null) {
             MatchDto.LeagueInfo leagueInfo = new MatchDto.LeagueInfo();
@@ -1061,6 +1137,12 @@ public class PredictionService {
         MatchDto dto = new MatchDto();
         dto.setMatchId(fight.getFightId());
         dto.setSportType("MMA");
+
+        // 예측 참여자 수 조회
+        Integer predictionCount = mmaPredictionStatisticsRepository.findByFight(fight)
+                .map(com.example.backend.entity.MmaPredictionStatistics::getTotalVotes)
+                .orElse(0);
+        dto.setPredictionCount(predictionCount);
 
         // 리그 정보
         if (fight.getLeague() != null) {

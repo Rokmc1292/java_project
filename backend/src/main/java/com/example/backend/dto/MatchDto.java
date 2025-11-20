@@ -20,6 +20,7 @@ public class MatchDto {
     // 경기 기본 정보
     private Long matchId;              // 경기 ID
     private String sportType;          // 종목 타입 (FOOTBALL, BASKETBALL, BASEBALL, LOL, MMA)
+    private Integer predictionCount;   // 예측 참여자 수
 
     // 리그 정보
     private LeagueInfo league;
