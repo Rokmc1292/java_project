@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import mypageApi from '../api/mypageApi';
 import ProfileSection from '../components/ProfileSection';
 import StatsSection from '../components/StatsSection';
@@ -82,7 +81,6 @@ const MyPage = () => {
   if (loading) {
     return (
       <>
-        <Navbar />
         <div className="mypage-loading">
           <div className="spinner"></div>
           <p>로딩 중...</p>
@@ -93,7 +91,6 @@ const MyPage = () => {
 
   return (
     <>
-      <Navbar />
       <div className="mypage-container">
       {/* 상단 프로필 헤더 - 모든 탭에서 보임 */}
       <div className="mypage-header">

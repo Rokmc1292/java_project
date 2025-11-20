@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
 import '../styles/Fixtures.css';
 
 // 환경변수에서 API Base URL 가져오기
@@ -143,7 +142,6 @@ function Fixtures() {
 
   return (
     <div>
-      <Navbar />
       <div className="fixtures-container">
         {/* 헤더 */}
         <div className="fixtures-header">

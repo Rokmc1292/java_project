@@ -54,7 +54,7 @@ function Navbar() {
                         </Link>
                     </li>
                     <li className="navbar-item">
-                        <Link to="/community" className={`navbar-link ${isActive('/community')}`}>
+                        <Link to="/board" className={`navbar-link ${isActive('/board')}`}>
                             커뮤니티
                         </Link>
                     </li>

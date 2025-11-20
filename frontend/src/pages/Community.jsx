@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import {
   getPosts,
   getPostsByCategory,
@@ -151,7 +150,7 @@ function Community() {
   };
 
   const goToPostDetail = (postId) => {
-    navigate(`/community/post/${postId}`);
+      navigate(`/board/${postId}`);
   };
 
     const handlePageChange = (newPage) => {
@@ -166,7 +165,6 @@ function Community() {
     };
   return (
     <div>
-      <Navbar />
       <div className="community-container">
         
         {/* 헤더 */}
