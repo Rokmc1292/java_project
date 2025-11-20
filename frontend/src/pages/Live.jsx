@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react';
-import Navbar from '../components/Navbar';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -207,7 +206,6 @@ function Live() {
 
   return (
     <div>
-      <Navbar />
       <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px' }}>
           🔴 실시간

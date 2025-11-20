@@ -66,3 +66,22 @@ export const getLiveMatches = async () => {
     throw error;
   }
 };
+/**
+ * 오늘의 경기 조회
+ */
+export const getTodayMatches = async (sport = null) => {
+    try {
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
+        const sportParam = sport ? `&sport=${sport}` : '';
+        const response = await fetch(`${API_BASE_URL}/api/matches?date=${today}${sportParam}`);
+
+        if (!response.ok) {
+            throw new Error('오늘의 경기 정보를 불러오는데 실패했습니다.');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('오늘의 경기 조회 실패:', error);
+        throw error;
+    }
+};

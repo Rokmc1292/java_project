@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import { getPredictableMatches } from '../api/prediction';
 import { isLoggedIn } from '../api/api';
 import '../styles/Predictions.css';
@@ -89,7 +88,6 @@ function Predictions() {
 
   return (
     <div>
-      <Navbar />
       <div className="predictions-container">
         {/* 페이지 헤더 */}
         <div className="predictions-header">

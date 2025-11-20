@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import {
     getPost,
     likePost,
@@ -469,7 +468,6 @@ function PostDetail() {
     if (pageLoading || !post) {
         return (
             <div>
-                <Navbar />
                 <div style={{ textAlign: 'center', padding: '100px', color: '#888' }}>
                     로딩 중...
                 </div>
@@ -479,11 +477,10 @@ function PostDetail() {
 
     return (
         <div>
-            <Navbar />
             <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
 
                 <button
-                    onClick={() => navigate('/community')}
+                    onClick={() => navigate('/board')}
                     style={{
                         padding: '8px 16px',
                         backgroundColor: '#f0f0f0',

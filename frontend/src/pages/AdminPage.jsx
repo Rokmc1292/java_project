@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import '../styles/AdminPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -256,7 +255,6 @@ function AdminPage() {
 
     return (
         <div>
-            <Navbar />
             <div className="admin-container">
                 <h1 className="admin-title">🛠️ 관리자 페이지</h1>
 

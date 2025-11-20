@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import Navbar from '../components/Navbar';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -245,7 +244,6 @@ function News() {
       background: '#f8f9fa',
       paddingBottom: '40px'
     }}>
-      <Navbar />
       
       {/* 헤더 섹션 */}
       <div style={{
