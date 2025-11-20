@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../styles/AdminPage.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -254,38 +253,58 @@ function AdminPage() {
     };
 
     return (
-        <div>
-            <div className="admin-container">
-                <h1 className="admin-title">🛠️ 관리자 페이지</h1>
+        <div className="bg-gray-900 text-white min-h-screen">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h1 className="text-4xl font-bold mb-8">🛠️ 관리자 페이지</h1>
 
                 {/* 탭 네비게이션 */}
-                <div className="admin-tabs">
+                <div className="flex flex-wrap gap-3 mb-8">
                     <button
-                        className={`admin-tab ${activeTab === 'dashboard' ? 'active' : ''}`}
+                        className={`px-6 py-3 rounded-lg font-semibold transition ${
+                            activeTab === 'dashboard'
+                                ? 'bg-blue-500 text-white shadow-lg'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
                         onClick={() => setActiveTab('dashboard')}
                     >
                         📊 대시보드
                     </button>
                     <button
-                        className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
+                        className={`px-6 py-3 rounded-lg font-semibold transition ${
+                            activeTab === 'users'
+                                ? 'bg-blue-500 text-white shadow-lg'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
                         onClick={() => setActiveTab('users')}
                     >
                         👥 사용자 관리
                     </button>
                     <button
-                        className={`admin-tab ${activeTab === 'reports' ? 'active' : ''}`}
+                        className={`px-6 py-3 rounded-lg font-semibold transition ${
+                            activeTab === 'reports'
+                                ? 'bg-blue-500 text-white shadow-lg'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
                         onClick={() => setActiveTab('reports')}
                     >
                         🚨 신고 관리
                     </button>
                     <button
-                        className={`admin-tab ${activeTab === 'posts' ? 'active' : ''}`}
+                        className={`px-6 py-3 rounded-lg font-semibold transition ${
+                            activeTab === 'posts'
+                                ? 'bg-blue-500 text-white shadow-lg'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
                         onClick={() => setActiveTab('posts')}
                     >
                         📝 게시글 관리
                     </button>
                     <button
-                        className={`admin-tab ${activeTab === 'crawl' ? 'active' : ''}`}
+                        className={`px-6 py-3 rounded-lg font-semibold transition ${
+                            activeTab === 'crawl'
+                                ? 'bg-blue-500 text-white shadow-lg'
+                                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                        }`}
                         onClick={() => setActiveTab('crawl')}
                     >
                         🔄 크롤링 관리
@@ -293,172 +312,186 @@ function AdminPage() {
                 </div>
 
                 {loading && (
-                    <div className="admin-loading">
-                        <div className="spinner"></div>
-                        <p>로딩 중...</p>
+                    <div className="text-center py-16">
+                        <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+                        <p className="mt-4 text-gray-400">로딩 중...</p>
                     </div>
                 )}
 
                 {/* 대시보드 */}
                 {!loading && activeTab === 'dashboard' && dashboardStats && (
-                    <div className="dashboard-content">
-                        <div className="stats-grid">
-                            <div className="stat-card">
-                                <div className="stat-icon">👥</div>
-                                <div className="stat-info">
-                                    <div className="stat-value">{dashboardStats.totalUsers}</div>
-                                    <div className="stat-label">전체 사용자</div>
-                                    <div className="stat-sub">오늘 +{dashboardStats.todayUsers}</div>
-                                </div>
+                    <div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                                <div className="text-4xl mb-3">👥</div>
+                                <div className="text-3xl font-bold mb-2">{dashboardStats.totalUsers}</div>
+                                <div className="text-gray-400 mb-2">전체 사용자</div>
+                                <div className="text-green-400 text-sm">오늘 +{dashboardStats.todayUsers}</div>
                             </div>
 
-                            <div className="stat-card">
-                                <div className="stat-icon">📝</div>
-                                <div className="stat-info">
-                                    <div className="stat-value">{dashboardStats.totalPosts}</div>
-                                    <div className="stat-label">전체 게시글</div>
-                                    <div className="stat-sub">오늘 +{dashboardStats.todayPosts}</div>
-                                </div>
+                            <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                                <div className="text-4xl mb-3">📝</div>
+                                <div className="text-3xl font-bold mb-2">{dashboardStats.totalPosts}</div>
+                                <div className="text-gray-400 mb-2">전체 게시글</div>
+                                <div className="text-green-400 text-sm">오늘 +{dashboardStats.todayPosts}</div>
                             </div>
 
-                            <div className="stat-card">
-                                <div className="stat-icon">💬</div>
-                                <div className="stat-info">
-                                    <div className="stat-value">{dashboardStats.totalComments}</div>
-                                    <div className="stat-label">전체 댓글</div>
-                                    <div className="stat-sub">오늘 +{dashboardStats.todayComments}</div>
-                                </div>
+                            <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                                <div className="text-4xl mb-3">💬</div>
+                                <div className="text-3xl font-bold mb-2">{dashboardStats.totalComments}</div>
+                                <div className="text-gray-400 mb-2">전체 댓글</div>
+                                <div className="text-green-400 text-sm">오늘 +{dashboardStats.todayComments}</div>
                             </div>
 
-                            <div className="stat-card">
-                                <div className="stat-icon">🎯</div>
-                                <div className="stat-info">
-                                    <div className="stat-value">{dashboardStats.totalPredictions}</div>
-                                    <div className="stat-label">전체 예측</div>
-                                    <div className="stat-sub">오늘 +{dashboardStats.todayPredictions}</div>
-                                </div>
+                            <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                                <div className="text-4xl mb-3">🎯</div>
+                                <div className="text-3xl font-bold mb-2">{dashboardStats.totalPredictions}</div>
+                                <div className="text-gray-400 mb-2">전체 예측</div>
+                                <div className="text-green-400 text-sm">오늘 +{dashboardStats.todayPredictions}</div>
                             </div>
 
-                            <div className="stat-card">
-                                <div className="stat-icon">⚽</div>
-                                <div className="stat-info">
-                                    <div className="stat-value">{dashboardStats.totalMatches}</div>
-                                    <div className="stat-label">전체 경기</div>
-                                </div>
+                            <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                                <div className="text-4xl mb-3">⚽</div>
+                                <div className="text-3xl font-bold mb-2">{dashboardStats.totalMatches}</div>
+                                <div className="text-gray-400 mb-2">전체 경기</div>
                             </div>
 
-                            <div className="stat-card alert">
-                                <div className="stat-icon">🚨</div>
-                                <div className="stat-info">
-                                    <div className="stat-value">{dashboardStats.pendingReports}</div>
-                                    <div className="stat-label">처리 대기 신고</div>
-                                </div>
+                            <div className="bg-red-500/20 border border-red-500 rounded-lg p-6">
+                                <div className="text-4xl mb-3">🚨</div>
+                                <div className="text-3xl font-bold mb-2">{dashboardStats.pendingReports}</div>
+                                <div className="text-red-400 mb-2">처리 대기 신고</div>
                             </div>
                         </div>
 
-                        <div className="recent-users-section">
-                            <h2>📋 최근 가입자</h2>
-                            <table className="admin-table">
-                                <thead>
-                                <tr>
-                                    <th>아이디</th>
-                                    <th>닉네임</th>
-                                    <th>이메일</th>
-                                    <th>티어</th>
-                                    <th>가입일</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {dashboardStats.recentUsers.map(user => (
-                                    <tr key={user.userId}>
-                                        <td>{user.username}</td>
-                                        <td>{user.nickname}</td>
-                                        <td>{user.email}</td>
-                                        <td><span className="tier-badge">{user.tier}</span></td>
-                                        <td>{formatDate(user.createdAt)}</td>
+                        <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                            <h2 className="text-2xl font-bold mb-4">📋 최근 가입자</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full">
+                                    <thead>
+                                    <tr className="border-b border-gray-700">
+                                        <th className="text-left py-3 px-4">아이디</th>
+                                        <th className="text-left py-3 px-4">닉네임</th>
+                                        <th className="text-left py-3 px-4">이메일</th>
+                                        <th className="text-left py-3 px-4">티어</th>
+                                        <th className="text-left py-3 px-4">가입일</th>
                                     </tr>
-                                ))}
-                                </tbody>
-                            </table>
+                                    </thead>
+                                    <tbody>
+                                    {dashboardStats.recentUsers.map(user => (
+                                        <tr key={user.userId} className="border-b border-gray-700 hover:bg-gray-700/50">
+                                            <td className="py-3 px-4">{user.username}</td>
+                                            <td className="py-3 px-4">{user.nickname}</td>
+                                            <td className="py-3 px-4 text-sm text-gray-400">{user.email}</td>
+                                            <td className="py-3 px-4">
+                                                <span className="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+                                                    {user.tier}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-sm text-gray-400">{formatDate(user.createdAt)}</td>
+                                        </tr>
+                                    ))}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {/* 사용자 관리 */}
                 {!loading && activeTab === 'users' && (
-                    <div className="users-content">
-                        <table className="admin-table">
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>아이디</th>
-                                <th>닉네임</th>
-                                <th>이메일</th>
-                                <th>티어</th>
-                                <th>게시글</th>
-                                <th>댓글</th>
-                                <th>예측</th>
-                                <th>관리자</th>
-                                <th>상태</th>
-                                <th>가입일</th>
-                                <th>관리</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {users.map(user => (
-                                <tr key={user.userId}>
-                                    <td>{user.userId}</td>
-                                    <td>{user.username}</td>
-                                    <td>{user.nickname}</td>
-                                    <td>{user.email}</td>
-                                    <td><span className="tier-badge">{user.tier}</span></td>
-                                    <td>{user.postCount}</td>
-                                    <td>{user.commentCount}</td>
-                                    <td>{user.predictionCount}</td>
-                                    <td>
-                      <span className={`status-badge ${user.isAdmin ? 'admin' : 'user'}`}>
-                        {user.isAdmin ? '관리자' : '일반'}
-                      </span>
-                                    </td>
-                                    <td>
-                      <span className={`status-badge ${user.isActive ? 'active' : 'inactive'}`}>
-                        {user.isActive ? '활성' : '비활성'}
-                      </span>
-                                    </td>
-                                    <td>{formatDate(user.createdAt)}</td>
-                                    <td>
-                                        <div className="action-buttons">
-                                            <button
-                                                onClick={() => toggleAdminRole(user.userId)}
-                                                className="admin-action-btn"
-                                            >
-                                                {user.isAdmin ? '권한 해제' : '관리자 지정'}
-                                            </button>
-                                            <button
-                                                onClick={() => toggleUserStatus(user.userId)}
-                                                className="admin-action-btn"
-                                            >
-                                                {user.isActive ? '비활성화' : '활성화'}
-                                            </button>
-                                        </div>
-                                    </td>
+                    <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                <tr className="border-b border-gray-700">
+                                    <th className="text-left py-3 px-2">ID</th>
+                                    <th className="text-left py-3 px-2">아이디</th>
+                                    <th className="text-left py-3 px-2">닉네임</th>
+                                    <th className="text-left py-3 px-2">이메일</th>
+                                    <th className="text-left py-3 px-2">티어</th>
+                                    <th className="text-left py-3 px-2">게시글</th>
+                                    <th className="text-left py-3 px-2">댓글</th>
+                                    <th className="text-left py-3 px-2">예측</th>
+                                    <th className="text-left py-3 px-2">관리자</th>
+                                    <th className="text-left py-3 px-2">상태</th>
+                                    <th className="text-left py-3 px-2">가입일</th>
+                                    <th className="text-left py-3 px-2">관리</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                {users.map(user => (
+                                    <tr key={user.userId} className="border-b border-gray-700 hover:bg-gray-700/50">
+                                        <td className="py-3 px-2">{user.userId}</td>
+                                        <td className="py-3 px-2">{user.username}</td>
+                                        <td className="py-3 px-2">{user.nickname}</td>
+                                        <td className="py-3 px-2 text-xs text-gray-400">{user.email}</td>
+                                        <td className="py-3 px-2">
+                                            <span className="px-2 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+                                                {user.tier}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2">{user.postCount}</td>
+                                        <td className="py-3 px-2">{user.commentCount}</td>
+                                        <td className="py-3 px-2">{user.predictionCount}</td>
+                                        <td className="py-3 px-2">
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${
+                                                user.isAdmin ? 'bg-red-500 text-white' : 'bg-gray-600 text-gray-300'
+                                            }`}>
+                                                {user.isAdmin ? '관리자' : '일반'}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2">
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${
+                                                user.isActive ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-300'
+                                            }`}>
+                                                {user.isActive ? '활성' : '비활성'}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-xs text-gray-400">{formatDate(user.createdAt)}</td>
+                                        <td className="py-3 px-2">
+                                            <div className="flex flex-col gap-1">
+                                                <button
+                                                    onClick={() => toggleAdminRole(user.userId)}
+                                                    className="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded"
+                                                >
+                                                    {user.isAdmin ? '권한 해제' : '관리자 지정'}
+                                                </button>
+                                                <button
+                                                    onClick={() => toggleUserStatus(user.userId)}
+                                                    className="px-2 py-1 bg-gray-600 hover:bg-gray-500 text-white text-xs rounded"
+                                                >
+                                                    {user.isActive ? '비활성화' : '활성화'}
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
 
                         {usersTotalPages > 1 && (
-                            <div className="admin-pagination">
+                            <div className="flex justify-center items-center gap-4 mt-6">
                                 <button
                                     disabled={usersPage === 0}
                                     onClick={() => setUsersPage(usersPage - 1)}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                        usersPage === 0
+                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    }`}
                                 >
                                     이전
                                 </button>
-                                <span>{usersPage + 1} / {usersTotalPages}</span>
+                                <span className="text-gray-400">{usersPage + 1} / {usersTotalPages}</span>
                                 <button
                                     disabled={usersPage >= usersTotalPages - 1}
                                     onClick={() => setUsersPage(usersPage + 1)}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                        usersPage >= usersTotalPages - 1
+                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    }`}
                                 >
                                     다음
                                 </button>
@@ -469,15 +502,16 @@ function AdminPage() {
 
                 {/* 신고 관리 */}
                 {!loading && activeTab === 'reports' && (
-                    <div className="reports-content">
-                        <div className="filter-section">
-                            <label>상태 필터:</label>
+                    <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                        <div className="mb-4">
+                            <label className="text-gray-400 mr-3">상태 필터:</label>
                             <select
                                 value={reportStatusFilter}
                                 onChange={(e) => {
                                     setReportStatusFilter(e.target.value);
                                     setReportsPage(0);
                                 }}
+                                className="px-4 py-2 bg-gray-700 text-white rounded-lg border-none focus:ring-2 focus:ring-blue-500"
                             >
                                 <option value="">전체</option>
                                 <option value="PENDING">처리 대기</option>
@@ -486,90 +520,111 @@ function AdminPage() {
                             </select>
                         </div>
 
-                        <table className="admin-table">
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>유형</th>
-                                <th>신고 대상 내용</th>
-                                <th>작성자</th>
-                                <th>신고자</th>
-                                <th>사유</th>
-                                <th>설명</th>
-                                <th>상태</th>
-                                <th>신고일</th>
-                                <th>관리</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {reports.map(report => (
-                                <tr key={report.reportId}>
-                                    <td>{report.reportId}</td>
-                                    <td><span className="type-badge">{report.targetType}</span></td>
-                                    <td className="description-cell">
-                                        {report.targetDeleted ? (
-                                            <span style={{color: '#999', fontStyle: 'italic'}}>
-                                                [삭제된 {report.targetType === 'COMMENT' ? '댓글' : '게시글'}]
-                                            </span>
-                                        ) : (
-                                            <div>
-                                                <strong>{report.targetType === 'COMMENT' ? '댓글' : '게시글'} #{report.targetId}:</strong>
-                                                <div style={{marginTop: '4px', color: '#555'}}>
-                                                    {report.targetContent || '(내용 없음)'}
-                                                </div>
-                                            </div>
-                                        )}
-                                    </td>
-                                    <td>{report.targetAuthor || '-'}</td>
-                                    <td>{report.reporter.nickname}</td>
-                                    <td>{report.reason}</td>
-                                    <td className="description-cell">{report.description}</td>
-                                    <td>
-                      <span className={`status-badge ${report.status.toLowerCase()}`}>
-                        {report.status === 'PENDING' ? '대기' :
-                            report.status === 'PROCESSED' ? '완료' : '거부'}
-                      </span>
-                                    </td>
-                                    <td>{formatDate(report.createdAt)}</td>
-                                    <td>
-                                        {report.status === 'PENDING' && !report.targetDeleted && (
-                                            <div className="action-buttons">
-                                                <button
-                                                    onClick={() => processReport(report.reportId, 'PROCESSED')}
-                                                    className="admin-action-btn approve"
-                                                    title={report.targetType === 'COMMENT' ? '댓글 삭제' : '게시글 블라인드'}
-                                                >
-                                                    {report.targetType === 'COMMENT' ? '댓글 삭제' : '승인'}
-                                                </button>
-                                                <button
-                                                    onClick={() => processReport(report.reportId, 'REJECTED')}
-                                                    className="admin-action-btn reject"
-                                                >
-                                                    거부
-                                                </button>
-                                            </div>
-                                        )}
-                                        {report.targetDeleted && (
-                                            <span style={{color: '#999', fontSize: '12px'}}>이미 삭제됨</span>
-                                        )}
-                                    </td>
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                <tr className="border-b border-gray-700">
+                                    <th className="text-left py-3 px-2">ID</th>
+                                    <th className="text-left py-3 px-2">유형</th>
+                                    <th className="text-left py-3 px-2">신고 대상 내용</th>
+                                    <th className="text-left py-3 px-2">작성자</th>
+                                    <th className="text-left py-3 px-2">신고자</th>
+                                    <th className="text-left py-3 px-2">사유</th>
+                                    <th className="text-left py-3 px-2">설명</th>
+                                    <th className="text-left py-3 px-2">상태</th>
+                                    <th className="text-left py-3 px-2">신고일</th>
+                                    <th className="text-left py-3 px-2">관리</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                {reports.map(report => (
+                                    <tr key={report.reportId} className="border-b border-gray-700 hover:bg-gray-700/50">
+                                        <td className="py-3 px-2">{report.reportId}</td>
+                                        <td className="py-3 px-2">
+                                            <span className="px-2 py-1 bg-purple-500 text-white text-xs rounded-full">
+                                                {report.targetType}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 max-w-xs">
+                                            {report.targetDeleted ? (
+                                                <span className="text-gray-500 italic">
+                                                    [삭제된 {report.targetType === 'COMMENT' ? '댓글' : '게시글'}]
+                                                </span>
+                                            ) : (
+                                                <div>
+                                                    <strong className="text-xs">
+                                                        {report.targetType === 'COMMENT' ? '댓글' : '게시글'} #{report.targetId}:
+                                                    </strong>
+                                                    <div className="mt-1 text-xs text-gray-400 truncate">
+                                                        {report.targetContent || '(내용 없음)'}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </td>
+                                        <td className="py-3 px-2">{report.targetAuthor || '-'}</td>
+                                        <td className="py-3 px-2">{report.reporter.nickname}</td>
+                                        <td className="py-3 px-2 text-xs">{report.reason}</td>
+                                        <td className="py-3 px-2 text-xs max-w-xs truncate">{report.description}</td>
+                                        <td className="py-3 px-2">
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${
+                                                report.status === 'PENDING' ? 'bg-yellow-500 text-black' :
+                                                report.status === 'PROCESSED' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
+                                            }`}>
+                                                {report.status === 'PENDING' ? '대기' :
+                                                 report.status === 'PROCESSED' ? '완료' : '거부'}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-xs text-gray-400">{formatDate(report.createdAt)}</td>
+                                        <td className="py-3 px-2">
+                                            {report.status === 'PENDING' && !report.targetDeleted && (
+                                                <div className="flex flex-col gap-1">
+                                                    <button
+                                                        onClick={() => processReport(report.reportId, 'PROCESSED')}
+                                                        className="px-2 py-1 bg-green-500 hover:bg-green-600 text-white text-xs rounded"
+                                                        title={report.targetType === 'COMMENT' ? '댓글 삭제' : '게시글 블라인드'}
+                                                    >
+                                                        {report.targetType === 'COMMENT' ? '댓글 삭제' : '승인'}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => processReport(report.reportId, 'REJECTED')}
+                                                        className="px-2 py-1 bg-red-500 hover:bg-red-600 text-white text-xs rounded"
+                                                    >
+                                                        거부
+                                                    </button>
+                                                </div>
+                                            )}
+                                            {report.targetDeleted && (
+                                                <span className="text-gray-500 text-xs">이미 삭제됨</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
 
                         {reportsTotalPages > 1 && (
-                            <div className="admin-pagination">
+                            <div className="flex justify-center items-center gap-4 mt-6">
                                 <button
                                     disabled={reportsPage === 0}
                                     onClick={() => setReportsPage(reportsPage - 1)}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                        reportsPage === 0
+                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    }`}
                                 >
                                     이전
                                 </button>
-                                <span>{reportsPage + 1} / {reportsTotalPages}</span>
+                                <span className="text-gray-400">{reportsPage + 1} / {reportsTotalPages}</span>
                                 <button
                                     disabled={reportsPage >= reportsTotalPages - 1}
                                     onClick={() => setReportsPage(reportsPage + 1)}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                        reportsPage >= reportsTotalPages - 1
+                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    }`}
                                 >
                                     다음
                                 </button>
@@ -580,63 +635,77 @@ function AdminPage() {
 
                 {/* 게시글 관리 */}
                 {!loading && activeTab === 'posts' && (
-                    <div className="posts-content">
-                        <table className="admin-table">
-                            <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>제목</th>
-                                <th>카테고리</th>
-                                <th>작성자</th>
-                                <th>조회</th>
-                                <th>추천</th>
-                                <th>댓글</th>
-                                <th>상태</th>
-                                <th>작성일</th>
-                                <th>관리</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            {posts.map(post => (
-                                <tr key={post.postId}>
-                                    <td>{post.postId}</td>
-                                    <td className="title-cell">{post.title}</td>
-                                    <td>{post.categoryName}</td>
-                                    <td>{post.nickname}</td>
-                                    <td>{post.viewCount}</td>
-                                    <td>{post.likeCount}</td>
-                                    <td>{post.commentCount}</td>
-                                    <td>
-                      <span className={`status-badge ${post.isBlinded ? 'blinded' : 'normal'}`}>
-                        {post.isBlinded ? '블라인드' : '정상'}
-                      </span>
-                                    </td>
-                                    <td>{formatDate(post.createdAt)}</td>
-                                    <td>
-                                        <button
-                                            onClick={() => blindPost(post.postId)}
-                                            className="admin-action-btn"
-                                        >
-                                            {post.isBlinded ? '해제' : '블라인드'}
-                                        </button>
-                                    </td>
+                    <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm">
+                                <thead>
+                                <tr className="border-b border-gray-700">
+                                    <th className="text-left py-3 px-2">ID</th>
+                                    <th className="text-left py-3 px-2">제목</th>
+                                    <th className="text-left py-3 px-2">카테고리</th>
+                                    <th className="text-left py-3 px-2">작성자</th>
+                                    <th className="text-left py-3 px-2">조회</th>
+                                    <th className="text-left py-3 px-2">추천</th>
+                                    <th className="text-left py-3 px-2">댓글</th>
+                                    <th className="text-left py-3 px-2">상태</th>
+                                    <th className="text-left py-3 px-2">작성일</th>
+                                    <th className="text-left py-3 px-2">관리</th>
                                 </tr>
-                            ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                {posts.map(post => (
+                                    <tr key={post.postId} className="border-b border-gray-700 hover:bg-gray-700/50">
+                                        <td className="py-3 px-2">{post.postId}</td>
+                                        <td className="py-3 px-2 max-w-xs truncate font-semibold">{post.title}</td>
+                                        <td className="py-3 px-2">{post.categoryName}</td>
+                                        <td className="py-3 px-2">{post.nickname}</td>
+                                        <td className="py-3 px-2">{post.viewCount}</td>
+                                        <td className="py-3 px-2">{post.likeCount}</td>
+                                        <td className="py-3 px-2">{post.commentCount}</td>
+                                        <td className="py-3 px-2">
+                                            <span className={`px-2 py-1 text-xs font-bold rounded-full ${
+                                                post.isBlinded ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+                                            }`}>
+                                                {post.isBlinded ? '블라인드' : '정상'}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-2 text-xs text-gray-400">{formatDate(post.createdAt)}</td>
+                                        <td className="py-3 px-2">
+                                            <button
+                                                onClick={() => blindPost(post.postId)}
+                                                className="px-3 py-1 bg-gray-600 hover:bg-gray-500 text-white text-xs rounded"
+                                            >
+                                                {post.isBlinded ? '해제' : '블라인드'}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                </tbody>
+                            </table>
+                        </div>
 
                         {postsTotalPages > 1 && (
-                            <div className="admin-pagination">
+                            <div className="flex justify-center items-center gap-4 mt-6">
                                 <button
                                     disabled={postsPage === 0}
                                     onClick={() => setPostsPage(postsPage - 1)}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                        postsPage === 0
+                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    }`}
                                 >
                                     이전
                                 </button>
-                                <span>{postsPage + 1} / {postsTotalPages}</span>
+                                <span className="text-gray-400">{postsPage + 1} / {postsTotalPages}</span>
                                 <button
                                     disabled={postsPage >= postsTotalPages - 1}
                                     onClick={() => setPostsPage(postsPage + 1)}
+                                    className={`px-4 py-2 rounded-lg font-semibold transition ${
+                                        postsPage >= postsTotalPages - 1
+                                            ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                                    }`}
                                 >
                                     다음
                                 </button>
@@ -647,194 +716,64 @@ function AdminPage() {
 
                 {/* 크롤링 관리 */}
                 {!loading && activeTab === 'crawl' && (
-                    <div className="crawl-content">
+                    <div>
                         {/* 전체 리그 크롤링 */}
-                        <div className="crawl-section-highlight">
-                            <h2>전체 리그 크롤링</h2>
-                            <div className="crawl-card-all">
-                                <div className="crawl-info">
-                                    <h3>모든 리그 일괄 크롤링</h3>
-                                    <p>EPL, NBA, Bundesliga, La Liga, Serie A, Ligue 1, KBL 전체 리그의 일정을 순차적으로 크롤링합니다.</p>
-                                    <p className="warning-text">완료까지 상당한 시간이 소요될 수 있습니다.</p>
-                                </div>
-                                <button
-                                    className="crawl-btn-all"
-                                    onClick={() => handleCrawl('all-leagues')}
-                                    disabled={crawlLoading['all-leagues']}
-                                >
-                                    {crawlLoading['all-leagues'] ? '크롤링 중...' : '전체 리그 크롤링 시작'}
-                                </button>
-                            </div>
+                        <div className="bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg p-6 mb-8">
+                            <h2 className="text-2xl font-bold mb-3">전체 리그 크롤링</h2>
+                            <p className="mb-2">EPL, NBA, Bundesliga, La Liga, Serie A, Ligue 1, KBL 전체 리그의 일정을 순차적으로 크롤링합니다.</p>
+                            <p className="text-yellow-300 text-sm mb-4">완료까지 상당한 시간이 소요될 수 있습니다.</p>
+                            <button
+                                onClick={() => handleCrawl('all-leagues')}
+                                disabled={crawlLoading['all-leagues']}
+                                className="px-8 py-3 bg-white text-purple-600 font-bold rounded-lg hover:bg-gray-100 transition disabled:opacity-50"
+                            >
+                                {crawlLoading['all-leagues'] ? '크롤링 중...' : '전체 리그 크롤링 시작'}
+                            </button>
                         </div>
 
                         {/* 개별 리그 크롤링 */}
-                        <div className="crawl-section">
-                            <h2>개별 리그 크롤링</h2>
-                            <div className="crawl-grid">
-                                {/* EPL */}
-                                <div className="crawl-card">
-                                    <h3>EPL (프리미어리그)</h3>
-                                    <p>잉글랜드 프리미어리그 일정 크롤링</p>
-                                    <div className="crawl-actions">
+                        <h2 className="text-2xl font-bold mb-4">개별 리그 크롤링</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            {[
+                                { id: 'epl', name: 'EPL', desc: '잉글랜드 프리미어리그' },
+                                { id: 'nba', name: 'NBA', desc: '미국 프로농구' },
+                                { id: 'bundesliga', name: 'Bundesliga', desc: '독일 분데스리가' },
+                                { id: 'laliga', name: 'La Liga', desc: '스페인 라리가' },
+                                { id: 'seriea', name: 'Serie A', desc: '이탈리아 세리에 A' },
+                                { id: 'ligue1', name: 'Ligue 1', desc: '프랑스 리그 1' },
+                                { id: 'kbl', name: 'KBL', desc: '한국 프로농구' }
+                            ].map(league => (
+                                <div key={league.id} className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-6">
+                                    <h3 className="text-xl font-bold mb-2">{league.name}</h3>
+                                    <p className="text-gray-400 text-sm mb-4">{league.desc}</p>
+                                    <div className="flex flex-col gap-2">
                                         <button
-                                            className="crawl-btn"
-                                            onClick={() => handleCrawl('epl')}
-                                            disabled={crawlLoading['epl']}
+                                            onClick={() => handleCrawl(league.id)}
+                                            disabled={crawlLoading[league.id]}
+                                            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-lg transition disabled:opacity-50"
                                         >
-                                            {crawlLoading['epl'] ? '크롤링 중...' : '일정 크롤링'}
+                                            {crawlLoading[league.id] ? '크롤링 중...' : '일정 크롤링'}
                                         </button>
                                         <button
-                                            className="live-btn"
-                                            onClick={() => handleLiveUpdate('epl')}
-                                            disabled={crawlLoading['live-epl']}
+                                            onClick={() => handleLiveUpdate(league.id)}
+                                            disabled={crawlLoading[`live-${league.id}`]}
+                                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition disabled:opacity-50"
                                         >
-                                            {crawlLoading['live-epl'] ? '업데이트 중...' : '실시간 업데이트'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* NBA */}
-                                <div className="crawl-card">
-                                    <h3>NBA</h3>
-                                    <p>미국 프로농구 일정 크롤링</p>
-                                    <div className="crawl-actions">
-                                        <button
-                                            className="crawl-btn"
-                                            onClick={() => handleCrawl('nba')}
-                                            disabled={crawlLoading['nba']}
-                                        >
-                                            {crawlLoading['nba'] ? '크롤링 중...' : '일정 크롤링'}
-                                        </button>
-                                        <button
-                                            className="live-btn"
-                                            onClick={() => handleLiveUpdate('nba')}
-                                            disabled={crawlLoading['live-nba']}
-                                        >
-                                            {crawlLoading['live-nba'] ? '업데이트 중...' : '실시간 업데이트'}
+                                            {crawlLoading[`live-${league.id}`] ? '업데이트 중...' : '실시간 업데이트'}
                                         </button>
                                     </div>
                                 </div>
-
-                                {/* Bundesliga */}
-                                <div className="crawl-card">
-                                    <h3>Bundesliga (분데스리가)</h3>
-                                    <p>독일 분데스리가 일정 크롤링</p>
-                                    <div className="crawl-actions">
-                                        <button
-                                            className="crawl-btn"
-                                            onClick={() => handleCrawl('bundesliga')}
-                                            disabled={crawlLoading['bundesliga']}
-                                        >
-                                            {crawlLoading['bundesliga'] ? '크롤링 중...' : '일정 크롤링'}
-                                        </button>
-                                        <button
-                                            className="live-btn"
-                                            onClick={() => handleLiveUpdate('bundesliga')}
-                                            disabled={crawlLoading['live-bundesliga']}
-                                        >
-                                            {crawlLoading['live-bundesliga'] ? '업데이트 중...' : '실시간 업데이트'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* La Liga */}
-                                <div className="crawl-card">
-                                    <h3>La Liga (라리가)</h3>
-                                    <p>스페인 라리가 일정 크롤링</p>
-                                    <div className="crawl-actions">
-                                        <button
-                                            className="crawl-btn"
-                                            onClick={() => handleCrawl('laliga')}
-                                            disabled={crawlLoading['laliga']}
-                                        >
-                                            {crawlLoading['laliga'] ? '크롤링 중...' : '일정 크롤링'}
-                                        </button>
-                                        <button
-                                            className="live-btn"
-                                            onClick={() => handleLiveUpdate('laliga')}
-                                            disabled={crawlLoading['live-laliga']}
-                                        >
-                                            {crawlLoading['live-laliga'] ? '업데이트 중...' : '실시간 업데이트'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Serie A */}
-                                <div className="crawl-card">
-                                    <h3>Serie A (세리에 A)</h3>
-                                    <p>이탈리아 세리에 A 일정 크롤링</p>
-                                    <div className="crawl-actions">
-                                        <button
-                                            className="crawl-btn"
-                                            onClick={() => handleCrawl('seriea')}
-                                            disabled={crawlLoading['seriea']}
-                                        >
-                                            {crawlLoading['seriea'] ? '크롤링 중...' : '일정 크롤링'}
-                                        </button>
-                                        <button
-                                            className="live-btn"
-                                            onClick={() => handleLiveUpdate('seriea')}
-                                            disabled={crawlLoading['live-seriea']}
-                                        >
-                                            {crawlLoading['live-seriea'] ? '업데이트 중...' : '실시간 업데이트'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* Ligue 1 */}
-                                <div className="crawl-card">
-                                    <h3>Ligue 1 (리그 1)</h3>
-                                    <p>프랑스 리그 1 일정 크롤링</p>
-                                    <div className="crawl-actions">
-                                        <button
-                                            className="crawl-btn"
-                                            onClick={() => handleCrawl('ligue1')}
-                                            disabled={crawlLoading['ligue1']}
-                                        >
-                                            {crawlLoading['ligue1'] ? '크롤링 중...' : '일정 크롤링'}
-                                        </button>
-                                        <button
-                                            className="live-btn"
-                                            onClick={() => handleLiveUpdate('ligue1')}
-                                            disabled={crawlLoading['live-ligue1']}
-                                        >
-                                            {crawlLoading['live-ligue1'] ? '업데이트 중...' : '실시간 업데이트'}
-                                        </button>
-                                    </div>
-                                </div>
-
-                                {/* KBL */}
-                                <div className="crawl-card">
-                                    <h3>KBL (한국프로농구)</h3>
-                                    <p>한국 프로농구 일정 크롤링</p>
-                                    <div className="crawl-actions">
-                                        <button
-                                            className="crawl-btn"
-                                            onClick={() => handleCrawl('kbl')}
-                                            disabled={crawlLoading['kbl']}
-                                        >
-                                            {crawlLoading['kbl'] ? '크롤링 중...' : '일정 크롤링'}
-                                        </button>
-                                        <button
-                                            className="live-btn"
-                                            onClick={() => handleLiveUpdate('kbl')}
-                                            disabled={crawlLoading['live-kbl']}
-                                        >
-                                            {crawlLoading['live-kbl'] ? '업데이트 중...' : '실시간 업데이트'}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            ))}
                         </div>
 
                         {/* 안내 메시지 */}
-                        <div className="crawl-notice">
-                            <h3>크롤링 안내</h3>
-                            <ul>
-                                <li>크롤링은 백그라운드에서 실행되며, 완료까지 수 분이 소요될 수 있습니다.</li>
-                                <li>전체 리그 크롤링은 모든 리그를 순차적으로 실행하므로 상당한 시간이 소요됩니다.</li>
-                                <li>실시간 업데이트는 현재 진행 중인 경기의 점수를 업데이트합니다.</li>
-                                <li>크롤링 중 브라우저를 닫아도 서버에서 계속 실행됩니다.</li>
+                        <div className="bg-blue-500/20 border border-blue-500 rounded-lg p-6">
+                            <h3 className="text-xl font-bold mb-3">크롤링 안내</h3>
+                            <ul className="space-y-2 text-sm text-gray-300">
+                                <li>• 크롤링은 백그라운드에서 실행되며, 완료까지 수 분이 소요될 수 있습니다.</li>
+                                <li>• 전체 리그 크롤링은 모든 리그를 순차적으로 실행하므로 상당한 시간이 소요됩니다.</li>
+                                <li>• 실시간 업데이트는 현재 진행 중인 경기의 점수를 업데이트합니다.</li>
+                                <li>• 크롤링 중 브라우저를 닫아도 서버에서 계속 실행됩니다.</li>
                             </ul>
                         </div>
                     </div>
