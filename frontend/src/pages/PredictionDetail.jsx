@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Navbar from '../components/Navbar';
 import {
   getPredictionsByMatch,
   getPredictionStatistics,
@@ -188,8 +187,7 @@ function PredictionDetail() {
 
   if (loading) {
     return (
-      <div>
-        <Navbar />
+      <div className="bg-gray-900 text-white min-h-screen">
         <div className="loading">
           <div className="spinner"></div>
           <p>로딩 중...</p>
@@ -200,8 +198,7 @@ function PredictionDetail() {
 
   if (error || !match) {
     return (
-      <div>
-        <Navbar />
+      <div className="bg-gray-900 text-white min-h-screen">
         <div className="predictions-container">
           <div className="error">
             {error || '경기 정보를 찾을 수 없습니다.'}
@@ -212,8 +209,7 @@ function PredictionDetail() {
   }
 
   return (
-    <div>
-      <Navbar />
+    <div className="bg-gray-900 text-white min-h-screen">
       <div className="predictions-container">
         {/* 뒤로가기 버튼 */}
         <button onClick={() => navigate('/predictions')} className="back-btn">
