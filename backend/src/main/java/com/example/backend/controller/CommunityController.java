@@ -72,7 +72,7 @@ public class CommunityController {
 
         // 검색어가 있으면 검색 API 호출
         if (keyword != null && !keyword.trim().isEmpty()) {
-            posts = communityService.searchPosts(keyword, searchType, pageable);
+            posts = communityService.searchPosts(keyword, searchType, categoryName, pageable);
         } else if ("popular".equals(type) || "인기글".equals(type)) {
             // 인기글 조회
             posts = communityService.getPopularPostsByCategory(categoryName, pageable);
@@ -94,11 +94,12 @@ public class CommunityController {
     public ResponseEntity<Page<PostDto>> searchPosts(
             @RequestParam String keyword,
             @RequestParam(required = false, defaultValue = "all") String searchType,
+            @RequestParam(required = false) String categoryName,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<PostDto> posts = communityService.searchPosts(keyword, searchType, pageable);
+        Page<PostDto> posts = communityService.searchPosts(keyword, searchType, categoryName, pageable);
         return ResponseEntity.ok(posts);
     }
 

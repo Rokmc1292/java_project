@@ -123,30 +123,68 @@ public class CommunityService {
      * 게시글 검색 (제목, 내용, 작성자) - 블라인드 제외
      * @param keyword 검색 키워드
      * @param searchType 검색 타입 (all, title, content, author)
+     * @param categoryName 카테고리 이름 (선택사항)
      * @param pageable 페이지 정보
      */
     @Transactional(readOnly = true)
-    public Page<PostDto> searchPosts(String keyword, String searchType, Pageable pageable) {
+    public Page<PostDto> searchPosts(String keyword, String searchType, String categoryName, Pageable pageable) {
+        // 카테고리 필터링 여부 확인
+        BoardCategory category = null;
+        boolean filterByCategory = false;
+
+        if (categoryName != null && !categoryName.isEmpty() && !categoryName.equals("전체") && !categoryName.equals("all")) {
+            category = boardCategoryRepository.findByCategoryName(categoryName).orElse(null);
+            if (category != null) {
+                filterByCategory = true;
+            }
+        }
+
+        // 검색 타입에 따라 적절한 메서드 호출
         if (searchType == null || searchType.isEmpty() || searchType.equals("all")) {
             // 전체 검색 (제목 + 내용)
-            return postRepository.searchByKeywordExcludingBlinded(keyword, pageable)
-                    .map(this::convertToDto);
+            if (filterByCategory) {
+                return postRepository.searchByKeywordAndCategoryExcludingBlinded(keyword, category, pageable)
+                        .map(this::convertToDto);
+            } else {
+                return postRepository.searchByKeywordExcludingBlinded(keyword, pageable)
+                        .map(this::convertToDto);
+            }
         } else if (searchType.equals("title")) {
             // 제목 검색
-            return postRepository.searchByTitleExcludingBlinded(keyword, pageable)
-                    .map(this::convertToDto);
+            if (filterByCategory) {
+                return postRepository.searchByTitleAndCategoryExcludingBlinded(keyword, category, pageable)
+                        .map(this::convertToDto);
+            } else {
+                return postRepository.searchByTitleExcludingBlinded(keyword, pageable)
+                        .map(this::convertToDto);
+            }
         } else if (searchType.equals("content")) {
             // 내용 검색
-            return postRepository.searchByContentExcludingBlinded(keyword, pageable)
-                    .map(this::convertToDto);
+            if (filterByCategory) {
+                return postRepository.searchByContentAndCategoryExcludingBlinded(keyword, category, pageable)
+                        .map(this::convertToDto);
+            } else {
+                return postRepository.searchByContentExcludingBlinded(keyword, pageable)
+                        .map(this::convertToDto);
+            }
         } else if (searchType.equals("author")) {
             // 작성자 검색
-            return postRepository.searchByNicknameExcludingBlinded(keyword, pageable)
-                    .map(this::convertToDto);
+            if (filterByCategory) {
+                return postRepository.searchByNicknameAndCategoryExcludingBlinded(keyword, category, pageable)
+                        .map(this::convertToDto);
+            } else {
+                return postRepository.searchByNicknameExcludingBlinded(keyword, pageable)
+                        .map(this::convertToDto);
+            }
         } else {
             // 기본값: 전체 검색
-            return postRepository.searchByKeywordExcludingBlinded(keyword, pageable)
-                    .map(this::convertToDto);
+            if (filterByCategory) {
+                return postRepository.searchByKeywordAndCategoryExcludingBlinded(keyword, category, pageable)
+                        .map(this::convertToDto);
+            } else {
+                return postRepository.searchByKeywordExcludingBlinded(keyword, pageable)
+                        .map(this::convertToDto);
+            }
         }
     }
 

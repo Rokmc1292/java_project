@@ -48,6 +48,22 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Query("SELECT p FROM Post p WHERE p.user.nickname LIKE CONCAT('%', :keyword, '%') AND p.isBlinded = false ORDER BY p.createdAt DESC")
     Page<Post> searchByNicknameExcludingBlinded(@Param("keyword") String keyword, Pageable pageable);
 
+    // 카테고리 + 키워드 검색 (블라인드 제외)
+    @Query("SELECT p FROM Post p WHERE (p.title LIKE CONCAT('%', :keyword, '%') OR p.content LIKE CONCAT('%', :keyword, '%')) AND p.category = :category AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    Page<Post> searchByKeywordAndCategoryExcludingBlinded(@Param("keyword") String keyword, @Param("category") BoardCategory category, Pageable pageable);
+
+    // 카테고리 + 제목 검색 (블라인드 제외)
+    @Query("SELECT p FROM Post p WHERE p.title LIKE CONCAT('%', :keyword, '%') AND p.category = :category AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    Page<Post> searchByTitleAndCategoryExcludingBlinded(@Param("keyword") String keyword, @Param("category") BoardCategory category, Pageable pageable);
+
+    // 카테고리 + 내용 검색 (블라인드 제외)
+    @Query("SELECT p FROM Post p WHERE p.content LIKE CONCAT('%', :keyword, '%') AND p.category = :category AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    Page<Post> searchByContentAndCategoryExcludingBlinded(@Param("keyword") String keyword, @Param("category") BoardCategory category, Pageable pageable);
+
+    // 카테고리 + 작성자 검색 (블라인드 제외)
+    @Query("SELECT p FROM Post p WHERE p.user.nickname LIKE CONCAT('%', :keyword, '%') AND p.category = :category AND p.isBlinded = false ORDER BY p.createdAt DESC")
+    Page<Post> searchByNicknameAndCategoryExcludingBlinded(@Param("keyword") String keyword, @Param("category") BoardCategory category, Pageable pageable);
+
     // 인기글 (전체)
     Page<Post> findByIsPopularTrueOrderByLikeCountDescCreatedAtDesc(Pageable pageable);
     Page<Post> findByIsPopularTrueAndIsBlindedFalseOrderByLikeCountDescCreatedAtDesc(Pageable pageable);
