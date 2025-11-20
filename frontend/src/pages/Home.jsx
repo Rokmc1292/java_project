@@ -6,6 +6,8 @@ import { getPopularNews } from '../api/news';
 import { getPredictableMatches } from '../api/prediction';
 import Navbar from '../components/Navbar';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 const Home = () => {
     const [todayMatches, setTodayMatches] = useState([]);
     const [popularPosts, setPopularPosts] = useState([]);
@@ -153,11 +155,17 @@ const Home = () => {
                                     todayMatches.map((match) => (
                                         <div key={match.matchId} className="flex items-center p-3 bg-gray-700/50 rounded-md">
                                             <div className="flex items-center space-x-3 flex-1 justify-start">
-                                                <img
-                                                    src={`https://placehold.co/40x40/3B82F6/FFFFFF?text=${match.teams.home.name.slice(0, 2)}`}
-                                                    alt={match.teams.home.name}
-                                                    className="rounded-full"
-                                                />
+                                                {match.teams.home.logo ? (
+                                                    <img
+                                                        src={`${API_BASE_URL}/${match.teams.home.logo}`}
+                                                        alt={match.teams.home.name}
+                                                        className="w-10 h-10 rounded-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white text-sm font-bold">
+                                                        {match.teams.home.name.slice(0, 2)}
+                                                    </div>
+                                                )}
                                                 <span className="font-medium">{match.teams.home.name}</span>
                                             </div>
                                             <div className="text-center w-[100px] flex-shrink-0">
@@ -168,11 +176,17 @@ const Home = () => {
                                             </div>
                                             <div className="flex items-center space-x-3 flex-1 justify-end">
                                                 <span className="font-medium">{match.teams.away.name}</span>
-                                                <img
-                                                    src={`https://placehold.co/40x40/FFFFFF/3B82F6?text=${match.teams.away.name.slice(0, 2)}`}
-                                                    alt={match.teams.away.name}
-                                                    className="rounded-full"
-                                                />
+                                                {match.teams.away.logo ? (
+                                                    <img
+                                                        src={`${API_BASE_URL}/${match.teams.away.logo}`}
+                                                        alt={match.teams.away.name}
+                                                        className="w-10 h-10 rounded-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-blue-500 text-sm font-bold">
+                                                        {match.teams.away.name.slice(0, 2)}
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     ))
@@ -235,25 +249,37 @@ const Home = () => {
                                     </p>
                                     <div className="flex items-center justify-between">
                                         <div className="text-center">
-                                            <img
-                                                src={`https://placehold.co/48x48/3B82F6/FFFFFF?text=${featuredPrediction.teams.home.name.slice(0, 2)}`}
-                                                alt={featuredPrediction.teams.home.name}
-                                                className="rounded-full mx-auto"
-                                            />
+                                            {featuredPrediction.teams.home.logo ? (
+                                                <img
+                                                    src={`${API_BASE_URL}/${featuredPrediction.teams.home.logo}`}
+                                                    alt={featuredPrediction.teams.home.name}
+                                                    className="w-12 h-12 rounded-full mx-auto object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold mx-auto">
+                                                    {featuredPrediction.teams.home.name.slice(0, 2)}
+                                                </div>
+                                            )}
                                             <p className="text-sm mt-1 font-semibold">{featuredPrediction.teams.home.name}</p>
                                         </div>
                                         <span className="text-2xl font-bold text-gray-500">vs</span>
                                         <div className="text-center">
-                                            <img
-                                                src={`https://placehold.co/48x48/FFFFFF/3B82F6?text=${featuredPrediction.teams.away.name.slice(0, 2)}`}
-                                                alt={featuredPrediction.teams.away.name}
-                                                className="rounded-full mx-auto"
-                                            />
+                                            {featuredPrediction.teams.away.logo ? (
+                                                <img
+                                                    src={`${API_BASE_URL}/${featuredPrediction.teams.away.logo}`}
+                                                    alt={featuredPrediction.teams.away.name}
+                                                    className="w-12 h-12 rounded-full mx-auto object-cover"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-blue-500 font-bold mx-auto">
+                                                    {featuredPrediction.teams.away.name.slice(0, 2)}
+                                                </div>
+                                            )}
                                             <p className="text-sm mt-1 font-semibold">{featuredPrediction.teams.away.name}</p>
                                         </div>
                                     </div>
                                     <Link
-                                        to={`/prediction/${featuredPrediction.matchId}`}
+                                        to="/predictions"
                                         onClick={scrollToTop}
                                         className="block text-center w-full mt-4 bg-yellow-500 hover:bg-yellow-600 text-black text-sm font-bold py-2 rounded-md transition"
                                     >
