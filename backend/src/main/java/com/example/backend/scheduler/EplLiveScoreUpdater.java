@@ -306,11 +306,13 @@ public class EplLiveScoreUpdater {
 
     /**
      * 웹 페이지에서 DB의 경기와 일치하는 요소 찾기
-     * 홈팀과 원정팀 이름으로 매칭
+     * 홈팀, 원정팀 이름 + 날짜(월/일)로 매칭하여 정확도 향상
      */
     private WebElement findMatchElement(List<WebElement> matchElements, Match dbMatch) {
         String homeTeamName = dbMatch.getHomeTeam().getTeamName();
         String awayTeamName = dbMatch.getAwayTeam().getTeamName();
+        int dbMonth = dbMatch.getMatchDate().getMonthValue();
+        int dbDay = dbMatch.getMatchDate().getDayOfMonth();
 
         for (WebElement matchElement : matchElements) {
             try {
@@ -320,9 +322,38 @@ public class EplLiveScoreUpdater {
                     String webHomeTeam = teamItems.get(0).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
                     String webAwayTeam = teamItems.get(1).findElement(By.cssSelector(".MatchBoxHeadToHeadArea_team__l2ZxP")).getText();
 
-                    // 팀 이름이 일치하면 해당 경기
+                    // 팀 이름이 일치하는지 먼저 확인
                     if (homeTeamName.equals(webHomeTeam) && awayTeamName.equals(webAwayTeam)) {
-                        return matchElement;
+                        // 날짜도 확인 (같은 팀끼리 여러 날짜에 경기가 있을 수 있음)
+                        try {
+                            // 경기의 상위 날짜 그룹에서 날짜 정보 추출
+                            WebElement parentGroup = matchElement.findElement(
+                                By.xpath("ancestor::div[contains(@class, 'ScheduleLeagueType_match_list_group')]")
+                            );
+                            String dateText = parentGroup.findElement(
+                                By.cssSelector(".ScheduleLeagueType_title__K0rhC")
+                            ).getText();
+
+                            // "11월 20일(수)" 형식에서 월, 일 추출
+                            String datePart = dateText.split("\\(")[0].strip();
+                            int webMonth = Integer.parseInt(datePart.split("월")[0]);
+                            int webDay = Integer.parseInt(datePart.split("월")[1].replace("일", "").strip());
+
+                            // 날짜(월/일)가 일치하면 해당 경기
+                            if (dbMonth == webMonth && dbDay == webDay) {
+                                log.debug("✅ 경기 매칭 성공: {} vs {} ({}월 {}일)",
+                                    homeTeamName, awayTeamName, dbMonth, dbDay);
+                                return matchElement;
+                            } else {
+                                log.debug("⚠️ 팀은 일치하지만 날짜가 다름: DB({}월 {}일) vs 웹({}월 {}일)",
+                                    dbMonth, dbDay, webMonth, webDay);
+                            }
+                        } catch (Exception dateEx) {
+                            // 날짜 추출 실패 시, 팀 이름만으로 매칭 (하위 호환성)
+                            log.warn("⚠️ 날짜 추출 실패, 팀 이름만으로 매칭: {} vs {}",
+                                homeTeamName, awayTeamName);
+                            return matchElement;
+                        }
                     }
                 }
             } catch (Exception e) {
