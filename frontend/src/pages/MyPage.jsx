@@ -5,7 +5,6 @@ import ProfileSection from '../components/ProfileSection';
 import StatsSection from '../components/StatsSection';
 import ActivitySection from '../components/ActivitySection';
 import SettingsSection from '../components/SettingsSection';
-import '../styles/MyPage.css';
 
 /**
  * 마이페이지 메인 컴포넌트
@@ -16,16 +15,16 @@ const MyPage = () => {
 
   // 현재 활성화된 탭 (profile, stats, activity, settings)
   const [activeTab, setActiveTab] = useState('profile');
-  
+
   // 프로필 정보
   const [profile, setProfile] = useState(null);
-  
+
   // 예측 통계
   const [predictionStats, setPredictionStats] = useState(null);
-  
+
   // 최근 10경기 결과
   const [recentResults, setRecentResults] = useState([]);
-  
+
   // 로딩 상태
   const [loading, setLoading] = useState(true);
 
@@ -49,7 +48,7 @@ const MyPage = () => {
   const loadMyPageData = async () => {
     try {
       setLoading(true);
-      
+
       // 병렬로 데이터 로드
       const [profileData, statsData, resultsData] = await Promise.all([
         mypageApi.getUserProfile(),
@@ -80,86 +79,105 @@ const MyPage = () => {
 
   if (loading) {
     return (
-      <>
-        <div className="mypage-loading">
-          <div className="spinner"></div>
-          <p>로딩 중...</p>
+      <div className="bg-gray-900 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="mt-4 text-white text-lg">로딩 중...</p>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
-    <>
-      <div className="mypage-container">
-      {/* 상단 프로필 헤더 - 모든 탭에서 보임 */}
-      <div className="mypage-header">
-        {profile && (
-          <>
-            <img 
-              src={profile.profileImage} 
-              alt="프로필" 
-              className="profile-image-large"
-            />
-            <div className="profile-header-info">
-              <h2>{profile.nickname}</h2>
-              <div className="tier-badge-large">{profile.tier}</div>
+    <div className="bg-gray-900 min-h-screen text-white">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        {/* 상단 프로필 헤더 - 모든 탭에서 보임 */}
+        <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-xl p-6 mb-8">
+          {profile && (
+            <div className="flex items-center space-x-6">
+              <img
+                src={profile.profileImage}
+                alt="프로필"
+                className="w-24 h-24 rounded-full object-cover border-4 border-blue-500"
+              />
+              <div>
+                <h2 className="text-3xl font-bold mb-2">{profile.nickname}</h2>
+                <div className="inline-block bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-lg font-semibold shadow-lg">
+                  {profile.tier}
+                </div>
+              </div>
             </div>
-          </>
-        )}
-      </div>
+          )}
+        </div>
 
-      {/* 탭 네비게이션 */}
-      <div className="mypage-tabs">
-        <button
-          className={`tab-button ${activeTab === 'profile' ? 'active' : ''}`}
-          onClick={() => setActiveTab('profile')}
-        >
-          프로필
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'stats' ? 'active' : ''}`}
-          onClick={() => setActiveTab('stats')}
-        >
-          통계
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'activity' ? 'active' : ''}`}
-          onClick={() => setActiveTab('activity')}
-        >
-          활동 내역
-        </button>
-        <button
-          className={`tab-button ${activeTab === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('settings')}
-        >
-          설정
-        </button>
-      </div>
+        {/* 탭 네비게이션 */}
+        <div className="flex space-x-2 mb-8 overflow-x-auto">
+          <button
+            className={`px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+              activeTab === 'profile'
+                ? 'bg-blue-500 text-white shadow-lg'
+                : 'bg-gray-800/80 backdrop-blur-sm text-gray-300 hover:bg-gray-700'
+            }`}
+            onClick={() => setActiveTab('profile')}
+          >
+            프로필
+          </button>
+          <button
+            className={`px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+              activeTab === 'stats'
+                ? 'bg-blue-500 text-white shadow-lg'
+                : 'bg-gray-800/80 backdrop-blur-sm text-gray-300 hover:bg-gray-700'
+            }`}
+            onClick={() => setActiveTab('stats')}
+          >
+            통계
+          </button>
+          <button
+            className={`px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+              activeTab === 'activity'
+                ? 'bg-blue-500 text-white shadow-lg'
+                : 'bg-gray-800/80 backdrop-blur-sm text-gray-300 hover:bg-gray-700'
+            }`}
+            onClick={() => setActiveTab('activity')}
+          >
+            활동 내역
+          </button>
+          <button
+            className={`px-6 py-3 rounded-lg font-semibold transition whitespace-nowrap ${
+              activeTab === 'settings'
+                ? 'bg-blue-500 text-white shadow-lg'
+                : 'bg-gray-800/80 backdrop-blur-sm text-gray-300 hover:bg-gray-700'
+            }`}
+            onClick={() => setActiveTab('settings')}
+          >
+            설정
+          </button>
+        </div>
 
-      {/* 탭 컨텐츠 */}
-      <div className="mypage-content">
-        {activeTab === 'profile' && profile && (
-          <ProfileSection profile={profile} />
-        )}
+        {/* 탭 컨텐츠 */}
+        <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-xl p-6">
+          {activeTab === 'profile' && profile && (
+            <ProfileSection profile={profile} />
+          )}
 
-        {activeTab === 'stats' && predictionStats && (
-          <StatsSection 
-            stats={predictionStats} 
-            recentResults={recentResults} 
-          />
-        )}
+          {activeTab === 'stats' && predictionStats && (
+            <StatsSection
+              stats={predictionStats}
+              recentResults={recentResults}
+            />
+          )}
 
-        {activeTab === 'activity' && (
-          <ActivitySection />
-        )}
+          {activeTab === 'activity' && (
+            <ActivitySection />
+          )}
 
-        {activeTab === 'settings' && (
-          <SettingsSection onLogout={handleLogout} />
-        )}
+          {activeTab === 'settings' && (
+            <SettingsSection onLogout={handleLogout} />
+          )}
+        </div>
       </div>
     </div>
-    </>
   );
 };
 

@@ -7,6 +7,20 @@ import '../styles/ProfileSection.css';
  */
 const ProfileSection = ({ profile }) => {
   /**
+   * 티어별 그라디언트 색상 반환
+   */
+  const getTierGradient = (tier) => {
+    const gradients = {
+      BRONZE: 'linear-gradient(135deg, #CD7F32 0%, #8B5A2B 100%)',
+      SILVER: 'linear-gradient(135deg, #C0C0C0 0%, #A8A8A8 100%)',
+      GOLD: 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)',
+      PLATINUM: 'linear-gradient(135deg, #00CED1 0%, #0099CC 100%)',
+      DIAMOND: 'linear-gradient(135deg, #B9F2FF 0%, #76D7EA 100%)'
+    };
+    return gradients[tier] || 'linear-gradient(135deg, #CD7F32 0%, #8B5A2B 100%)';
+  };
+
+  /**
    * 티어별 색상 반환
    */
   const getTierColor = (tier) => {
@@ -73,9 +87,12 @@ const ProfileSection = ({ profile }) => {
         {/* 티어 정보 */}
         <div className="tier-section">
           <div className="tier-header">
-            <span 
+            <span
               className="tier-badge"
-              style={{ backgroundColor: getTierColor(profile.tier) }}
+              style={{
+                background: getTierGradient(profile.tier),
+                boxShadow: '0 4px 14px 0 rgba(0, 0, 0, 0.3)'
+              }}
             >
               {profile.tier}
             </span>

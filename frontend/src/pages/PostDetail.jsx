@@ -18,18 +18,17 @@ function PostDetail() {
 
     const [post, setPost] = useState(null);
     const [comments, setComments] = useState([]);
-    const [pageLoading, setPageLoading] = useState(false);  // ⭐ 페이지 전체 로딩
-    const [commentLoading, setCommentLoading] = useState(false);  // ⭐ 댓글 작성 로딩
+    const [pageLoading, setPageLoading] = useState(false);
+    const [commentLoading, setCommentLoading] = useState(false);
     const [newComment, setNewComment] = useState('');
     const [replyTo, setReplyTo] = useState(null);
     const [showReportModal, setShowReportModal] = useState(false);
     const [reportReason, setReportReason] = useState('');
 
-    // ⭐ 댓글 페이지네이션 상태 추가
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(0);
     const [totalComments, setTotalComments] = useState(0);
-    const commentSectionRef = useRef(null);  // 댓글 섹션 참조
+    const commentSectionRef = useRef(null);
 
     const currentUser = getUserData();
 
@@ -62,12 +61,11 @@ function PostDetail() {
             const data = await response.json();
 
             setComments(data.comments);
-            setBestComments(data.bestComments);  // ⭐ 베스트 댓글 설정
+            setBestComments(data.bestComments);
             setCurrentPage(data.currentPage);
             setTotalPages(data.totalPages);
             setTotalComments(data.totalComments);
 
-            // ⭐ 댓글 섹션으로 스크롤
             if (commentSectionRef.current && page > 0) {
                 commentSectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
@@ -80,7 +78,7 @@ function PostDetail() {
      * 게시글 및 댓글 조회
      */
     const fetchPostAndComments = async () => {
-        setPageLoading(true);  // ⭐ 페이지 로딩만
+        setPageLoading(true);
         try {
             await fetchPost();
             await fetchComments(currentPage);
@@ -176,16 +174,15 @@ function PostDetail() {
             return;
         }
 
-        // ⭐ 댓글 작성 중 상태 추가
         if (commentLoading) {
             return;
         }
 
-        setCommentLoading(true);  // ⭐ 로딩 시작
+        setCommentLoading(true);
 
         try {
             await createComment(postId, newComment, replyTo);
-            alert(replyTo ? '답글이 작성되었습니다.' : '댓글이 작성되었습니다.');  // ⭐ alert 유지
+            alert(replyTo ? '답글이 작성되었습니다.' : '댓글이 작성되었습니다.');
             setNewComment('');
             setReplyTo(null);
 
@@ -207,7 +204,7 @@ function PostDetail() {
                 alert(error.message || '댓글 작성에 실패했습니다.');
             }
         } finally {
-                setCommentLoading(false);  // ⭐ 로딩 종료
+            setCommentLoading(false);
         }
     };
 
@@ -247,6 +244,7 @@ function PostDetail() {
             alert(error.message || '추천에 실패했습니다.');
         }
     };
+
     /**
      * 댓글 비추천
      */
@@ -288,6 +286,7 @@ function PostDetail() {
             alert(error.message || '신고에 실패했습니다.');
         }
     };
+
     /**
      * 댓글 신고
      */
@@ -334,88 +333,55 @@ function PostDetail() {
         return (
             <div
                 key={comment.commentId}
-                style={{
-                    padding: '15px',
-                    marginBottom: '10px',
-                    marginLeft: isReply ? '40px' : '0',
-                    backgroundColor: isReply ? '#f9f9f9' : 'white',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '5px'
-                }}
+                className={`p-4 mb-3 rounded-lg ${
+                    isReply
+                        ? 'ml-10 bg-gray-700/30'
+                        : 'bg-gray-700/50'
+                } border border-gray-600/50`}
             >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <div>
+                <div className="flex justify-between items-center mb-3">
+                    <div className="flex items-center space-x-2">
                         {comment.isBest && (
-                            <span style={{
-                                backgroundColor: '#4da6ff',
-                                color: 'white',
-                                padding: '2px 8px',
-                                borderRadius: '3px',
-                                fontSize: '11px',
-                                fontWeight: 'bold',
-                                marginRight: '8px'
-                            }}>
-                ★ BEST
-              </span>
+                            <span className="bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-bold">
+                                ★ BEST
+                            </span>
                         )}
-                        <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
-              {comment.nickname}
-            </span>
-                        <span style={{ fontSize: '12px', color: '#888' }}>
-              {new Date(comment.createdAt).toLocaleString('ko-KR')}
-            </span>
+                        <span className="font-bold text-white">{comment.nickname}</span>
+                        <span className="text-xs text-gray-400">
+                            {new Date(comment.createdAt).toLocaleString('ko-KR')}
+                        </span>
                     </div>
 
                     {isMyComment && !comment.isDeleted && (
                         <button
                             onClick={() => handleDeleteComment(comment.commentId)}
-                            style={{
-                                padding: '5px 10px',
-                                backgroundColor: '#ff4444',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '3px',
-                                cursor: 'pointer',
-                                fontSize: '12px'
-                            }}
+                            className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-md text-xs font-semibold transition"
                         >
                             삭제
                         </button>
                     )}
                 </div>
 
-                <div style={{ marginBottom: '10px', whiteSpace: 'pre-wrap' }}>
+                <div className="mb-3 whitespace-pre-wrap text-white">
                     {comment.isDeleted ? (
-                        <span style={{ color: '#999', fontStyle: 'italic' }}>삭제된 댓글입니다.</span>
+                        <span className="text-gray-500 italic">삭제된 댓글입니다.</span>
                     ) : (
                         comment.content
                     )}
                 </div>
 
                 {!comment.isDeleted && (
-                    <div style={{ display: 'flex', gap: '10px', fontSize: '14px' }}>
+                    <div className="flex gap-2 text-sm">
                         <button
                             onClick={() => handleLikeComment(comment.commentId)}
-                            style={{
-                                padding: '5px 10px',
-                                backgroundColor: '#f0f0f0',
-                                border: 'none',
-                                borderRadius: '3px',
-                                cursor: 'pointer'
-                            }}
+                            className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded-md transition"
                         >
                             👍 {comment.likeCount}
                         </button>
 
                         <button
                             onClick={() => handleDislikeComment(comment.commentId)}
-                            style={{
-                                padding: '5px 10px',
-                                backgroundColor: '#f0f0f0',
-                                border: 'none',
-                                borderRadius: '3px',
-                                cursor: 'pointer'
-                            }}
+                            className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded-md transition"
                         >
                             👎 {comment.dislikeCount}
                         </button>
@@ -423,32 +389,19 @@ function PostDetail() {
                         {!isReply && (
                             <button
                                 onClick={() => setReplyTo(comment.commentId)}
-                                style={{
-                                    padding: '5px 10px',
-                                    backgroundColor: '#f0f0f0',
-                                    border: 'none',
-                                    borderRadius: '3px',
-                                    cursor: 'pointer'
-                                }}
+                                className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded-md transition"
                             >
                                 💬 답글
                             </button>
                         )}
-                        {/* 신고 버튼 추가 - 본인 댓글이 아닐 때만 */}
+
                         {!isMyComment && (
                             <button
                                 onClick={() => {
                                     setReportingCommentId(comment.commentId);
                                     setShowCommentReportModal(true);
                                 }}
-                                style={{
-                                    padding: '5px 10px',
-                                    backgroundColor: '#ff4444',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '3px',
-                                    cursor: 'pointer'
-                                }}
+                                className="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded-md transition"
                             >
                                 🚨 신고
                             </button>
@@ -457,7 +410,7 @@ function PostDetail() {
                 )}
 
                 {comment.replies && comment.replies.length > 0 && (
-                    <div style={{ marginTop: '15px' }}>
+                    <div className="mt-4">
                         {comment.replies.map(reply => renderComment(reply, true))}
                     </div>
                 )}
@@ -467,185 +420,105 @@ function PostDetail() {
 
     if (pageLoading || !post) {
         return (
-            <div>
-                <div style={{ textAlign: 'center', padding: '100px', color: '#888' }}>
-                    로딩 중...
+            <div className="bg-gray-900 min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-block w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                    <p className="mt-4 text-white text-lg">로딩 중...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div>
-            <div style={{ maxWidth: '900px', margin: '0 auto', padding: '20px' }}>
+        <div className="bg-gray-900 min-h-screen text-white">
+            <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-4xl">
 
                 <button
                     onClick={() => navigate('/board')}
-                    style={{
-                        padding: '8px 16px',
-                        backgroundColor: '#f0f0f0',
-                        border: 'none',
-                        borderRadius: '5px',
-                        cursor: 'pointer',
-                        marginBottom: '20px'
-                    }}
+                    className="px-6 py-3 bg-gray-800/80 backdrop-blur-sm hover:bg-gray-700 rounded-lg font-semibold transition mb-6"
                 >
                     ← 목록으로
                 </button>
 
                 {/* 게시글 본문 */}
-                <div style={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '10px',
-                    padding: '30px',
-                    marginBottom: '20px'
-                }}>
-                    <div style={{ marginBottom: '20px', borderBottom: '2px solid #e0e0e0', paddingBottom: '20px' }}>
-                        {post.isNotice && (
-                            <span style={{
-                                backgroundColor: '#ff4444',
-                                color: 'white',
-                                padding: '3px 10px',
-                                borderRadius: '3px',
-                                fontSize: '12px',
-                                marginRight: '10px'
-                            }}>
-                공지
-              </span>
-                        )}
-                        {post.isPopular && (
-                            <span style={{
-                                backgroundColor: '#646cff',
-                                color: 'white',
-                                padding: '3px 10px',
-                                borderRadius: '3px',
-                                fontSize: '12px',
-                                marginRight: '10px'
-                            }}>
-                인기
-              </span>
-                        )}
-                        <h1 style={{ fontSize: '28px', fontWeight: 'bold', display: 'inline' }}>
-                            {post.title}
-                        </h1>
+                <div className="bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-xl p-8 mb-6">
+                    <div className="mb-6 pb-6 border-b-2 border-gray-700">
+                        <div className="flex items-center gap-2 mb-3">
+                            {post.isNotice && (
+                                <span className="bg-red-500 text-white px-3 py-1 rounded-md text-xs font-bold">
+                                    공지
+                                </span>
+                            )}
+                            {post.isPopular && (
+                                <span className="bg-blue-500 text-white px-3 py-1 rounded-md text-xs font-bold">
+                                    인기
+                                </span>
+                            )}
+                        </div>
+                        <h1 className="text-3xl font-bold">{post.title}</h1>
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                        <div style={{ fontSize: '14px', color: '#666' }}>
-                            <span style={{ fontWeight: 'bold', marginRight: '15px' }}>{post.nickname}</span>
+                    <div className="flex justify-between items-center mb-6">
+                        <div className="text-sm text-gray-400 space-x-4">
+                            <span className="font-bold text-white">{post.nickname}</span>
                             <span>{new Date(post.createdAt).toLocaleString('ko-KR')}</span>
-                            <span style={{ margin: '0 10px' }}>|</span>
+                            <span>|</span>
                             <span>조회 {post.viewCount}</span>
                         </div>
 
                         <button
                             onClick={() => setShowReportModal(true)}
-                            style={{
-                                padding: '5px 10px',
-                                backgroundColor: '#ff4444',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '3px',
-                                cursor: 'pointer',
-                                fontSize: '12px'
-                            }}
+                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md text-xs font-semibold transition"
                         >
                             🚨 신고
                         </button>
                     </div>
 
-                    <div style={{ fontSize: '16px', lineHeight: '1.8', marginBottom: '30px', whiteSpace: 'pre-wrap' }}>
+                    <div className="text-base leading-relaxed mb-8 whitespace-pre-wrap">
                         {post.content}
                     </div>
 
-                    <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', paddingTop: '20px', borderTop: '1px solid #e0e0e0' }}>
+                    <div className="flex justify-center gap-4 pt-6 border-t border-gray-700">
                         <button
                             onClick={handleLike}
-                            style={{
-                                padding: '15px 30px',
-                                backgroundColor: '#646cff',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '5px',
-                                cursor: 'pointer',
-                                fontSize: '16px',
-                                fontWeight: 'bold'
-                            }}
+                            className="px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-bold transition shadow-lg"
                         >
                             👍 추천 {post.likeCount}
                         </button>
 
                         <button
                             onClick={handleDislike}
-                            style={{
-                                padding: '15px 30px',
-                                backgroundColor: '#888',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '5px',
-                                cursor: 'pointer',
-                                fontSize: '16px',
-                                fontWeight: 'bold'
-                            }}
+                            className="px-8 py-3 bg-gray-600 hover:bg-gray-500 text-white rounded-lg font-bold transition shadow-lg"
                         >
                             👎 비추천 {post.dislikeCount}
                         </button>
 
                         <button
                             onClick={handleScrap}
-                            style={{
-                                padding: '15px 30px',
-                                backgroundColor: '#4CAF50',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '5px',
-                                cursor: 'pointer',
-                                fontSize: '16px',
-                                fontWeight: 'bold'
-                            }}
+                            className="px-8 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-bold transition shadow-lg"
                         >
                             ⭐ 스크랩
                         </button>
                     </div>
                 </div>
 
-                {/* ⭐ 댓글 섹션 - ref 추가 */}
+                {/* 댓글 섹션 */}
                 <div
                     ref={commentSectionRef}
-                    style={{
-                        backgroundColor: 'white',
-                        border: '1px solid #e0e0e0',
-                        borderRadius: '10px',
-                        padding: '30px'
-                    }}
+                    className="bg-gray-800/80 backdrop-blur-sm rounded-lg shadow-xl p-8"
                 >
-                    <h2 style={{ fontSize: '20px', fontWeight: 'bold', marginBottom: '20px' }}>
+                    <h2 className="text-2xl font-bold mb-6">
                         💬 댓글 {totalComments}
                     </h2>
 
                     {isLoggedIn() && (
-                        <div style={{ marginBottom: '30px' }}>
+                        <div className="mb-8">
                             {replyTo && (
-                                <div style={{
-                                    padding: '10px',
-                                    backgroundColor: '#f0f0f0',
-                                    marginBottom: '10px',
-                                    borderRadius: '5px',
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center'
-                                }}>
-                                    <span>답글 작성 중...</span>
+                                <div className="flex justify-between items-center p-3 bg-gray-700/50 rounded-lg mb-3">
+                                    <span className="text-sm">답글 작성 중...</span>
                                     <button
                                         onClick={() => setReplyTo(null)}
-                                        style={{
-                                            padding: '5px 10px',
-                                            backgroundColor: '#ddd',
-                                            border: 'none',
-                                            borderRadius: '3px',
-                                            cursor: 'pointer'
-                                        }}
+                                        className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded-md text-xs transition"
                                     >
                                         취소
                                     </button>
@@ -656,34 +529,19 @@ function PostDetail() {
                                 value={newComment}
                                 onChange={(e) => setNewComment(e.target.value)}
                                 placeholder={replyTo ? "답글을 입력하세요..." : "댓글을 입력하세요..."}
-                                style={{
-                                    width: '100%',
-                                    padding: '15px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    fontSize: '14px',
-                                    minHeight: '100px',
-                                    resize: 'vertical',
-                                    boxSizing: 'border-box'
-                                }}
+                                className="w-full p-4 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 resize-vertical min-h-[100px] focus:outline-none focus:border-blue-500"
                             />
 
                             <button
                                 onClick={handleCreateComment}
-                                disabled={commentLoading || !newComment.trim()}  // ⭐ 로딩 중일 때, 내용 없을 때 비활성화
-                                style={{
-                                    marginTop: '10px',
-                                    padding: '10px 20px',
-                                    backgroundColor: commentLoading || !newComment.trim() ? '#ccc' : '#646cff',  // ⭐ 로딩 중 색상 변경
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: '5px',
-                                    cursor: commentLoading || !newComment.trim() ? 'not-allowed' : 'pointer',  // ⭐ 로딩 중 커서 변경
-                                    fontSize: '16px',
-                                    fontWeight: 'bold'
-                                }}
+                                disabled={commentLoading || !newComment.trim()}
+                                className={`mt-3 px-6 py-3 rounded-lg font-bold transition ${
+                                    commentLoading || !newComment.trim()
+                                        ? 'bg-gray-600 cursor-not-allowed'
+                                        : 'bg-blue-500 hover:bg-blue-600'
+                                } text-white`}
                             >
-                                {commentLoading ? '작성 중...' : (replyTo ? '답글 작성' : '댓글 작성')}  {/* ⭐ 로딩 중 텍스트 */}
+                                {commentLoading ? '작성 중...' : (replyTo ? '답글 작성' : '댓글 작성')}
                             </button>
                         </div>
                     )}
@@ -691,73 +549,41 @@ function PostDetail() {
                     {/* 댓글 목록 */}
                     <div>
                         {comments.length === 0 ? (
-                            <div style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
+                            <div className="text-center py-12 text-gray-400">
                                 첫 댓글을 작성해보세요!
                             </div>
                         ) : (
                             <>
-                                {/* ⭐ 베스트 댓글 섹션 - 백엔드에서 받은 데이터 사용 */}
+                                {/* 베스트 댓글 섹션 */}
                                 {bestComments && bestComments.length > 0 && (
-                                    <div style={{ marginBottom: '30px' }}>
-                                        <h3 style={{
-                                            fontSize: '16px',
-                                            fontWeight: 'bold',
-                                            marginBottom: '15px',
-                                            color: '#4da6ff'
-                                        }}>
+                                    <div className="mb-8">
+                                        <h3 className="text-lg font-bold mb-4 text-blue-400">
                                             ★ 베스트 댓글
                                         </h3>
-                                        <div style={{ borderTop: '2px solid #4da6ff', paddingTop: '15px' }}>
+                                        <div className="border-t-2 border-blue-500 pt-4">
                                             {bestComments.map((comment, index) => (
                                                 <div
                                                     key={`best-${comment.commentId}-${index}`}
-                                                    style={{
-                                                        padding: '15px',
-                                                        marginBottom: '10px',
-                                                        backgroundColor: '#f0f8ff',
-                                                        border: '1px solid #4da6ff',
-                                                        borderRadius: '5px'
-                                                    }}
+                                                    className="p-4 mb-3 bg-blue-900/20 border border-blue-500/50 rounded-lg"
                                                 >
-                                                    <div style={{
-                                                        display: 'flex',
-                                                        justifyContent: 'space-between',
-                                                        alignItems: 'center',
-                                                        marginBottom: '10px'
-                                                    }}>
-                                                        <div>
-                    <span style={{
-                        backgroundColor: '#4da6ff',
-                        color: 'white',
-                        padding: '2px 8px',
-                        borderRadius: '3px',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        marginRight: '8px'
-                    }}>
-                      ★ BEST
-                    </span>
-                                                            <span style={{ fontWeight: 'bold', marginRight: '10px' }}>
-                      {comment.nickname}
-                    </span>
-                                                            <span style={{ fontSize: '12px', color: '#888' }}>
-                      {new Date(comment.createdAt).toLocaleString('ko-KR')}
-                    </span>
+                                                    <div className="flex justify-between items-center mb-3">
+                                                        <div className="flex items-center space-x-2">
+                                                            <span className="bg-blue-500 text-white px-2 py-1 rounded-md text-xs font-bold">
+                                                                ★ BEST
+                                                            </span>
+                                                            <span className="font-bold text-white">{comment.nickname}</span>
+                                                            <span className="text-xs text-gray-400">
+                                                                {new Date(comment.createdAt).toLocaleString('ko-KR')}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                    <div style={{ marginBottom: '10px', whiteSpace: 'pre-wrap' }}>
+                                                    <div className="mb-3 whitespace-pre-wrap text-white">
                                                         {comment.content}
                                                     </div>
-                                                    <div style={{ display: 'flex', gap: '10px', fontSize: '14px' }}>
+                                                    <div className="flex gap-2 text-sm">
                                                         <button
                                                             onClick={() => handleLikeComment(comment.commentId)}
-                                                            style={{
-                                                                padding: '5px 10px',
-                                                                backgroundColor: '#f0f0f0',
-                                                                border: 'none',
-                                                                borderRadius: '3px',
-                                                                cursor: 'pointer'
-                                                            }}
+                                                            className="px-3 py-1 bg-gray-600 hover:bg-gray-500 rounded-md transition"
                                                         >
                                                             👍 {comment.likeCount}
                                                         </button>
@@ -768,9 +594,9 @@ function PostDetail() {
                                     </div>
                                 )}
 
-                                {/* ⭐ 일반 댓글 섹션 */}
+                                {/* 일반 댓글 섹션 */}
                                 <div>
-                                    <h3 style={{ fontSize: '16px', fontWeight: 'bold', marginBottom: '15px' }}>
+                                    <h3 className="text-lg font-bold mb-4">
                                         💬 댓글 {totalComments}
                                     </h3>
                                     {comments.map(comment => renderComment(comment))}
@@ -779,54 +605,34 @@ function PostDetail() {
                         )}
                     </div>
 
-                    {/* ⭐ 댓글 페이지네이션 - 30개 초과 시에만 표시 */}
+                    {/* 댓글 페이지네이션 */}
                     {totalComments > 30 && (
-                        <div style={{
-                            display: 'flex',
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                            gap: '5px',
-                            marginTop: '30px',
-                            paddingTop: '20px',
-                            borderTop: '1px solid #e0e0e0'
-                        }}>
-                            {/* 10페이지 이전 */}
+                        <div className="flex justify-center items-center gap-2 mt-8 pt-6 border-t border-gray-700">
                             <button
                                 onClick={() => handlePageChange(currentPage - 10)}
                                 disabled={currentPage < 10}
-                                style={{
-                                    padding: '8px 15px',
-                                    backgroundColor: 'white',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    cursor: currentPage < 10 ? 'not-allowed' : 'pointer',
-                                    fontSize: '14px',
-                                    color: currentPage < 10 ? '#ccc' : '#333'
-                                }}
+                                className={`px-4 py-2 bg-gray-700 rounded-lg transition ${
+                                    currentPage < 10
+                                        ? 'text-gray-500 cursor-not-allowed'
+                                        : 'hover:bg-gray-600 text-white'
+                                }`}
                             >
                                 &lt;&lt;
                             </button>
 
-                            {/* 1페이지 이전 */}
                             <button
                                 onClick={() => handlePageChange(currentPage - 1)}
                                 disabled={currentPage === 0}
-                                style={{
-                                    padding: '8px 15px',
-                                    backgroundColor: 'white',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    cursor: currentPage === 0 ? 'not-allowed' : 'pointer',
-                                    fontSize: '14px',
-                                    minWidth: '60px',
-                                    color: currentPage === 0 ? '#ccc' : '#333'
-                                }}
+                                className={`px-4 py-2 bg-gray-700 rounded-lg transition min-w-[60px] ${
+                                    currentPage === 0
+                                        ? 'text-gray-500 cursor-not-allowed'
+                                        : 'hover:bg-gray-600 text-white'
+                                }`}
                             >
                                 Prev
                             </button>
 
-                            {/* 페이지 번호 버튼들 (1~10) */}
-                            <div style={{ display: 'flex', gap: '5px' }}>
+                            <div className="flex gap-2">
                                 {(() => {
                                     const startPage = Math.floor(currentPage / 10) * 10;
                                     const endPage = Math.min(startPage + 10, totalPages);
@@ -837,17 +643,11 @@ function PostDetail() {
                                             <button
                                                 key={i}
                                                 onClick={() => handlePageChange(i)}
-                                                style={{
-                                                    minWidth: '40px',
-                                                    padding: '8px 12px',
-                                                    backgroundColor: currentPage === i ? '#646cff' : 'white',
-                                                    color: currentPage === i ? 'white' : '#333',
-                                                    border: '1px solid #ddd',
-                                                    borderRadius: '5px',
-                                                    cursor: 'pointer',
-                                                    fontSize: '14px',
-                                                    fontWeight: currentPage === i ? 'bold' : 'normal'
-                                                }}
+                                                className={`min-w-[40px] px-3 py-2 rounded-lg font-semibold transition ${
+                                                    currentPage === i
+                                                        ? 'bg-blue-500 text-white'
+                                                        : 'bg-gray-700 hover:bg-gray-600 text-white'
+                                                }`}
                                             >
                                                 {i + 1}
                                             </button>
@@ -858,37 +658,26 @@ function PostDetail() {
                                 })()}
                             </div>
 
-                            {/* 1페이지 다음 */}
                             <button
                                 onClick={() => handlePageChange(currentPage + 1)}
                                 disabled={currentPage >= totalPages - 1}
-                                style={{
-                                    padding: '8px 15px',
-                                    backgroundColor: 'white',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    cursor: currentPage >= totalPages - 1 ? 'not-allowed' : 'pointer',
-                                    fontSize: '14px',
-                                    minWidth: '60px',
-                                    color: currentPage >= totalPages - 1 ? '#ccc' : '#333'
-                                }}
+                                className={`px-4 py-2 bg-gray-700 rounded-lg transition min-w-[60px] ${
+                                    currentPage >= totalPages - 1
+                                        ? 'text-gray-500 cursor-not-allowed'
+                                        : 'hover:bg-gray-600 text-white'
+                                }`}
                             >
                                 Next
                             </button>
 
-                            {/* 10페이지 다음 */}
                             <button
                                 onClick={() => handlePageChange(currentPage + 10)}
                                 disabled={currentPage >= totalPages - 10}
-                                style={{
-                                    padding: '8px 15px',
-                                    backgroundColor: 'white',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    cursor: currentPage >= totalPages - 10 ? 'not-allowed' : 'pointer',
-                                    fontSize: '14px',
-                                    color: currentPage >= totalPages - 10 ? '#ccc' : '#333'
-                                }}
+                                className={`px-4 py-2 bg-gray-700 rounded-lg transition ${
+                                    currentPage >= totalPages - 10
+                                        ? 'text-gray-500 cursor-not-allowed'
+                                        : 'hover:bg-gray-600 text-white'
+                                }`}
                             >
                                 &gt;&gt;
                             </button>
@@ -896,69 +685,29 @@ function PostDetail() {
                     )}
                 </div>
 
-                {/* 신고 모달 */}
+                {/* 게시글 신고 모달 */}
                 {showReportModal && (
-                    <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1000
-                    }}>
-                        <div style={{
-                            backgroundColor: 'white',
-                            padding: '30px',
-                            borderRadius: '10px',
-                            width: '90%',
-                            maxWidth: '500px'
-                        }}>
-                            <h2 style={{ marginBottom: '20px' }}>🚨 게시글 신고</h2>
+                    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+                        <div className="bg-gray-800 rounded-lg p-8 w-[90%] max-w-md">
+                            <h2 className="text-2xl font-bold mb-6">🚨 게시글 신고</h2>
 
                             <textarea
                                 placeholder="신고 사유를 입력해주세요"
                                 value={reportReason}
                                 onChange={(e) => setReportReason(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    marginBottom: '15px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    fontSize: '14px',
-                                    minHeight: '150px',
-                                    resize: 'vertical',
-                                    boxSizing: 'border-box'
-                                }}
+                                className="w-full p-4 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 resize-vertical min-h-[150px] focus:outline-none focus:border-blue-500 mb-4"
                             />
 
-                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                            <div className="flex gap-3 justify-end">
                                 <button
                                     onClick={() => setShowReportModal(false)}
-                                    style={{
-                                        padding: '10px 20px',
-                                        backgroundColor: '#ddd',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer'
-                                    }}
+                                    className="px-6 py-3 bg-gray-600 hover:bg-gray-500 rounded-lg font-semibold transition"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={handleReportPost}
-                                    style={{
-                                        padding: '10px 20px',
-                                        backgroundColor: '#ff4444',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer'
-                                    }}
+                                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition"
                                 >
                                     신고하기
                                 </button>
@@ -966,73 +715,34 @@ function PostDetail() {
                         </div>
                     </div>
                 )}
-                {/* 댓글 신고 모달 - 여기에 추가! */}
+
+                {/* 댓글 신고 모달 */}
                 {showCommentReportModal && (
-                    <div style={{
-                        position: 'fixed',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        zIndex: 1000
-                    }}>
-                        <div style={{
-                            backgroundColor: 'white',
-                            padding: '30px',
-                            borderRadius: '10px',
-                            width: '90%',
-                            maxWidth: '500px'
-                        }}>
-                            <h2 style={{ marginBottom: '20px' }}>🚨 댓글 신고</h2>
+                    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+                        <div className="bg-gray-800 rounded-lg p-8 w-[90%] max-w-md">
+                            <h2 className="text-2xl font-bold mb-6">🚨 댓글 신고</h2>
 
                             <textarea
                                 placeholder="신고 사유를 입력해주세요"
                                 value={commentReportReason}
                                 onChange={(e) => setCommentReportReason(e.target.value)}
-                                style={{
-                                    width: '100%',
-                                    padding: '10px',
-                                    marginBottom: '15px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '5px',
-                                    fontSize: '14px',
-                                    minHeight: '150px',
-                                    resize: 'vertical',
-                                    boxSizing: 'border-box'
-                                }}
+                                className="w-full p-4 bg-gray-700/50 border border-gray-600 rounded-lg text-white placeholder-gray-400 resize-vertical min-h-[150px] focus:outline-none focus:border-blue-500 mb-4"
                             />
 
-                            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                            <div className="flex gap-3 justify-end">
                                 <button
                                     onClick={() => {
                                         setShowCommentReportModal(false);
                                         setCommentReportReason('');
                                         setReportingCommentId(null);
                                     }}
-                                    style={{
-                                        padding: '10px 20px',
-                                        backgroundColor: '#ddd',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer'
-                                    }}
+                                    className="px-6 py-3 bg-gray-600 hover:bg-gray-500 rounded-lg font-semibold transition"
                                 >
                                     취소
                                 </button>
                                 <button
                                     onClick={handleReportComment}
-                                    style={{
-                                        padding: '10px 20px',
-                                        backgroundColor: '#ff4444',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer'
-                                    }}
+                                    className="px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition"
                                 >
                                     신고하기
                                 </button>

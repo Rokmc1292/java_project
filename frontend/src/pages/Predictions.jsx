@@ -237,10 +237,10 @@ function Predictions() {
                     </div>
                   </div>
 
-                  {/* 예측 버튼 */}
-                  <button className="w-full mt-4 py-3 bg-yellow-500 hover:bg-yellow-600 text-black font-bold rounded-lg transition">
-                    예측 참여하기 →
-                  </button>
+                  {/* 예측 안내 */}
+                  <div className="mt-4 py-3 bg-yellow-500 text-black font-bold rounded-lg text-center">
+                    클릭하여 예측 참여하기 →
+                  </div>
                 </div>
               ))}
             </div>
