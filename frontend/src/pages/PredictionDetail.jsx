@@ -173,6 +173,18 @@ function PredictionDetail() {
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일 ${date.getHours()}:${String(date.getMinutes()).padStart(2, '0')}`;
   };
 
+  // 티어별 그라데이션 색상
+  const getTierGradient = (tier) => {
+    const gradients = {
+      BRONZE: 'from-amber-700 to-amber-900',
+      SILVER: 'from-gray-400 to-gray-600',
+      GOLD: 'from-yellow-400 to-orange-500',
+      PLATINUM: 'from-cyan-400 to-blue-500',
+      DIAMOND: 'from-blue-300 to-blue-500'
+    };
+    return gradients[tier] || 'from-gray-500 to-gray-700';
+  };
+
   // 티어 아이콘
   const getTierIcon = (tier) => {
     const icons = {
@@ -453,8 +465,13 @@ function PredictionDetail() {
                   <div className="comment-header">
                     <div className="comment-user-info">
                       <span className="comment-nickname">
-                        {getTierIcon(prediction.userTier)} {prediction.nickname}
+                        {prediction.nickname}
                       </span>
+                      {prediction.userTier && (
+                        <span className={`px-3 py-1 bg-gradient-to-r ${getTierGradient(prediction.userTier)} text-white text-xs font-bold rounded shadow-lg`}>
+                          {prediction.userTier}
+                        </span>
+                      )}
                       <span className={`prediction-badge ${prediction.predictedResult.toLowerCase()}`}>
                         {prediction.predictedResult === 'HOME' ? '홈팀 승' :
                          prediction.predictedResult === 'DRAW' ? '무승부' : '원정팀 승'}

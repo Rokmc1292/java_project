@@ -92,9 +92,9 @@ function Navbar() {
                 {user.nickname}님
                   {user.isAdmin && <span className="admin-badge">👑</span>}
               </span>
-                            <Link to="/mypage" className="navbar-link">
+                            <button onClick={() => navigate('/mypage')} className="navbar-logout-btn">
                                 마이페이지
-                            </Link>
+                            </button>
                             <button onClick={handleLogout} className="navbar-logout-btn">
                                 로그아웃
                             </button>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // 환경변수에서 API Base URL 가져오기
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -8,6 +9,8 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
  * 종목별 경기 일정을 날짜별로 조회
  */
 function Fixtures() {
+  const navigate = useNavigate();
+
   // 상태 관리
   const [selectedSport, setSelectedSport] = useState('ALL');  // 선택된 종목
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);  // 선택된 날짜
@@ -141,6 +144,11 @@ function Fixtures() {
     };
   };
 
+  // LIVE 경기 클릭 핸들러
+  const handleLiveMatchClick = (matchId) => {
+    navigate(`/live?matchId=${matchId}`);
+  };
+
   return (
     <div className="bg-gray-900 text-white min-h-screen">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -223,7 +231,11 @@ function Fixtures() {
           {!loading && !error && matches.length > 0 && (
             <div className="space-y-6">
               {matches.map((match) => (
-                <div key={match.matchId} className="bg-white rounded-lg p-6 shadow-xl">
+                <div
+                  key={match.matchId}
+                  className={`bg-white rounded-lg p-6 shadow-xl ${match.detail.status === 'LIVE' ? 'cursor-pointer hover:shadow-2xl transition-shadow' : ''}`}
+                  onClick={() => match.detail.status === 'LIVE' && handleLiveMatchClick(match.matchId)}
+                >
                   {/* 리그 정보 */}
                   <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-200">
                     <div className="flex items-center gap-3">
