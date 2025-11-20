@@ -23,7 +23,17 @@ const Home = () => {
                 const data = await getTodayMatches();
 
                 if (Array.isArray(data)) {
-                    setTodayMatches(data.slice(0, 3));
+                    // 현재 시간 기준으로 가장 가까운 경기 3개 선택
+                    const now = new Date();
+                    const sortedMatches = data
+                        .map(match => ({
+                            ...match,
+                            timeDiff: Math.abs(new Date(match.detail.matchDate) - now)
+                        }))
+                        .sort((a, b) => a.timeDiff - b.timeDiff)
+                        .slice(0, 3);
+
+                    setTodayMatches(sortedMatches);
                 } else {
                     setTodayMatches([]);
                 }

@@ -396,7 +396,7 @@ function Live() {
                             <span className={`font-bold ${msg.isAdmin ? 'text-yellow-400' : 'text-blue-400'}`}>
                               {msg.nickname}
                             </span>
-                            <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded">
+                            <span className="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-bold rounded shadow-lg">
                               {msg.userTier}
                             </span>
                           </div>
