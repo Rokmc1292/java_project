@@ -261,7 +261,7 @@ function Fixtures() {
                         <img
                           src={`${API_BASE_URL}/${match.teams.home.logo}`}
                           alt={match.teams.home.name}
-                          className={`w-16 h-16 object-cover ${match.sportType === 'MMA' ? 'rounded-full' : 'rounded-lg'}`}
+                          className={match.sportType === 'MMA' ? 'w-[110px] h-[400px] object-cover rounded-lg shadow-md' : 'w-16 h-16 object-cover rounded-lg'}
                         />
                       )}
                       <div>
@@ -318,7 +318,7 @@ function Fixtures() {
                         <img
                           src={`${API_BASE_URL}/${match.teams.away.logo}`}
                           alt={match.teams.away.name}
-                          className={`w-16 h-16 object-cover ${match.sportType === 'MMA' ? 'rounded-full' : 'rounded-lg'}`}
+                          className={match.sportType === 'MMA' ? 'w-[110px] h-[400px] object-cover rounded-lg shadow-md' : 'w-16 h-16 object-cover rounded-lg'}
                         />
                       )}
                     </div>
