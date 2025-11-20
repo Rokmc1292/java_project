@@ -193,7 +193,7 @@ function News() {
             display: 'flex',
             gap: '20px',
             padding: '20px',
-            backgroundColor: '#16213e',
+            backgroundColor: '#1f2937',
             borderRadius: '16px',
             boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
             animation: 'pulse 1.5s ease-in-out infinite'
@@ -239,9 +239,9 @@ function News() {
   );
 
   return (
-    <div style={{ 
+    <div style={{
       minHeight: '100vh',
-      background: '#1a1a2e',
+      background: '#111827',
       paddingBottom: '40px'
     }}>
       
@@ -287,10 +287,10 @@ function News() {
               width: '100%',
               padding: '16px 24px',
               fontSize: '16px',
-              border: '2px solid #0f3460',
+              border: '2px solid #374151',
               borderRadius: '12px',
               outline: 'none',
-              backgroundColor: '#16213e',
+              backgroundColor: '#1f2937',
               color: '#ffffff',
               transition: 'all 0.3s',
               boxSizing: 'border-box'
@@ -323,13 +323,13 @@ function News() {
               }}
               style={{
                 padding: '12px 24px',
-                background: selectedSport === sport.value && !showLikedOnly 
-                  ? '#3b82f6' 
-                  : '#16213e',
+                background: selectedSport === sport.value && !showLikedOnly
+                  ? '#3b82f6'
+                  : '#374151',
                 color: '#ffffff',
-                border: selectedSport === sport.value && !showLikedOnly 
-                  ? 'none' 
-                  : '2px solid #0f3460',
+                border: selectedSport === sport.value && !showLikedOnly
+                  ? 'none'
+                  : '2px solid #4b5563',
                 borderRadius: '12px',
                 cursor: 'pointer',
                 fontWeight: '700',
@@ -344,13 +344,13 @@ function News() {
               }}
               onMouseEnter={(e) => {
                 if (!(selectedSport === sport.value && !showLikedOnly)) {
-                  e.currentTarget.style.background = '#1e3a5f';
+                  e.currentTarget.style.background = '#4b5563';
                   e.currentTarget.style.transform = 'translateY(-2px)';
                 }
               }}
               onMouseLeave={(e) => {
                 if (!(selectedSport === sport.value && !showLikedOnly)) {
-                  e.currentTarget.style.background = '#16213e';
+                  e.currentTarget.style.background = '#374151';
                   e.currentTarget.style.transform = 'none';
                 }
               }}
@@ -373,11 +373,11 @@ function News() {
             disabled={!isLoggedIn}
             style={{
               padding: '12px 24px',
-              background: showLikedOnly 
-                ? '#ef4444' 
-                : '#16213e',
+              background: showLikedOnly
+                ? '#ef4444'
+                : '#374151',
               color: '#ffffff',
-              border: showLikedOnly ? 'none' : '2px solid #0f3460',
+              border: showLikedOnly ? 'none' : '2px solid #4b5563',
               borderRadius: '12px',
               cursor: !isLoggedIn ? 'not-allowed' : 'pointer',
               fontWeight: '700',
@@ -389,13 +389,13 @@ function News() {
             }}
             onMouseEnter={(e) => {
               if (isLoggedIn && !showLikedOnly) {
-                e.currentTarget.style.background = '#1e3a5f';
+                e.currentTarget.style.background = '#4b5563';
                 e.currentTarget.style.transform = 'translateY(-2px)';
               }
             }}
             onMouseLeave={(e) => {
               if (isLoggedIn && !showLikedOnly) {
-                e.currentTarget.style.background = '#16213e';
+                e.currentTarget.style.background = '#374151';
                 e.currentTarget.style.transform = 'none';
               }
             }}
@@ -421,12 +421,12 @@ function News() {
             <div style={{
               marginBottom: '20px',
               padding: '12px 20px',
-              background: '#16213e',
+              background: '#1f2937',
               borderRadius: '12px',
               color: '#ffffff',
               fontSize: '14px',
               fontWeight: '600',
-              border: '2px solid #0f3460',
+              border: '2px solid #374151',
               boxShadow: '0 2px 8px rgba(0,0,0,0.2)'
             }}>
               "<strong style={{ fontSize: '16px' }}>{searchKeyword}</strong>" 검색 결과: {news.length}개
@@ -439,9 +439,9 @@ function News() {
             <div style={{
               textAlign: 'center',
               padding: '100px 20px',
-              background: '#16213e',
+              background: '#1f2937',
               borderRadius: '20px',
-              border: '2px solid #0f3460',
+              border: '2px solid #374151',
               boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
             }}>
               <div style={{ fontSize: '64px', marginBottom: '20px' }}>📭</div>
@@ -463,7 +463,7 @@ function News() {
                       display: 'flex',
                       gap: '24px',
                       padding: '24px',
-                      background: '#16213e',
+                      background: '#1f2937',
                       borderRadius: '20px',
                       textDecoration: 'none',
                       color: 'inherit',
@@ -477,12 +477,12 @@ function News() {
                     onMouseEnter={(e) => {
                       e.currentTarget.style.transform = 'translateY(-8px) scale(1.01)';
                       e.currentTarget.style.boxShadow = '0 20px 60px rgba(0,0,0,0.4)';
-                      e.currentTarget.style.background = '#1e3a5f';
+                      e.currentTarget.style.background = '#374151';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.transform = 'translateY(0) scale(1)';
                       e.currentTarget.style.boxShadow = '0 10px 40px rgba(0,0,0,0.3)';
-                      e.currentTarget.style.background = '#16213e';
+                      e.currentTarget.style.background = '#1f2937';
                     }}
                   >
                     {/* 그라디언트 배경 */}
@@ -678,9 +678,9 @@ function News() {
                     marginTop: '50px',
                     flexWrap: 'wrap',
                     padding: '20px',
-                    background: '#16213e',
+                    background: '#1f2937',
                     borderRadius: '16px',
-                    border: '2px solid #0f3460',
+                    border: '2px solid #374151',
                     boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
                   }}>
                     {/* 맨 처음 */}
@@ -762,11 +762,11 @@ function News() {
                             minWidth: '40px',
                             height: '40px',
                             padding: '0 12px',
-                            background: currentPage === pageNum 
-                              ? '#3b82f6' 
-                              : '#16213e',
+                            background: currentPage === pageNum
+                              ? '#3b82f6'
+                              : '#1f2937',
                             color: '#ffffff',
-                            border: '2px solid #0f3460',
+                            border: '2px solid #4b5563',
                             borderRadius: '10px',
                             cursor: 'pointer',
                             fontWeight: currentPage === pageNum ? '700' : '600',
@@ -785,7 +785,7 @@ function News() {
                           onMouseLeave={(e) => {
                             if (currentPage !== pageNum) {
                               e.currentTarget.style.transform = 'scale(1)';
-                              e.currentTarget.style.borderColor = '#0f3460';
+                              e.currentTarget.style.borderColor = '#4b5563';
                             }
                           }}
                         >
@@ -877,9 +877,9 @@ function News() {
             flexShrink: 0
           }}>
             <div style={{
-              background: '#16213e',
+              background: '#1f2937',
               borderRadius: '16px',
-              border: '2px solid #0f3460',
+              border: '2px solid #374151',
               boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
               overflow: 'hidden'
             }}>
@@ -932,13 +932,13 @@ function News() {
                       padding: '16px',
                       textDecoration: 'none',
                       color: 'inherit',
-                      borderBottom: index < 9 ? '1px solid #0f3460' : 'none',
+                      borderBottom: index < 9 ? '1px solid #374151' : 'none',
                       transition: 'all 0.2s',
                       cursor: 'pointer',
                       position: 'relative'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#1e3a5f';
+                      e.currentTarget.style.background = '#374151';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'transparent';
@@ -1027,7 +1027,7 @@ function News() {
               {/* 새로고침 버튼 */}
               <div style={{
                 padding: '12px',
-                borderTop: '1px solid #0f3460',
+                borderTop: '1px solid #374151',
                 textAlign: 'center'
               }}>
                 <button

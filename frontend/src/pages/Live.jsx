@@ -205,23 +205,13 @@ function Live() {
   }, [currentChatroomId, user]);
 
   return (
-    <div>
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '20px' }}>
-        <h1 style={{ fontSize: '28px', fontWeight: 'bold', marginBottom: '20px' }}>
-          🔴 실시간
-        </h1>
+    <div className="bg-gray-900 text-white min-h-screen">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <h1 className="text-4xl font-bold mb-4">🔴 실시간</h1>
 
-        <div style={{
-          backgroundColor: '#ffebee',
-          padding: '15px',
-          borderRadius: '8px',
-          marginBottom: '20px',
-          border: '1px solid #ffcdd2'
-        }}>
-          <p style={{ margin: 0, color: '#c62828', fontWeight: 'bold' }}>
-            🔴 LIVE | 실시간 점수는 10초마다 자동 업데이트됩니다.
-          </p>
-          <p style={{ margin: '5px 0 0 0', fontSize: '14px', color: '#666' }}>
+        <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-8">
+          <p className="text-red-400 font-bold">🔴 LIVE | 실시간 점수는 10초마다 자동 업데이트됩니다.</p>
+          <p className="text-sm text-gray-400 mt-1">
             경기를 클릭하면 실시간 채팅방에 참여할 수 있습니다.
           </p>
         </div>
@@ -229,112 +219,74 @@ function Live() {
         {!selectedMatch ? (
           /* 진행 중인 경기 목록 */
           loading ? (
-            <div style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
-              로딩 중...
+            <div className="text-center py-16">
+              <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-red-500"></div>
+              <p className="mt-4 text-gray-400">로딩 중...</p>
             </div>
           ) : liveMatches.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '50px', color: '#888' }}>
-              현재 진행 중인 경기가 없습니다.
+            <div className="bg-gray-800/50 rounded-lg p-16 text-center">
+              <p className="text-gray-400 text-lg">현재 진행 중인 경기가 없습니다.</p>
             </div>
           ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {liveMatches.map((match) => (
                 <div
                   key={match.matchId}
                   onClick={() => enterChatroom(match)}
-                  style={{
-                    padding: '20px',
-                    backgroundColor: 'white',
-                    border: '2px solid #ff4444',
-                    borderRadius: '10px',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s',
-                    boxShadow: '0 2px 8px rgba(255,68,68,0.2)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.transform = 'translateY(-5px)';
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(255,68,68,0.3)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(255,68,68,0.2)';
-                  }}
+                  className="bg-white rounded-lg p-6 cursor-pointer transform transition hover:scale-105 hover:shadow-2xl shadow-xl"
                 >
-                  <div style={{
-                    backgroundColor: '#ff4444',
-                    color: 'white',
-                    padding: '5px 10px',
-                    borderRadius: '5px',
-                    display: 'inline-block',
-                    marginBottom: '15px',
-                    fontSize: '12px',
-                    fontWeight: 'bold'
-                  }}>
+                  <div className="inline-block bg-red-500 text-white px-3 py-1 rounded-full text-xs font-bold mb-4 animate-pulse">
                     🔴 LIVE
                   </div>
 
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '10px',
-                    fontSize: '12px',
-                    color: '#888',
-                    marginBottom: '15px'
-                  }}>
+                  <div className="flex items-center gap-3 text-xs text-gray-600 mb-4">
                     {match.league?.logo && (
                       <img
                         src={`${API_BASE_URL}/${match.league.logo}`}
                         alt={match.league?.name}
-                        style={{ width: '24px', height: '24px', objectFit: 'contain' }}
+                        className="w-6 h-6 object-contain"
                       />
                     )}
-                    <span>{match.league?.name}</span>
+                    <span className="font-semibold">{match.league?.name}</span>
                   </div>
 
-                  <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    marginBottom: '15px'
-                  }}>
-                    <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex flex-col items-center flex-1 gap-2">
                       {match.teams?.home?.logo && (
                         <img
                           src={`${API_BASE_URL}/${match.teams.home.logo}`}
                           alt={match.teams?.home?.name}
-                          style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                          className="w-16 h-16 object-contain"
                         />
                       )}
-                      <div style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <div className="font-bold text-sm text-gray-900 text-center">
                         {match.teams?.home?.name}
                       </div>
-                      <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#333' }}>
+                      <div className="text-4xl font-bold text-gray-900">
                         {match.score?.home || 0}
                       </div>
                     </div>
 
-                    <div style={{ fontSize: '20px', color: '#888', padding: '0 20px' }}>
-                      :
-                    </div>
+                    <div className="text-2xl text-gray-400 px-4">:</div>
 
-                    <div style={{ flex: 1, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <div className="flex flex-col items-center flex-1 gap-2">
                       {match.teams?.away?.logo && (
                         <img
                           src={`${API_BASE_URL}/${match.teams.away.logo}`}
                           alt={match.teams?.away?.name}
-                          style={{ width: '50px', height: '50px', objectFit: 'contain' }}
+                          className="w-16 h-16 object-contain"
                         />
                       )}
-                      <div style={{ fontWeight: 'bold', fontSize: '14px' }}>
+                      <div className="font-bold text-sm text-gray-900 text-center">
                         {match.teams?.away?.name}
                       </div>
-                      <div style={{ fontSize: '32px', fontWeight: 'bold', color: '#333' }}>
+                      <div className="text-4xl font-bold text-gray-900">
                         {match.score?.away || 0}
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ textAlign: 'center', color: '#666', fontSize: '14px' }}>
+                  <div className="text-center text-gray-600 text-sm">
                     📍 {match.detail?.venue}
                   </div>
                 </div>
@@ -343,179 +295,116 @@ function Live() {
           )
         ) : (
           /* 채팅방 화면 */
-          <div style={{ display: 'flex', gap: '20px', height: '600px' }}>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* 좌측: 스코어보드 */}
-            <div style={{
-              width: '30%',
-              backgroundColor: 'white',
-              border: '2px solid #e0e0e0',
-              borderRadius: '10px',
-              padding: '20px'
-            }}>
+            <div className="lg:col-span-1 bg-white rounded-lg p-6 shadow-xl">
               <button
                 onClick={() => setSelectedMatch(null)}
-                style={{
-                  marginBottom: '20px',
-                  padding: '10px',
-                  backgroundColor: '#f5f5f5',
-                  border: 'none',
-                  borderRadius: '5px',
-                  cursor: 'pointer',
-                  width: '100%'
-                }}
+                className="mb-6 w-full px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition font-semibold"
               >
                 ← 뒤로 가기
               </button>
 
-              <div style={{ textAlign: 'center' }}>
-                <div style={{
-                  backgroundColor: '#ff4444',
-                  color: 'white',
-                  padding: '10px',
-                  borderRadius: '5px',
-                  marginBottom: '20px',
-                  fontWeight: 'bold'
-                }}>
+              <div className="text-center">
+                <div className="inline-block bg-red-500 text-white px-4 py-2 rounded-full font-bold mb-4 animate-pulse">
                   🔴 LIVE
                 </div>
 
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  marginBottom: '20px'
-                }}>
+                <div className="flex items-center justify-center gap-3 mb-6">
                   {selectedMatch.league?.logo && (
                     <img
                       src={`${API_BASE_URL}/${selectedMatch.league.logo}`}
                       alt={selectedMatch.league?.name}
-                      style={{ width: '30px', height: '30px', objectFit: 'contain' }}
+                      className="w-8 h-8 object-contain"
                     />
                   )}
-                  <h2 style={{ fontSize: '16px', margin: 0, color: '#888' }}>
+                  <h2 className="text-lg font-semibold text-gray-600">
                     {selectedMatch.league?.name}
                   </h2>
                 </div>
 
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-around',
-                  alignItems: 'center',
-                  marginBottom: '30px'
-                }}>
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col items-center flex-1 gap-3">
                     {selectedMatch.teams?.home?.logo && (
                       <img
                         src={`${API_BASE_URL}/${selectedMatch.teams.home.logo}`}
                         alt={selectedMatch.teams?.home?.name}
-                        style={{ width: '60px', height: '60px', objectFit: 'contain' }}
+                        className="w-20 h-20 object-contain"
                       />
                     )}
-                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                    <div className="text-base font-bold text-gray-900">
                       {selectedMatch.teams?.home?.name}
                     </div>
-                    <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#333' }}>
+                    <div className="text-5xl font-bold text-gray-900">
                       {selectedMatch.score?.home || 0}
                     </div>
                   </div>
 
-                  <div style={{ fontSize: '24px', color: '#888' }}>:</div>
+                  <div className="text-2xl text-gray-400 px-4">:</div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
+                  <div className="flex flex-col items-center flex-1 gap-3">
                     {selectedMatch.teams?.away?.logo && (
                       <img
                         src={`${API_BASE_URL}/${selectedMatch.teams.away.logo}`}
                         alt={selectedMatch.teams?.away?.name}
-                        style={{ width: '60px', height: '60px', objectFit: 'contain' }}
+                        className="w-20 h-20 object-contain"
                       />
                     )}
-                    <div style={{ fontSize: '16px', fontWeight: 'bold' }}>
+                    <div className="text-base font-bold text-gray-900">
                       {selectedMatch.teams?.away?.name}
                     </div>
-                    <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#333' }}>
+                    <div className="text-5xl font-bold text-gray-900">
                       {selectedMatch.score?.away || 0}
                     </div>
                   </div>
                 </div>
 
-                <div style={{ fontSize: '14px', color: '#666' }}>
+                <div className="text-sm text-gray-600">
                   📍 {selectedMatch.detail?.venue}
                 </div>
               </div>
             </div>
 
             {/* 우측: 채팅창 */}
-            <div style={{
-              width: '70%',
-              backgroundColor: 'white',
-              border: '2px solid #e0e0e0',
-              borderRadius: '10px',
-              padding: '20px',
-              display: 'flex',
-              flexDirection: 'column'
-            }}>
-              <h3 style={{ marginBottom: '15px', fontSize: '18px', fontWeight: 'bold' }}>
-                💬 실시간 채팅
-              </h3>
+            <div className="lg:col-span-2 bg-gray-800/80 backdrop-blur-sm rounded-lg p-6 flex flex-col shadow-xl">
+              <h3 className="text-xl font-bold mb-4">💬 실시간 채팅</h3>
 
               {/* 메시지 목록 */}
-              <div style={{
-                flex: 1,
-                overflowY: 'auto',
-                backgroundColor: '#f9f9f9',
-                borderRadius: '5px',
-                padding: '15px',
-                marginBottom: '15px'
-              }}>
+              <div className="flex-1 bg-gray-900/50 rounded-lg p-4 mb-4 overflow-y-auto" style={{ maxHeight: '500px' }}>
                 {messages.length === 0 ? (
-                  <div style={{ textAlign: 'center', color: '#888', padding: '20px' }}>
+                  <div className="text-center text-gray-400 py-8">
                     채팅 메시지가 없습니다. 첫 메시지를 남겨보세요!
                   </div>
                 ) : (
                   <>
                     {messages.map((msg) => (
-                      <div key={msg.messageId} style={{
-                        marginBottom: '12px',
-                        padding: '10px',
-                        backgroundColor: msg.isAdmin ? '#fff3cd' : 'white',
-                        border: msg.isAdmin ? '2px solid #ffc107' : '1px solid #e0e0e0',
-                        borderRadius: '8px'
-                      }}>
-                        <div style={{ fontSize: '12px', color: '#888', marginBottom: '5px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                          <div>
+                      <div
+                        key={msg.messageId}
+                        className={`mb-3 p-3 rounded-lg ${
+                          msg.isAdmin
+                            ? 'bg-yellow-500/20 border border-yellow-500'
+                            : 'bg-gray-700/50'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-2">
                             {msg.isAdmin && (
-                              <span style={{
-                                marginRight: '5px',
-                                padding: '3px 8px',
-                                backgroundColor: '#dc3545',
-                                color: 'white',
-                                borderRadius: '3px',
-                                fontSize: '10px',
-                                fontWeight: 'bold'
-                              }}>
+                              <span className="px-2 py-1 bg-red-500 text-white text-xs font-bold rounded">
                                 관리자
                               </span>
                             )}
-                            <span style={{ fontWeight: 'bold', color: msg.isAdmin ? '#d32f2f' : '#333' }}>
+                            <span className={`font-bold ${msg.isAdmin ? 'text-yellow-400' : 'text-blue-400'}`}>
                               {msg.nickname}
                             </span>
-                            <span style={{
-                              marginLeft: '5px',
-                              padding: '2px 6px',
-                              backgroundColor: '#646cff',
-                              color: 'white',
-                              borderRadius: '3px',
-                              fontSize: '10px'
-                            }}>
+                            <span className="px-2 py-1 bg-blue-500 text-white text-xs rounded">
                               {msg.userTier}
                             </span>
                           </div>
-                          <span style={{ fontSize: '11px', color: '#999' }}>
+                          <span className="text-xs text-gray-400">
                             {formatTime(msg.createdAt)}
                           </span>
                         </div>
-                        <div style={{ marginTop: '5px', color: '#333', fontWeight: msg.isAdmin ? 'bold' : 'normal' }}>
+                        <div className={`text-sm ${msg.isAdmin ? 'font-semibold text-white' : 'text-gray-200'}`}>
                           {msg.message}
                         </div>
                       </div>
@@ -526,32 +415,18 @@ function Live() {
               </div>
 
               {/* 메시지 입력 */}
-              <div style={{ display: 'flex', gap: '10px' }}>
+              <div className="flex gap-3">
                 <input
                   type="text"
                   value={newMessage}
                   onChange={(e) => setNewMessage(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
                   placeholder="메시지를 입력하세요..."
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '5px',
-                    fontSize: '14px'
-                  }}
+                  className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-lg border-none focus:ring-2 focus:ring-blue-500"
                 />
                 <button
                   onClick={sendMessage}
-                  style={{
-                    padding: '12px 25px',
-                    backgroundColor: '#646cff',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '5px',
-                    cursor: 'pointer',
-                    fontWeight: 'bold'
-                  }}
+                  className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg transition"
                 >
                   전송
                 </button>
