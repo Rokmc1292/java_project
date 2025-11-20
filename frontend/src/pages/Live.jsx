@@ -29,6 +29,18 @@ function Live() {
     return `${hours}:${minutes}`;
   };
 
+  // 티어별 그라데이션 색상
+  const getTierGradient = (tier) => {
+    const gradients = {
+      BRONZE: 'from-amber-700 to-amber-900',
+      SILVER: 'from-gray-400 to-gray-600',
+      GOLD: 'from-yellow-400 to-orange-500',
+      PLATINUM: 'from-cyan-400 to-blue-500',
+      DIAMOND: 'from-blue-300 to-blue-500'
+    };
+    return gradients[tier] || 'from-gray-500 to-gray-700';
+  };
+
   // 메시지 자동 스크롤
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -396,7 +408,7 @@ function Live() {
                             <span className={`font-bold ${msg.isAdmin ? 'text-yellow-400' : 'text-blue-400'}`}>
                               {msg.nickname}
                             </span>
-                            <span className="px-3 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm font-bold rounded shadow-lg">
+                            <span className={`px-3 py-2 bg-gradient-to-r ${getTierGradient(msg.userTier)} text-white text-sm font-bold rounded shadow-lg`}>
                               {msg.userTier}
                             </span>
                           </div>

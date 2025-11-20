@@ -19,17 +19,17 @@
   font-size: 32px;
   font-weight: bold;
   margin-bottom: 10px;
-  color: #333;
+  color: #ffffff;
 }
 
 .predictions-header p {
-  color: #666;
+  color: #d1d5db;
   font-size: 16px;
 }
 
 /* ==================== 안내 박스 ==================== */
 .info-box {
-  background-color: #e3f2fd;
+  background-color: #1e3a5f;
   border: 1px solid #2196f3;
   border-radius: 10px;
   padding: 20px;
@@ -41,13 +41,13 @@
   font-weight: bold;
   font-size: 18px;
   margin-bottom: 10px;
-  color: #1565c0;
+  color: #60a5fa;
 }
 
 .info-list {
   margin: 0;
   padding-left: 20px;
-  color: #1565c0;
+  color: #93c5fd;
 }
 
 .info-list li {
@@ -59,7 +59,7 @@
   display: flex;
   gap: 10px;
   margin-bottom: 30px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid #4b5563;
   padding-bottom: 10px;
   overflow-x: auto;
 }
@@ -79,7 +79,7 @@
 }
 
 .sport-tab:hover {
-  background-color: #f5f5f5;
+  background-color: #4b5563;
 }
 
 .sport-tab.active {
@@ -96,14 +96,14 @@
 .loading {
   text-align: center;
   padding: 50px;
-  color: #666;
+  color: #d1d5db;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #f3f3f3;
-  border-top: 4px solid #646cff;
+  border: 4px solid #4b5563;
+  border-top: 4px solid #3b82f6;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin: 0 auto 20px;
@@ -115,11 +115,11 @@
 }
 
 .error {
-  background-color: #ffebee;
+  background-color: #7f1d1d;
   border: 1px solid #f44336;
   border-radius: 10px;
   padding: 20px;
-  color: #c62828;
+  color: #fca5a5;
   text-align: center;
 }
 
@@ -128,8 +128,8 @@
 .no-rankings {
   text-align: center;
   padding: 50px;
-  color: #666;
-  background-color: #f5f5f5;
+  color: #d1d5db;
+  background-color: #374151;
   border-radius: 10px;
 }
 
@@ -140,8 +140,8 @@
 }
 
 .match-card {
-  background-color: white;
-  border: 2px solid #e0e0e0;
+  background-color: #1f2937;
+  border: 2px solid #4b5563;
   border-radius: 10px;
   padding: 20px;
   cursor: pointer;
@@ -190,7 +190,7 @@
 
 .match-date {
   font-size: 14px;
-  color: #666;
+  color: #d1d5db;
 }
 
 .match-teams {
@@ -216,7 +216,7 @@
   width: 60px;
   height: 60px;
   margin: 0 auto 10px;
-  background-color: #f0f0f0;
+  background-color: #374151;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -227,7 +227,7 @@
 .team-name {
   font-size: 18px;
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
 }
 
 .vs {
@@ -242,13 +242,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px;
-  background-color: #f5f5f5;
+  background-color: #374151;
   border-radius: 5px;
 }
 
 .venue {
   font-size: 14px;
-  color: #666;
+  color: #d1d5db;
 }
 
 .countdown {
@@ -282,15 +282,15 @@
 }
 
 .pagination-btn:disabled {
-  background-color: #e0e0e0;
-  color: #999;
+  background-color: #4b5563;
+  color: #9ca3af;
   cursor: not-allowed;
 }
 
 .pagination-info {
   font-size: 16px;
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
 }
 
 /* ==================== 랭킹 링크 ==================== */
@@ -319,23 +319,24 @@
 /* ==================== 뒤로가기 버튼 ==================== */
 .back-btn {
   padding: 10px 20px;
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
+  background-color: #374151;
+  border: 1px solid #4b5563;
   border-radius: 5px;
   cursor: pointer;
   font-size: 16px;
   margin-bottom: 20px;
   transition: all 0.3s;
+  color: #ffffff;
 }
 
 .back-btn:hover {
-  background-color: #e0e0e0;
+  background-color: #4b5563;
 }
 
 /* ==================== 경기 상세 카드 ==================== */
 .match-detail-card {
-  background-color: white;
-  border: 2px solid #e0e0e0;
+  background-color: #1f2937;
+  border: 2px solid #4b5563;
   border-radius: 10px;
   padding: 30px;
   margin-bottom: 30px;
@@ -371,7 +372,7 @@
   width: 80px;
   height: 80px;
   margin: 0 auto 15px;
-  background-color: #f0f0f0;
+  background-color: #374151;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -382,7 +383,7 @@
 .team-name-large {
   font-size: 24px;
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
 }
 
 .vs-large {
@@ -395,10 +396,10 @@
 .match-detail-venue {
   text-align: center;
   padding: 15px;
-  background-color: #f5f5f5;
+  background-color: #374151;
   border-radius: 5px;
   font-size: 16px;
-  color: #666;
+  color: #d1d5db;
 }
 
 /* ==================== 통계 카드 ==================== */
@@ -406,8 +407,8 @@
 .prediction-form-card,
 .comments-card,
 .tier-info-card {
-  background-color: white;
-  border: 2px solid #e0e0e0;
+  background-color: #1f2937;
+  border: 2px solid #4b5563;
   border-radius: 10px;
   padding: 30px;
   margin-bottom: 30px;
@@ -417,12 +418,12 @@
   font-size: 24px;
   font-weight: bold;
   margin-bottom: 20px;
-  color: #333;
+  color: #ffffff;
 }
 
 .total-votes {
   font-size: 16px;
-  color: #666;
+  color: #d1d5db;
   margin-bottom: 20px;
 }
 
@@ -438,7 +439,7 @@
 
 .vote-label {
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
 }
 
 .vote-percentage {
@@ -460,7 +461,7 @@
 .vote-bar {
   width: 100%;
   height: 30px;
-  background-color: #e0e0e0;
+  background-color: #4b5563;
   border-radius: 5px;
   overflow: hidden;
 }
@@ -486,12 +487,12 @@
 .expected-points {
   margin-top: 8px;
   font-size: 14px;
-  color: #666;
+  color: #d1d5db;
   text-align: center;
   padding: 8px;
-  background-color: #f9f9f9;
+  background-color: #374151;
   border-radius: 5px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #4b5563;
 }
 
 .points-win {
@@ -516,9 +517,9 @@
 .result-btn {
   flex: 1;
   padding: 20px;
-  background-color: #f5f5f5;
-  color: #333;
-  border: 2px solid #e0e0e0;
+  background-color: #374151;
+  color: #ffffff;
+  border: 2px solid #4b5563;
   border-radius: 10px;
   cursor: pointer;
   font-size: 18px;
@@ -528,7 +529,7 @@
 }
 
 .result-btn:hover {
-  background-color: #e0e0e0;
+  background-color: #4b5563;
 }
 
 .team-name-small {
@@ -564,18 +565,20 @@
   margin-bottom: 10px;
   font-size: 16px;
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
 }
 
 .comment-textarea {
   width: 100%;
   min-height: 120px;
   padding: 15px;
-  border: 2px solid #e0e0e0;
+  border: 2px solid #4b5563;
   border-radius: 5px;
   font-size: 16px;
   font-family: inherit;
   resize: vertical;
+  background-color: #374151;
+  color: #ffffff;
 }
 
 .comment-textarea:focus {
@@ -616,23 +619,23 @@
 }
 
 .submit-btn:disabled {
-  background-color: #e0e0e0;
-  color: #999;
+  background-color: #4b5563;
+  color: #9ca3af;
   cursor: not-allowed;
 }
 
 .warning-box {
   padding: 15px;
-  background-color: #fff3cd;
+  background-color: #78350f;
   border: 1px solid #ffc107;
   border-radius: 5px;
   font-size: 14px;
-  color: #856404;
+  color: #fde047;
 }
 
 /* ==================== 이미 예측한 경우 ==================== */
 .already-predicted {
-  background-color: #e8f5e9;
+  background-color: #065f46;
   border: 2px solid #4caf50;
   border-radius: 10px;
   padding: 40px;
@@ -648,13 +651,13 @@
 .already-predicted-title {
   font-size: 20px;
   font-weight: bold;
-  color: #2e7d32;
+  color: #86efac;
   margin-bottom: 10px;
 }
 
 .already-predicted-desc {
   font-size: 16px;
-  color: #666;
+  color: #d1d5db;
 }
 
 /* ==================== 코멘트 목록 ==================== */
@@ -666,9 +669,9 @@
 
 .comment-item {
   padding: 20px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #4b5563;
   border-radius: 10px;
-  background-color: #fafafa;
+  background-color: #374151;
 }
 
 .comment-header {
@@ -687,7 +690,7 @@
 .comment-nickname {
   font-weight: bold;
   font-size: 16px;
-  color: #333;
+  color: #ffffff;
 }
 
 .prediction-badge {
@@ -728,7 +731,7 @@
 
 .comment-time {
   font-size: 14px;
-  color: #999;
+  color: #9ca3af;
 }
 
 .comment-content {
@@ -736,9 +739,9 @@
   line-height: 1.6;
   margin-bottom: 15px;
   padding: 15px;
-  background-color: white;
+  background-color: #1f2937;
   border-radius: 5px;
-  color: #333;
+  color: #ffffff;
 }
 
 .comment-actions {
@@ -748,12 +751,13 @@
 
 .action-btn {
   padding: 8px 15px;
-  background-color: #f5f5f5;
-  border: 1px solid #e0e0e0;
+  background-color: #374151;
+  border: 1px solid #4b5563;
   border-radius: 5px;
   cursor: pointer;
   font-size: 14px;
   transition: all 0.3s;
+  color: #ffffff;
 }
 
 .action-btn.like:hover {
@@ -770,8 +774,8 @@
 
 /* ==================== 랭킹 테이블 ==================== */
 .ranking-table {
-  background-color: white;
-  border: 2px solid #e0e0e0;
+  background-color: #1f2937;
+  border: 2px solid #4b5563;
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 30px;
@@ -782,10 +786,11 @@
   grid-template-columns: 80px 1fr 120px 120px 120px 120px 120px;
   gap: 10px;
   padding: 20px;
-  background-color: #f5f5f5;
+  background-color: #374151;
   font-weight: bold;
   font-size: 14px;
-  border-bottom: 2px solid #e0e0e0;
+  border-bottom: 2px solid #4b5563;
+  color: #ffffff;
 }
 
 .ranking-row {
@@ -793,17 +798,17 @@
   grid-template-columns: 80px 1fr 120px 120px 120px 120px 120px;
   gap: 10px;
   padding: 20px;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #4b5563;
   align-items: center;
   transition: background-color 0.3s;
 }
 
 .ranking-row:hover {
-  background-color: #f5f5f5;
+  background-color: #374151;
 }
 
 .ranking-row.top-three {
-  background-color: #fffde7;
+  background-color: #374151;
 }
 
 .col-rank,
@@ -819,7 +824,7 @@
 .col-nickname {
   font-size: 16px;
   font-weight: bold;
-  color: #333;
+  color: #ffffff;
 }
 
 .tier-score {
@@ -867,7 +872,7 @@
   align-items: center;
   gap: 15px;
   padding: 15px;
-  background-color: #f5f5f5;
+  background-color: #374151;
   border-radius: 5px;
 }
 
@@ -883,21 +888,21 @@
   font-weight: bold;
   font-size: 18px;
   margin-bottom: 5px;
-  color: #333;
+  color: #ffffff;
 }
 
 .tier-range {
-  color: #666;
+  color: #d1d5db;
   font-size: 14px;
 }
 
 .tier-note {
   padding: 15px;
-  background-color: #e3f2fd;
+  background-color: #1e3a5f;
   border: 1px solid #2196f3;
   border-radius: 5px;
   font-size: 14px;
-  color: #1565c0;
+  color: #60a5fa;
 }
 
 /* ==================== 반응형 디자인 ==================== */
