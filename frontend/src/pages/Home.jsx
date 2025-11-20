@@ -23,14 +23,9 @@ const Home = () => {
                 const data = await getTodayMatches();
 
                 if (Array.isArray(data)) {
-                    // 현재 시간 기준으로 가장 가까운 경기 3개 선택
-                    const now = new Date();
+                    // 시간 오름차순으로 정렬하여 처음 3개 선택
                     const sortedMatches = data
-                        .map(match => ({
-                            ...match,
-                            timeDiff: Math.abs(new Date(match.detail.matchDate) - now)
-                        }))
-                        .sort((a, b) => a.timeDiff - b.timeDiff)
+                        .sort((a, b) => new Date(a.detail.matchDate) - new Date(b.detail.matchDate))
                         .slice(0, 3);
 
                     setTodayMatches(sortedMatches);

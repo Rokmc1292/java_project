@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 
@@ -10,6 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
  * 진행 중인 경기 및 실시간 채팅
  */
 function Live() {
+  const [searchParams] = useSearchParams();
   const [liveMatches, setLiveMatches] = useState([]);
   const [selectedMatch, setSelectedMatch] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -145,6 +147,17 @@ function Live() {
     const interval = setInterval(fetchLiveMatches, 10000);
     return () => clearInterval(interval);
   }, []);
+
+  // URL 파라미터에 matchId가 있으면 자동으로 채팅방 입장
+  useEffect(() => {
+    const matchIdParam = searchParams.get('matchId');
+    if (matchIdParam && liveMatches.length > 0 && !selectedMatch) {
+      const match = liveMatches.find(m => m.matchId === parseInt(matchIdParam));
+      if (match) {
+        enterChatroom(match);
+      }
+    }
+  }, [searchParams, liveMatches, selectedMatch]);
 
   // 채팅방에 있을 때 liveMatches가 업데이트되면 selectedMatch도 업데이트
   useEffect(() => {

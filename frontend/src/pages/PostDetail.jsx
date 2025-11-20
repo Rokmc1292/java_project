@@ -33,6 +33,18 @@ function PostDetail() {
     const currentUser = getUserData();
 
     const [showCommentReportModal, setShowCommentReportModal] = useState(false);
+
+    // 티어별 그라데이션 색상
+    const getTierGradient = (tier) => {
+        const gradients = {
+            BRONZE: 'from-amber-700 to-amber-900',
+            SILVER: 'from-gray-400 to-gray-600',
+            GOLD: 'from-yellow-400 to-orange-500',
+            PLATINUM: 'from-cyan-400 to-blue-500',
+            DIAMOND: 'from-blue-300 to-blue-500'
+        };
+        return gradients[tier] || 'from-gray-500 to-gray-700';
+    };
     const [reportingCommentId, setReportingCommentId] = useState(null);
     const [commentReportReason, setCommentReportReason] = useState('');
 
@@ -347,6 +359,11 @@ function PostDetail() {
                             </span>
                         )}
                         <span className="font-bold text-white">{comment.nickname}</span>
+                        {comment.userTier && (
+                            <span className={`px-3 py-1 bg-gradient-to-r ${getTierGradient(comment.userTier)} text-white text-xs font-bold rounded shadow-lg`}>
+                                {comment.userTier}
+                            </span>
+                        )}
                         <span className="text-xs text-gray-400">
                             {new Date(comment.createdAt).toLocaleString('ko-KR')}
                         </span>
@@ -572,6 +589,11 @@ function PostDetail() {
                                                                 ★ BEST
                                                             </span>
                                                             <span className="font-bold text-white">{comment.nickname}</span>
+                                                            {comment.userTier && (
+                                                                <span className={`px-3 py-1 bg-gradient-to-r ${getTierGradient(comment.userTier)} text-white text-xs font-bold rounded shadow-lg`}>
+                                                                    {comment.userTier}
+                                                                </span>
+                                                            )}
                                                             <span className="text-xs text-gray-400">
                                                                 {new Date(comment.createdAt).toLocaleString('ko-KR')}
                                                             </span>

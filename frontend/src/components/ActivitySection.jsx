@@ -178,7 +178,7 @@ const ActivitySection = () => {
           ) : (
             <>
               {posts.map((post) => (
-                <div key={post.postId} className="post-card" onClick={() => navigate(`/community/post/${post.postId}`)}>
+                <div key={post.postId} className="post-card" onClick={() => navigate(`/board/${post.postId}`)}>
                   <div className="post-header">
                     <span className="category-badge">{post.categoryName}</span>
                     {post.isBest && <span className="best-badge">베스트</span>}
@@ -212,7 +212,7 @@ const ActivitySection = () => {
           ) : (
             <>
               {comments.map((comment) => (
-                <div key={comment.commentId} className="comment-card" onClick={() => navigate(`/community/post/${comment.postId}`)}>
+                <div key={comment.commentId} className="comment-card" onClick={() => navigate(`/board/${comment.postId}`)}>
                   <div className="comment-post-title"><strong>게시글:</strong> {comment.postTitle}</div>
                   <div className={`comment-content ${comment.isDeleted ? 'deleted' : ''}`}>
                     {comment.isDeleted ? <p className="deleted-message">삭제된 댓글입니다.</p> : <p>{comment.content}</p>}
@@ -245,7 +245,7 @@ const ActivitySection = () => {
           ) : (
             <>
               {scraps.map((post) => (
-                <div key={post.postId} className="post-card" onClick={() => navigate(`/community/post/${post.postId}`)}>
+                <div key={post.postId} className="post-card" onClick={() => navigate(`/board/${post.postId}`)}>
                   <div className="post-header">
                     <span className="category-badge">{post.categoryName}</span>
                     {post.isBest && <span className="best-badge">베스트</span>}

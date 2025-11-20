@@ -68,6 +68,7 @@ function Community() {
   };
 
   useEffect(() => {
+    setSearchKeyword('');
     fetchPosts(0);
   }, [selectedCategory, activeTab]);
 
