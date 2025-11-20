@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useEffect } from 'react';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import Home from './pages/Home';
@@ -14,6 +15,11 @@ import MyPage from './pages/MyPage';
 import AdminPage from './pages/AdminPage';
 
 function App() {
+    // 앱 초기 로드 시 로그인 상태 초기화
+    useEffect(() => {
+        localStorage.removeItem('user');
+    }, []);
+
     return (
         <Router>
             <div className="min-h-screen bg-gray-900">
