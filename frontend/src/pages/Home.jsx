@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getTodayMatches } from '../api/match';
 import { getPopularPosts } from '../api/community';
 import { getPopularNews } from '../api/news';
-import { getPredictableMatches } from '../api/prediction';
+import { getTodayTopMatches, getTopPredictedMatch } from '../api/prediction';
 import Navbar from '../components/Navbar';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -15,20 +14,15 @@ const Home = () => {
     const [featuredPrediction, setFeaturedPrediction] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // 오늘의 경기 데이터 로드
+    // 오늘의 주요경기 데이터 로드 (예측 참여자 많은 순)
     useEffect(() => {
         const fetchTodayMatches = async () => {
             try {
                 setLoading(true);
-                const data = await getTodayMatches();
+                const data = await getTodayTopMatches(3);
 
                 if (Array.isArray(data)) {
-                    // 시간 오름차순으로 정렬하여 처음 3개 선택
-                    const sortedMatches = data
-                        .sort((a, b) => new Date(a.detail.matchDate) - new Date(b.detail.matchDate))
-                        .slice(0, 3);
-
-                    setTodayMatches(sortedMatches);
+                    setTodayMatches(data);
                 } else {
                     setTodayMatches([]);
                 }
@@ -86,17 +80,15 @@ const Home = () => {
         fetchPopularNews();
     }, []);
 
-    // 인기 승부예측 데이터 로드
+    // 주목할만한 승부예측 데이터 로드 (예측 참여자가 가장 많은 경기 1개)
     useEffect(() => {
         const fetchFeaturedPrediction = async () => {
             try {
-                const data = await getPredictableMatches('ALL', 0, 1); // 1개만
+                const data = await getTopPredictedMatch();
                 console.log('승부예측 데이터:', data);
 
-                if (data && data.content && data.content.length > 0) {
-                    setFeaturedPrediction(data.content[0]);
-                } else if (Array.isArray(data) && data.length > 0) {
-                    setFeaturedPrediction(data[0]);
+                if (data) {
+                    setFeaturedPrediction(data);
                 } else {
                     setFeaturedPrediction(null);
                 }
