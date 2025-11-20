@@ -9,11 +9,10 @@ import {
   deletePost
 } from '../api/community';
 import { getUserData, isLoggedIn } from '../api/api';
-import '../styles/Community.css';
 
 function Community() {
   const navigate = useNavigate();
-  
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('전체');
@@ -34,47 +33,39 @@ function Community() {
 
   const currentUser = getUserData();
 
-    const fetchPosts = async (page = 0) => {
-        setLoading(true);
-        try {
-            let response;
+  const fetchPosts = async (page = 0) => {
+    setLoading(true);
+    try {
+      let response;
 
-            if (activeTab === 'popular') {
-                if (selectedCategory === '전체') {
-                    response = await getPopularPosts(page, 20);
-                } else {
-                    response = await getPopularPostsByCategory(selectedCategory, page, 20);
-                }
-            } else {
-                // 검색 기능 수정
-                if (selectedCategory === '전체') {
-                    response = await getPosts(page, 20, searchKeyword, searchType);
-                } else {
-                    // 카테고리별 검색도 지원
-                    if (searchKeyword) {
-                        // 검색어가 있으면 전체 검색
-                        response = await getPosts(page, 20, searchKeyword, searchType);
-                    } else {
-                        // 검색어가 없으면 카테고리별 조회
-                        response = await getPostsByCategory(selectedCategory, page, 20);
-                    }
-                }
-            }
-
-            console.log('API 응답:', response);
-            console.log('totalPages:', response.totalPages);
-            console.log('content 개수:', response.content?.length);
-
-            setPosts(response.content || []);
-            setTotalPages(response.totalPages || 0);
-            setCurrentPage(page);
-        } catch (error) {
-            console.error('게시글 조회 오류:', error);
-            alert('게시글을 불러오는데 실패했습니다.');
-        } finally {
-            setLoading(false);
+      if (activeTab === 'popular') {
+        if (selectedCategory === '전체') {
+          response = await getPopularPosts(page, 20);
+        } else {
+          response = await getPopularPostsByCategory(selectedCategory, page, 20);
         }
-    };
+      } else {
+        if (selectedCategory === '전체') {
+          response = await getPosts(page, 20, searchKeyword, searchType);
+        } else {
+          if (searchKeyword) {
+            response = await getPosts(page, 20, searchKeyword, searchType);
+          } else {
+            response = await getPostsByCategory(selectedCategory, page, 20);
+          }
+        }
+      }
+
+      setPosts(response.content || []);
+      setTotalPages(response.totalPages || 0);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error('게시글 조회 오류:', error);
+      alert('게시글을 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchPosts(0);
@@ -89,49 +80,44 @@ function Community() {
   };
 
   const handleCreatePost = async () => {
-  if (!isLoggedIn()) {
-    alert('로그인이 필요합니다.');
-    navigate('/login');
-    return;
-  }
+    if (!isLoggedIn()) {
+      alert('로그인이 필요합니다.');
+      navigate('/login');
+      return;
+    }
 
-  if (!newPost.title.trim() || !newPost.content.trim()) {
-    alert('제목과 내용을 입력해주세요.');
-    return;
-  }
+    if (!newPost.title.trim() || !newPost.content.trim()) {
+      alert('제목과 내용을 입력해주세요.');
+      return;
+    }
 
-  if (!newPost.categoryName) {
-    alert('카테고리를 선택해주세요.');
-    return;
-  }
+    if (!newPost.categoryName) {
+      alert('카테고리를 선택해주세요.');
+      return;
+    }
 
-  try {
-    await createPost(newPost.categoryName, newPost.title, newPost.content);
-    alert('게시글이 작성되었습니다.');
-    setShowWriteModal(false);
-    setNewPost({ title: '', content: '', categoryName: '축구' });
-    setSelectedCategory(newPost.categoryName);
-    setActiveTab('all');
-    fetchPosts(0);
-  } catch (error) {
-    console.error('게시글 작성 오류:', error);
-      // ⭐ validation 에러 메시지 처리
+    try {
+      await createPost(newPost.categoryName, newPost.title, newPost.content);
+      alert('게시글이 작성되었습니다.');
+      setShowWriteModal(false);
+      setNewPost({ title: '', content: '', categoryName: '축구' });
+      setSelectedCategory(newPost.categoryName);
+      setActiveTab('all');
+      fetchPosts(0);
+    } catch (error) {
+      console.error('게시글 작성 오류:', error);
       if (error.response && error.response.data) {
-          const errors = error.response.data;
-
-          // 에러 객체에서 메시지들을 추출
-          if (typeof errors === 'object' && !errors.message) {
-              // validation 에러 형태: { title: "제목은 최대 200자...", content: "..." }
-              const errorMessages = Object.values(errors).join('\n');
-              alert(errorMessages);
-          } else {
-              // 일반 에러 형태: { message: "..." }
-              alert(errors.message || '게시글 작성에 실패했습니다.');
-          }
+        const errors = error.response.data;
+        if (typeof errors === 'object' && !errors.message) {
+          const errorMessages = Object.values(errors).join('\n');
+          alert(errorMessages);
+        } else {
+          alert(errors.message || '게시글 작성에 실패했습니다.');
+        }
       } else {
-          alert(error.message || '게시글 작성에 실패했습니다.');
+        alert(error.message || '게시글 작성에 실패했습니다.');
       }
-  }
+    }
   };
 
   const handleDeletePost = async (postId) => {
@@ -150,56 +136,73 @@ function Community() {
   };
 
   const goToPostDetail = (postId) => {
-      navigate(`/board/${postId}`);
+    navigate(`/board/${postId}`);
   };
 
-    const handlePageChange = (newPage) => {
-        // 페이지 범위를 자동으로 제한
-        if (newPage < 0) {
-            newPage = 0;
-        }
-        if (newPage >= totalPages) {
-            newPage = totalPages - 1;
-        }
-        fetchPosts(newPage);
-    };
+  const handlePageChange = (newPage) => {
+    if (newPage < 0) {
+      newPage = 0;
+    }
+    if (newPage >= totalPages) {
+      newPage = totalPages - 1;
+    }
+    fetchPosts(newPage);
+  };
+
   return (
-    <div>
-      <div className="community-container">
-        
+    <div className="bg-gray-900 text-white min-h-screen">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* 헤더 */}
-        <div className="community-header">
-          <h1 className="community-title">💬 커뮤니티</h1>
-          
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h1 className="text-4xl font-bold">💬 커뮤니티</h1>
+            <p className="text-gray-400 mt-2">스포츠에 대한 이야기를 자유롭게 나눠보세요</p>
+          </div>
+
           {isLoggedIn() && activeTab === 'all' && (
-            <button className="write-button" onClick={() => setShowWriteModal(true)}>
+            <button
+              onClick={() => setShowWriteModal(true)}
+              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg transition shadow-lg"
+            >
               ✏️ 글쓰기
             </button>
           )}
         </div>
 
         {/* 탭 */}
-        <div className="tabs-container">
+        <div className="flex gap-4 mb-6">
           <button
-            className={`tab-button ${activeTab === 'all' ? 'active' : ''}`}
+            className={`px-6 py-3 rounded-lg font-semibold transition ${
+              activeTab === 'all'
+                ? 'bg-blue-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
             onClick={() => setActiveTab('all')}
           >
             전체글
           </button>
           <button
-            className={`tab-button ${activeTab === 'popular' ? 'active' : ''}`}
+            className={`px-6 py-3 rounded-lg font-semibold transition ${
+              activeTab === 'popular'
+                ? 'bg-blue-500 text-white shadow-lg'
+                : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+            }`}
             onClick={() => setActiveTab('popular')}
           >
-            인기글
+            🔥 인기글
           </button>
         </div>
 
         {/* 카테고리 버튼 */}
-        <div className="category-buttons">
+        <div className="flex flex-wrap gap-3 mb-6">
           {categories.map((cat) => (
             <button
               key={cat}
-              className={`category-button ${selectedCategory === cat ? 'active' : ''}`}
+              className={`px-5 py-2 rounded-lg font-semibold transition ${
+                selectedCategory === cat
+                  ? 'bg-blue-500 text-white shadow-lg transform scale-105'
+                  : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              }`}
               onClick={() => setSelectedCategory(cat)}
             >
               {cat}
@@ -209,18 +212,11 @@ function Community() {
 
         {/* 검색창 */}
         {activeTab === 'all' && (
-          <div className="search-container">
+          <div className="flex gap-3 mb-8">
             <select
-              className="search-type-select"
               value={searchType}
               onChange={(e) => setSearchType(e.target.value)}
-              style={{
-                padding: '10px',
-                borderRadius: '5px',
-                border: '1px solid #ddd',
-                marginRight: '10px',
-                fontSize: '14px'
-              }}
+              className="px-4 py-3 bg-gray-700 text-white rounded-lg border-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">제목+내용</option>
               <option value="title">제목</option>
@@ -229,13 +225,16 @@ function Community() {
             </select>
             <input
               type="text"
-              className="search-input"
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
               placeholder="검색어를 입력하세요"
+              className="flex-1 px-4 py-3 bg-gray-700 text-white rounded-lg border-none focus:ring-2 focus:ring-blue-500"
             />
-            <button className="search-button" onClick={handleSearch}>
+            <button
+              onClick={handleSearch}
+              className="px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg transition"
+            >
               🔍 검색
             </button>
           </div>
@@ -243,131 +242,155 @@ function Community() {
 
         {/* 게시글 목록 */}
         {loading ? (
-          <div className="loading-state">로딩 중...</div>
+          <div className="text-center py-16">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-gray-400">로딩 중...</p>
+          </div>
         ) : posts.length === 0 ? (
-          <div className="empty-state">게시글이 없습니다.</div>
+          <div className="bg-gray-800/50 rounded-lg p-16 text-center">
+            <p className="text-gray-400 text-lg">게시글이 없습니다.</p>
+          </div>
         ) : (
-          <div>
-            {posts.map((post) => (
-              <div key={post.postId} className="post-card" onClick={() => goToPostDetail(post.postId)}>
-                <div className="post-card-header">
-                    <div className="post-card-content">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1px' }}>
-                            <span className="badge badge-category">{post.categoryName}</span>
-                            {post.isNotice && <span className="badge badge-notice">공지</span>}
-                            {post.isPopular && <span className="badge badge-popular">인기</span>}
-
-                            <span className="post-title" style={{ marginTop: '9px' }}>{post.title}</span>
-
-                            {post.commentCount > 0 && (
-                                <span className="comment-count">[{post.commentCount}]</span>
-                            )}
-                        </div>
+          <>
+            <div className="space-y-3 mb-8">
+              {posts.map((post) => (
+                <div
+                  key={post.postId}
+                  onClick={() => goToPostDetail(post.postId)}
+                  className="bg-gray-800/80 backdrop-blur-sm rounded-lg p-5 cursor-pointer hover:bg-gray-700/80 transition"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="px-3 py-1 bg-blue-500 text-white text-xs font-bold rounded-full">
+                        {post.categoryName}
+                      </span>
+                      {post.isNotice && (
+                        <span className="px-3 py-1 bg-red-500 text-white text-xs font-bold rounded-full">공지</span>
+                      )}
+                      {post.isPopular && (
+                        <span className="px-3 py-1 bg-yellow-500 text-black text-xs font-bold rounded-full">인기</span>
+                      )}
+                      <span className="font-bold text-lg">{post.title}</span>
+                      {post.commentCount > 0 && (
+                        <span className="text-blue-400 font-semibold">[{post.commentCount}]</span>
+                      )}
                     </div>
 
-                  {currentUser && currentUser.username === post.username && (
-                    <button
-                      className="delete-button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeletePost(post.postId);
-                      }}
-                    >
-                      삭제
-                    </button>
-                  )}
-                </div>
+                    {currentUser && currentUser.username === post.username && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePost(post.postId);
+                        }}
+                        className="px-4 py-1 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded transition"
+                      >
+                        삭제
+                      </button>
+                    )}
+                  </div>
 
-                <div className="post-meta">
-                  <span>{post.nickname}</span>
-                  <span>|</span>
-                  <span>조회 {post.viewCount}</span>
-                  <span>|</span>
-                  <span>👍 {post.likeCount}</span>
-                  <span>|</span>
-                  <span>{new Date(post.createdAt).toLocaleString('ko-KR')}</span>
+                  <div className="flex items-center gap-3 text-sm text-gray-400">
+                    <span>{post.nickname}</span>
+                    <span>•</span>
+                    <span>조회 {post.viewCount}</span>
+                    <span>•</span>
+                    <span>👍 {post.likeCount}</span>
+                    <span>•</span>
+                    <span>{new Date(post.createdAt).toLocaleString('ko-KR')}</span>
+                  </div>
                 </div>
+              ))}
+            </div>
+
+            {/* 페이지네이션 */}
+            <div className="flex justify-center items-center gap-2">
+              <button
+                onClick={() => handlePageChange(currentPage - 10)}
+                disabled={currentPage < 10}
+                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  currentPage < 10
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+              >
+                &lt;&lt;
+              </button>
+
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 0}
+                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  currentPage === 0
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+              >
+                이전
+              </button>
+
+              <div className="flex gap-2">
+                {(() => {
+                  const startPage = Math.floor(currentPage / 10) * 10;
+                  const endPage = Math.min(startPage + 10, totalPages);
+                  const pages = [];
+
+                  for (let i = startPage; i < endPage; i++) {
+                    pages.push(
+                      <button
+                        key={i}
+                        onClick={() => handlePageChange(i)}
+                        className={`px-4 py-2 rounded-lg font-semibold transition ${
+                          currentPage === i
+                            ? 'bg-blue-500 text-white shadow-lg'
+                            : 'bg-gray-700 text-white hover:bg-gray-600'
+                        }`}
+                      >
+                        {i + 1}
+                      </button>
+                    );
+                  }
+
+                  return pages;
+                })()}
               </div>
-            ))}
-          </div>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= totalPages - 1 || totalPages === 0}
+                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  currentPage >= totalPages - 1 || totalPages === 0
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+              >
+                다음
+              </button>
+
+              <button
+                onClick={() => handlePageChange(currentPage + 10)}
+                disabled={currentPage >= totalPages - 10 || totalPages === 0}
+                className={`px-4 py-2 rounded-lg font-semibold transition ${
+                  currentPage >= totalPages - 10 || totalPages === 0
+                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                    : 'bg-gray-700 text-white hover:bg-gray-600'
+                }`}
+              >
+                &gt;&gt;
+              </button>
+            </div>
+          </>
         )}
-
-          {/* ⭐ 페이지네이션 - 항상 표시 */}
-          <div className="pagination">
-              {/* 10페이지 이전 */}
-              <button
-                  className="pagination-button"
-                  onClick={() => handlePageChange(currentPage - 10)}
-                  disabled={currentPage < 10}
-                  title="10페이지 이전"
-              >
-                  &lt;&lt;
-              </button>
-
-              {/* 1페이지 이전 */}
-              <button
-                  className="pagination-button"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage === 0}
-                  title="이전"
-              >
-                  Prev  {/* ⭐ &lt; 대신 Prev */}
-              </button>
-
-              {/* 페이지 번호 버튼들 (1~10) */}
-              <div style={{ display: 'flex', gap: '5px' }}>
-                  {(() => {
-                      const startPage = Math.floor(currentPage / 10) * 10;
-                      const endPage = Math.min(startPage + 10, totalPages);
-                      const pages = [];
-
-                      for (let i = startPage; i < endPage; i++) {
-                          pages.push(
-                              <button
-                                  key={i}
-                                  className={`pagination-number ${currentPage === i ? 'active' : ''}`}
-                                  onClick={() => handlePageChange(i)}
-                              >
-                                  {i + 1}
-                              </button>
-                          );
-                      }
-
-                      return pages;
-                  })()}
-              </div>
-
-              {/* 1페이지 다음 */}
-              <button
-                  className="pagination-button"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage >= totalPages - 1 || totalPages === 0}
-                  title="다음"
-              >
-                  Next  {/* ⭐ &gt; 대신 Next */}
-              </button>
-
-              {/* 10페이지 다음 */}
-              <button
-                  className="pagination-button"
-                  onClick={() => handlePageChange(currentPage + 10)}
-                  disabled={currentPage >= totalPages - 10 || totalPages === 0}
-                  title="10페이지 다음"
-              >
-                  &gt;&gt;
-              </button>
-          </div>
 
         {/* 글쓰기 모달 */}
         {showWriteModal && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <h2 className="modal-title">✏️ 글쓰기</h2>
-              
+          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+            <div className="bg-gray-800 rounded-lg p-8 max-w-2xl w-full mx-4">
+              <h2 className="text-2xl font-bold mb-6">✏️ 글쓰기</h2>
+
               <select
-                className="form-select"
                 value={newPost.categoryName}
                 onChange={(e) => setNewPost({...newPost, categoryName: e.target.value})}
+                className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border-none focus:ring-2 focus:ring-blue-500 mb-4"
               >
                 {writableCategories.map(cat => (
                   <option key={cat} value={cat}>{cat}</option>
@@ -376,24 +399,30 @@ function Community() {
 
               <input
                 type="text"
-                className="form-input"
                 placeholder="제목"
                 value={newPost.title}
                 onChange={(e) => setNewPost({...newPost, title: e.target.value})}
+                className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border-none focus:ring-2 focus:ring-blue-500 mb-4"
               />
-              
+
               <textarea
-                className="form-textarea"
                 placeholder="내용"
                 value={newPost.content}
                 onChange={(e) => setNewPost({...newPost, content: e.target.value})}
+                className="w-full px-4 py-3 bg-gray-700 text-white rounded-lg border-none focus:ring-2 focus:ring-blue-500 mb-4 h-64 resize-none"
               />
-              
-              <div className="modal-actions">
-                <button className="cancel-button" onClick={() => setShowWriteModal(false)}>
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowWriteModal(false)}
+                  className="flex-1 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white font-bold rounded-lg transition"
+                >
                   취소
                 </button>
-                <button className="submit-button" onClick={handleCreatePost}>
+                <button
+                  onClick={handleCreatePost}
+                  className="flex-1 px-6 py-3 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-lg transition"
+                >
                   작성
                 </button>
               </div>
