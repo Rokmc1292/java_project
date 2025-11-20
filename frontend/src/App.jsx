@@ -7,6 +7,8 @@ import PostDetail from './pages/PostDetail';
 import News from './pages/News';
 import Fixtures from './pages/Fixtures';
 import Predictions from './pages/Predictions';
+import PredictionDetail from './pages/PredictionDetail';
+import PredictionRanking from './pages/PredictionRanking';
 import Live from './pages/Live';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
@@ -25,6 +27,8 @@ function App() {
                         <Route path="/board" element={<Community />} />
                         <Route path="/board/:postId" element={<PostDetail />} />
                         <Route path="/predictions" element={<Predictions />} />
+                        <Route path="/predictions/match/:matchId" element={<PredictionDetail />} />
+                        <Route path="/predictions/ranking" element={<PredictionRanking />} />
                         <Route path="/live" element={<Live />} />
                         <Route path="/news" element={<News />} />
                         <Route path="/login" element={<Login />} />
