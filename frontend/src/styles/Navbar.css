@@ -139,6 +139,24 @@
     background: rgba(255, 255, 255, 0.25);
 }
 
+/* 마이페이지 버튼 빛나는 효과 */
+.navbar-mypage-btn {
+    animation: mypage-glow 2s ease-in-out infinite alternate;
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes mypage-glow {
+    from {
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+                    0 0 20px rgba(255, 255, 255, 0.3);
+    }
+    to {
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.8),
+                    0 0 30px rgba(255, 255, 255, 0.5),
+                    0 0 40px rgba(255, 255, 255, 0.3);
+    }
+}
+
 /* 반응형 */
 @media (max-width: 768px) {
     .navbar-menu {
