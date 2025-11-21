@@ -166,7 +166,7 @@ const ProfileSection = ({ profile }) => {
           </div>
         </div>
         <p className="tier-guide">
-          💡 승부예측 성공 시 +10점, 실패 시 -10점
+          💡 승부예측 성공 시 최소+10점, 실패 시 최소-10점
         </p>
       </div>
     </div>
