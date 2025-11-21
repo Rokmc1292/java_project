@@ -197,6 +197,26 @@ function PredictionDetail() {
     return icons[tier] || '🥉';
   };
 
+  // 예측 결과를 텍스트로 변환
+  const getPredictionResultText = (predictedResult) => {
+    if (match.sportType === 'MMA') {
+      if (predictedResult === 'HOME' || predictedResult === 'FIGHTER1') {
+        return match.teams?.home?.name || 'Fighter 1';
+      } else if (predictedResult === 'AWAY' || predictedResult === 'FIGHTER2') {
+        return match.teams?.away?.name || 'Fighter 2';
+      }
+    } else {
+      if (predictedResult === 'HOME') {
+        return '홈팀 승';
+      } else if (predictedResult === 'DRAW') {
+        return '무승부';
+      } else if (predictedResult === 'AWAY') {
+        return '원정팀 승';
+      }
+    }
+    return predictedResult;
+  };
+
   if (loading) {
     return (
       <div className="bg-gray-900 text-white min-h-screen">
@@ -306,7 +326,10 @@ function PredictionDetail() {
             <div className="vote-bar-container">
               <div className="vote-bar-header">
                 <span className="vote-label">
-                  홈팀 승 ({match.teams?.home?.name || '홈팀'})
+                  {match.sportType === 'MMA'
+                    ? match.teams?.home?.name || 'Fighter 1'
+                    : `홈팀 승 (${match.teams?.home?.name || '홈팀'})`
+                  }
                 </span>
                 <span className="vote-percentage home">
                   {statistics.homePercentage.toFixed(1)}% ({statistics.homeVotes}명)
@@ -350,7 +373,10 @@ function PredictionDetail() {
             <div className="vote-bar-container">
               <div className="vote-bar-header">
                 <span className="vote-label">
-                  원정팀 승 ({match.teams?.away?.name || '원정팀'})
+                  {match.sportType === 'MMA'
+                    ? match.teams?.away?.name || 'Fighter 2'
+                    : `원정팀 승 (${match.teams?.away?.name || '원정팀'})`
+                  }
                 </span>
                 <span className="vote-percentage away">
                   {statistics.awayPercentage.toFixed(1)}% ({statistics.awayVotes}명)
@@ -381,8 +407,16 @@ function PredictionDetail() {
                 onClick={() => setSelectedResult(match.sportType === 'MMA' ? 'FIGHTER1' : 'HOME')}
                 className={`result-btn home ${selectedResult === (match.sportType === 'MMA' ? 'FIGHTER1' : 'HOME') ? 'active' : ''}`}
               >
-                {match.sportType === 'MMA' ? 'Fighter 1 승' : '홈팀 승'}<br />
-                <span className="team-name-small">({match.teams?.home?.name || '홈팀'})</span>
+                {match.sportType === 'MMA'
+                  ? match.teams?.home?.name || 'Fighter 1'
+                  : `홈팀 승`
+                }
+                {match.sportType !== 'MMA' && (
+                  <>
+                    <br />
+                    <span className="team-name-small">({match.teams?.home?.name || '홈팀'})</span>
+                  </>
+                )}
               </button>
 
               {match.sportType !== 'MMA' && (
@@ -398,8 +432,16 @@ function PredictionDetail() {
                 onClick={() => setSelectedResult(match.sportType === 'MMA' ? 'FIGHTER2' : 'AWAY')}
                 className={`result-btn away ${selectedResult === (match.sportType === 'MMA' ? 'FIGHTER2' : 'AWAY') ? 'active' : ''}`}
               >
-                {match.sportType === 'MMA' ? 'Fighter 2 승' : '원정팀 승'}<br />
-                <span className="team-name-small">({match.teams?.away?.name || '원정팀'})</span>
+                {match.sportType === 'MMA'
+                  ? match.teams?.away?.name || 'Fighter 2'
+                  : `원정팀 승`
+                }
+                {match.sportType !== 'MMA' && (
+                  <>
+                    <br />
+                    <span className="team-name-small">({match.teams?.away?.name || '원정팀'})</span>
+                  </>
+                )}
               </button>
             </div>
 
@@ -473,8 +515,7 @@ function PredictionDetail() {
                         </span>
                       )}
                       <span className={`prediction-badge ${prediction.predictedResult.toLowerCase()}`}>
-                        {prediction.predictedResult === 'HOME' ? '홈팀 승' :
-                         prediction.predictedResult === 'DRAW' ? '무승부' : '원정팀 승'}
+                        {getPredictionResultText(prediction.predictedResult)}
                       </span>
                       {prediction.isCorrect !== null && (
                         <span className={`result-badge ${prediction.isCorrect ? 'correct' : 'wrong'}`}>
