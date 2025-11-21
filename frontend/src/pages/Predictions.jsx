@@ -185,7 +185,7 @@ function Predictions() {
                         <img
                           src={`${API_BASE_URL}/${match.teams.home.logo}`}
                           alt={match.teams.home.name}
-                          className={`w-12 h-12 object-cover ${match.sportType === 'MMA' ? 'rounded-full' : 'rounded-lg'}`}
+                          className={match.sportType === 'MMA' ? 'w-[110px] h-[400px] object-cover rounded-lg shadow-md' : 'w-12 h-12 object-cover rounded-lg'}
                         />
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
@@ -206,7 +206,7 @@ function Predictions() {
                         <img
                           src={`${API_BASE_URL}/${match.teams.away.logo}`}
                           alt={match.teams.away.name}
-                          className={`w-12 h-12 object-cover ${match.sportType === 'MMA' ? 'rounded-full' : 'rounded-lg'}`}
+                          className={match.sportType === 'MMA' ? 'w-[110px] h-[400px] object-cover rounded-lg shadow-md' : 'w-12 h-12 object-cover rounded-lg'}
                         />
                       ) : (
                         <div className="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center text-red-600 font-bold">
