@@ -47,59 +47,10 @@ public class BundesligaCrawlerService extends BaseCrawlerService {
      * Chrome WebDriver 설정 및 생성
      * @return 설정된 WebDriver 인스턴스
      */
-    public WebDriver setupDriver() {
-        try {
-            // ChromeDriver 자동 설치 및 설정
-            WebDriverManager.chromedriver().setup();
-
-            ChromeOptions options = new ChromeOptions();
-            options.addArguments("--headless=new");  // 새로운 headless 모드
-            options.addArguments("--no-sandbox");
-            options.addArguments("--disable-dev-shm-usage");
-            options.addArguments("--window-size=1920,1080");
-            options.addArguments("--disable-gpu");
-            options.addArguments("--disable-extensions");
-            options.addArguments("--disable-blink-features=AutomationControlled");
-
-            // 추가 안정성 옵션
-            options.addArguments("--disable-software-rasterizer");
-            options.addArguments("--disable-background-timer-throttling");
-            options.addArguments("--disable-backgrounding-occluded-windows");
-            options.addArguments("--disable-renderer-backgrounding");
-            options.addArguments("--disable-features=IsolateOrigins,site-per-process");
-            options.addArguments("--disable-web-security");  // CORS 이슈 방지
-            options.addArguments("--allow-running-insecure-content");
-
-            // 페이지 로드 전략 (eager: DOM이 로드되면 바로 반환)
-            options.setPageLoadStrategy(org.openqa.selenium.PageLoadStrategy.NORMAL);
-
-            // User-Agent 설정
-            options.addArguments("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
-
-            WebDriver driver = new ChromeDriver(options);
-
-            // 타임아웃 설정 (비용 절감 최적화: 대기 시간 단축)
-            driver.manage().timeouts().pageLoadTimeout(java.time.Duration.ofSeconds(15));  // 30→15초
-            driver.manage().timeouts().implicitlyWait(java.time.Duration.ofSeconds(3));    // 5→3초
-
-            log.info("✅ WebDriver 초기화 성공 (분데스리가)");
-            return driver;
-        } catch (Exception e) {
-            log.error("❌ WebDriver 초기화 실패: {}", e.getMessage());
-            throw new RuntimeException("WebDriver 초기화 실패", e);
-        }
-    }
 
     /**
      * 텍스트 정리 (줄바꿈 및 공백 제거)
      */
-    public String cleanText(String text) {
-        if (text == null || text.isEmpty()) {
-            return "";
-        }
-        String[] lines = text.strip().split("\n");
-        return lines[lines.length - 1].strip();
-    }
 
     /**
      * 경기 상태 텍스트 변환
