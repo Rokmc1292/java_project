@@ -24,10 +24,25 @@ FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 
+# Chromium 및 ChromeDriver 설치 (크롤링용)
+RUN apk add --no-cache \
+    chromium \
+    chromium-chromedriver \
+    nss \
+    freetype \
+    harfbuzz \
+    ca-certificates \
+    ttf-freefont \
+    font-noto-cjk
+
+# Chromium 환경 변수 설정
+ENV CHROME_BIN=/usr/bin/chromium-browser \
+    CHROME_DRIVER=/usr/bin/chromedriver
+
 # 빌드된 jar 복사
 COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-# 메모리 제한 설정으로 OOM 방지
-CMD ["java", "-Xmx400m", "-Xms256m", "-jar", "app.jar"]
+# 유료 플랜용 메모리 설정 (더 넉넉하게)
+CMD ["java", "-Xmx1024m", "-Xms512m", "-jar", "app.jar"]
