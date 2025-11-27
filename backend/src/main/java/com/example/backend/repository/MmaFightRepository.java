@@ -40,4 +40,16 @@ public interface MmaFightRepository extends JpaRepository<MmaFight, Long> {
             "ORDER BY f.fightDate ASC")
     List<MmaFight> findByDateRange(@Param("startDate") LocalDateTime startDate,
                                    @Param("endDate") LocalDateTime endDate);
+
+    /**
+     * 경기 상태로 UFC 경기 조회 (스케줄러용)
+     */
+    @Query("SELECT f FROM MmaFight f " +
+            "JOIN FETCH f.league l " +
+            "JOIN FETCH f.fighter1 f1 " +
+            "JOIN FETCH f.fighter2 f2 " +
+            "LEFT JOIN FETCH f.winner w " +
+            "WHERE f.status = :status " +
+            "ORDER BY f.fightDate ASC")
+    List<MmaFight> findByStatus(@Param("status") String status);
 }

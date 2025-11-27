@@ -267,10 +267,23 @@ public class Ligue1ScheduleCrawler {
                         if (!homeScoreText.isEmpty() && !awayScoreText.isEmpty()) {
                             homeScore = Integer.parseInt(homeScoreText);
                             awayScore = Integer.parseInt(awayScoreText);
+                        } else {
+                            // FINISHED 상태인데 점수가 비어있는 경우 경고
+                            if ("FINISHED".equals(status)) {
+                                log.warn("⚠️ [리그1] FINISHED 상태이지만 점수가 비어있음: {} vs {} (상태: {})",
+                                        homeTeam, awayTeam, statusText);
+                            }
                         }
                     } catch (NumberFormatException e) {
                         // 점수 파싱 실패시 null 유지
-                        log.warn("⚠️ 점수 파싱 실패: {} vs {}", homeTeam, awayTeam);
+                        log.warn("⚠️ [리그1] 점수 파싱 실패: {} vs {} (홈: '{}', 원정: '{}')",
+                                homeTeam, awayTeam, scores.get(0).getText().trim(), scores.get(1).getText().trim());
+                    }
+                } else {
+                    // FINISHED나 LIVE인데 점수 요소가 없는 경우
+                    if ("FINISHED".equals(status)) {
+                        log.warn("⚠️ [리그1] FINISHED 상태이지만 점수 요소가 없음: {} vs {} (상태: {}, 점수 요소 수: {})",
+                                homeTeam, awayTeam, statusText, scores.size());
                     }
                 }
             }
@@ -407,9 +420,17 @@ public class Ligue1ScheduleCrawler {
                             existingMatch.setHomeScore(null);
                             existingMatch.setAwayScore(null);
                         } else {
-                            // LIVE나 다른 상태는 크롤링된 점수 사용
-                            existingMatch.setHomeScore(dto.getHomeScore());
-                            existingMatch.setAwayScore(dto.getAwayScore());
+                            // FINISHED 상태인데 점수가 null인 경우 경고
+                            if ("FINISHED".equals(dto.getStatus()) && (dto.getHomeScore() == null || dto.getAwayScore() == null)) {
+                                log.error("❌ [리그1] FINISHED 상태이지만 점수가 NULL: {} vs {} (matchId: {})",
+                                        dto.getHomeTeamName(), dto.getAwayTeamName(), existingMatch.getMatchId());
+                                // FINISHED 상태로 저장하지 않고 LIVE로 유지
+                                existingMatch.setStatus("LIVE");
+                            } else {
+                                // LIVE나 다른 상태는 크롤링된 점수 사용
+                                existingMatch.setHomeScore(dto.getHomeScore());
+                                existingMatch.setAwayScore(dto.getAwayScore());
+                            }
                         }
 
                         matchRepository.save(existingMatch);
@@ -418,12 +439,19 @@ public class Ligue1ScheduleCrawler {
                             dto.getHomeTeamName(), dto.getAwayTeamName(), dto.getStatus());
                     } else if ("FINISHED".equals(dto.getStatus())) {
                         // 둘 다 FINISHED인 경우는 점수만 업데이트 (점수 수정 가능성)
-                        existingMatch.setHomeScore(dto.getHomeScore());
-                        existingMatch.setAwayScore(dto.getAwayScore());
-                        matchRepository.save(existingMatch);
-                        updatedMatchCount++;
-                        log.debug("  ✅ 점수 업데이트: {} {} - {} {}",
-                            dto.getHomeTeamName(), dto.getHomeScore(), dto.getAwayScore(), dto.getAwayTeamName());
+                        // 단, 점수가 null이 아닐 때만
+                        if (dto.getHomeScore() != null && dto.getAwayScore() != null) {
+                            existingMatch.setHomeScore(dto.getHomeScore());
+                            existingMatch.setAwayScore(dto.getAwayScore());
+                            matchRepository.save(existingMatch);
+                            updatedMatchCount++;
+                            log.debug("  ✅ 점수 업데이트: {} {} - {} {}",
+                                dto.getHomeTeamName(), dto.getHomeScore(), dto.getAwayScore(), dto.getAwayTeamName());
+                        } else {
+                            log.warn("⚠️ [리그1] FINISHED 상태이지만 점수가 NULL이어서 업데이트 스킵: {} vs {}",
+                                    dto.getHomeTeamName(), dto.getAwayTeamName());
+                            skippedCount++;
+                        }
                     } else {
                         // 기존 FINISHED 경기를 다른 상태로 변경하려는 시도 차단
                         log.debug("  ⏭️ FINISHED 경기 보호: {} vs {}", dto.getHomeTeamName(), dto.getAwayTeamName());
@@ -437,13 +465,21 @@ public class Ligue1ScheduleCrawler {
                     match.setAwayTeam(awayTeam);
                     match.setMatchDate(dto.getMatchDate());
                     match.setVenue(dto.getVenue());
-                    match.setStatus(dto.getStatus());
 
                     // SCHEDULED 상태는 무조건 점수를 null로 설정
                     if ("SCHEDULED".equals(dto.getStatus()) || "POSTPONED".equals(dto.getStatus())) {
+                        match.setStatus(dto.getStatus());
+                        match.setHomeScore(null);
+                        match.setAwayScore(null);
+                    } else if ("FINISHED".equals(dto.getStatus()) && (dto.getHomeScore() == null || dto.getAwayScore() == null)) {
+                        // FINISHED 상태인데 점수가 null인 경우 경고하고 SCHEDULED로 저장
+                        log.error("❌ [리그1] 새 경기 생성 시 FINISHED 상태이지만 점수가 NULL: {} vs {}",
+                                dto.getHomeTeamName(), dto.getAwayTeamName());
+                        match.setStatus("SCHEDULED");
                         match.setHomeScore(null);
                         match.setAwayScore(null);
                     } else {
+                        match.setStatus(dto.getStatus());
                         match.setHomeScore(dto.getHomeScore());
                         match.setAwayScore(dto.getAwayScore());
                     }
