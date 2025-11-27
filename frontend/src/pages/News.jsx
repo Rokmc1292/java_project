@@ -146,7 +146,7 @@ function News() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId }),
+        credentials: 'include', // 세션 쿠키 전송
       });
       
       const result = await response.json();
