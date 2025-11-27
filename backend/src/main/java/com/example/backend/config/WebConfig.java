@@ -23,12 +23,11 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**")  // 모든 경로 (API뿐만 아니라 WebSocket도 포함)
-                .allowedOrigins(
-                        "http://localhost:5173",     // 개발 환경 (Vite)
-                        "http://localhost:3000",     // 대체 개발 환경
-                        "https://sportscommunity-production-bb23.up.railway.app",  // Railway 프론트엔드
-                        frontendUrl                  // 환경 변수로 설정된 URL
+        registry.addMapping("/**")
+                .allowedOriginPatterns(
+                        "http://localhost:*",
+                        "https://sportscommunity-production-bb23.up.railway.app",
+                        "https://*.railway.app"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
