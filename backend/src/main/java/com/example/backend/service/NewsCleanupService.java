@@ -65,7 +65,7 @@ public class NewsCleanupService {
     /**
      * 종목별 뉴스 정리
      */
-    cleanupNewsBySport
+
 
     /**
      * 종목별 뉴스 정리
