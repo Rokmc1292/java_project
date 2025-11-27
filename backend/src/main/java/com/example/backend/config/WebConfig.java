@@ -1,5 +1,6 @@
 package com.example.backend.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -12,6 +13,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
+    @Value("${frontend.url:http://localhost:5173}")
+    private String frontendUrl;
+
     /**
      * CORS 매핑 설정
      * - 모든 API 엔드포인트에 대해 CORS 허용
@@ -19,15 +23,15 @@ public class WebConfig implements WebMvcConfigurer {
      */
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")  // /api로 시작하는 모든 경로
+        registry.addMapping("/**")  // 모든 경로 (API뿐만 아니라 WebSocket도 포함)
                 .allowedOrigins(
                         "http://localhost:5173",     // 개발 환경 (Vite)
                         "http://localhost:3000",     // 대체 개발 환경
-                        "https://yourdomain.com"     // 프로덕션 환경 (배포 시 수정)
+                        frontendUrl                  // Railway 프로덕션 환경
                 )
-                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")  // 허용할 HTTP 메서드
-                .allowedHeaders("*")           // 모든 헤더 허용
-                .allowCredentials(true)        // 쿠키, 인증 헤더 허용
-                .maxAge(3600);                 // Preflight 요청 캐시 시간 (1시간)
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }
