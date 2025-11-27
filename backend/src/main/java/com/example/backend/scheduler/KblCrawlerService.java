@@ -16,7 +16,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class KblCrawlerService {
+public class KblCrawlerService extends BaseCrawlerService {
 
     /**
      * 팀 이름과 DB team_id 매핑
