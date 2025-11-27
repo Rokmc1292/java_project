@@ -65,6 +65,11 @@ public class NewsCleanupService {
     /**
      * 종목별 뉴스 정리
      */
+    cleanupNewsBySport
+
+    /**
+     * 종목별 뉴스 정리
+     */
     private int cleanupNewsBySport(Sport sport) {
         long totalCount = newsRepository.countBySport(sport);
 
@@ -78,7 +83,7 @@ public class NewsCleanupService {
 
         int deleteCount = 0;
 
-        // 1. 종목별 최대 개수(40개) 초과 시 삭제
+        // 🔥 핵심 수정: 40개 초과 시 무조건 오래된 것부터 삭제!
         if (totalCount > MAX_NEWS_PER_SPORT) {
             int excessCount = (int)(totalCount - MAX_NEWS_PER_SPORT);
             List<News> oldestNews = newsRepository
@@ -86,28 +91,8 @@ public class NewsCleanupService {
 
             newsRepository.deleteAll(oldestNews);
             deleteCount += oldestNews.size();
-            log.info("[{}] 최대 개수({}) 초과 - {}개 삭제",
+            log.info("[{}] 최대 개수({}) 초과 - 오래된 뉴스 {}개 삭제",
                     sport.getDisplayName(), MAX_NEWS_PER_SPORT, oldestNews.size());
-        }
-
-        // 2. 30일 이상 된 뉴스 삭제 (최소 개수는 보장)
-        LocalDateTime cutoffDate = LocalDateTime.now().minusDays(DELETE_AFTER_DAYS);
-        long currentCount = newsRepository.countBySport(sport);
-
-        if (currentCount > MIN_NEWS_PER_SPORT) {
-            List<News> oldNews = newsRepository
-                    .findBySportAndPublishedAtBefore(sport, cutoffDate);
-
-            int canDelete = (int)Math.min(oldNews.size(),
-                    currentCount - MIN_NEWS_PER_SPORT);
-
-            if (canDelete > 0) {
-                List<News> toDelete = oldNews.subList(0, canDelete);
-                newsRepository.deleteAll(toDelete);
-                deleteCount += toDelete.size();
-                log.info("[{}] {}일 이상 뉴스 {}개 삭제",
-                        sport.getDisplayName(), DELETE_AFTER_DAYS, toDelete.size());
-            }
         }
 
         log.info("[{}] 정리 완료 - {}개 삭제, 남은 개수: {}",
