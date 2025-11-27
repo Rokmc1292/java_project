@@ -22,7 +22,6 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/admin/page")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")
 public class AdminPageController {
 
     private final UserRepository userRepository;

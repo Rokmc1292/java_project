@@ -19,7 +19,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/matches")
 @RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:5173")  // React 개발 서버 허용
 public class MatchController {
 
     private final MatchService matchService;
