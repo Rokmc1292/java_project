@@ -27,7 +27,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                         "http://localhost:5173",     // 개발 환경 (Vite)
                         "http://localhost:3000",     // 대체 개발 환경
-                        frontendUrl                  // Railway 프로덕션 환경
+                        "https://sportscommunity-production-bb23.up.railway.app",  // Railway 프론트엔드
+                        frontendUrl                  // 환경 변수로 설정된 URL
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
