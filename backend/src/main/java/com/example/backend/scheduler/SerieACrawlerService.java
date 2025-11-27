@@ -16,7 +16,7 @@ import java.util.Map;
  */
 @Service
 @Slf4j
-public class SerieACrawlerService {
+public class SerieACrawlerService extends BaseCrawlerService {
 
     /**
      * 팀 이름과 DB team_id 매핑

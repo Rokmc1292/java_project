@@ -32,7 +32,8 @@ RUN apk add --no-cache \
     freetype \
     harfbuzz \
     ca-certificates \
-    ttf-freefont
+    ttf-freefont \
+    font-noto-cjk
 
 # Chromium 환경 변수 설정
 ENV CHROME_BIN=/usr/bin/chromium-browser \
@@ -43,4 +44,5 @@ COPY --from=build /app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "app.jar"]
+# 유료 플랜용 메모리 설정 (더 넉넉하게)
+CMD ["java", "-Xmx1024m", "-Xms512m", "-jar", "app.jar"]
