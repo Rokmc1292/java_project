@@ -7,6 +7,9 @@
 
 import { apiPost, apiGet, saveUserData } from './api';
 
+// 환경변수에서 API Base URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 /**
  * 회원가입
  * @param {object} signupData - { username, password, passwordConfirm, nickname, email }
@@ -38,7 +41,7 @@ export const login = async (loginData) => {
             return user;
         } catch (e) {
             // 2) apiPost가 쿠키를 안 붙이면 세션이 유지되지 않으니, 안전장치로 직접 fetch 시도
-            const r = await fetch('http://localhost:8080/api/auth/login', {
+            const r = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include', // ★ 세션 쿠키 유지
@@ -68,7 +71,7 @@ export const logout = async () => {
     try {
         await apiPost('/api/auth/logout', {});
     } catch {
-        await fetch('http://localhost:8080/api/auth/logout', {
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
             method: 'POST',
             credentials: 'include',
         }).catch(() => {});
@@ -90,7 +93,7 @@ export const getCurrentUser = async () => {
     try {
         return await apiGet('/api/auth/me');
     } catch {
-        const r = await fetch('http://localhost:8080/api/auth/me', {
+        const r = await fetch(`${API_BASE_URL}/api/auth/me`, {
             method: 'GET',
             credentials: 'include',
         });

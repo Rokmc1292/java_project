@@ -10,7 +10,7 @@ import {
     likeComment,
     reportPost
 } from '../api/community';
-import { getUserData, isLoggedIn } from '../api/api';
+import { getUserData, isLoggedIn, apiGet } from '../api/api';
 
 function PostDetail() {
     const { postId } = useParams();
@@ -69,8 +69,7 @@ function PostDetail() {
 
     const fetchComments = async (page = 0) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/community/posts/${postId}/comments?page=${page}&size=30`);
-            const data = await response.json();
+            const data = await apiGet(`/api/community/posts/${postId}/comments?page=${page}&size=30`);
 
             setComments(data.comments);
             setBestComments(data.bestComments);
