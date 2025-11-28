@@ -176,6 +176,94 @@ const mypageApi = {
       console.error('알림 설정 변경 실패:', error);
       throw error;
     }
+  },
+
+  /**
+   * 알림 목록 조회
+   */
+  getNotifications: async (page = 0, size = 20) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/notifications`, {
+        params: { page, size },
+        withCredentials: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error('알림 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 읽지 않은 알림 개수 조회
+   */
+  getUnreadNotificationCount: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/notifications/unread/count`, {
+        withCredentials: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error('읽지 않은 알림 개수 조회 실패:', error);
+      return 0;
+    }
+  },
+
+  /**
+   * 읽지 않은 알림 목록 조회
+   */
+  getUnreadNotifications: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/notifications/unread`, {
+        withCredentials: true
+      });
+      return response.data;
+    } catch (error) {
+      console.error('읽지 않은 알림 조회 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 알림 읽음 처리
+   */
+  markNotificationAsRead: async (notificationId) => {
+    try {
+      await axios.put(`${API_BASE_URL}/api/notifications/${notificationId}/read`, {}, {
+        withCredentials: true
+      });
+    } catch (error) {
+      console.error('알림 읽음 처리 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 모든 알림 읽음 처리
+   */
+  markAllNotificationsAsRead: async () => {
+    try {
+      await axios.put(`${API_BASE_URL}/api/notifications/read-all`, {}, {
+        withCredentials: true
+      });
+    } catch (error) {
+      console.error('모든 알림 읽음 처리 실패:', error);
+      throw error;
+    }
+  },
+
+  /**
+   * 알림 삭제
+   */
+  deleteNotification: async (notificationId) => {
+    try {
+      await axios.delete(`${API_BASE_URL}/api/notifications/${notificationId}`, {
+        withCredentials: true
+      });
+    } catch (error) {
+      console.error('알림 삭제 실패:', error);
+      throw error;
+    }
   }
 };
 
