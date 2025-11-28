@@ -12,6 +12,8 @@ import {
 } from '../api/community';
 import { getUserData, isLoggedIn, apiGet } from '../api/api';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
 function PostDetail() {
     const { postId } = useParams();
     const navigate = useNavigate();
@@ -261,7 +263,7 @@ function PostDetail() {
      */
     const handleDislikeComment = async (commentId) => {
         try {
-            const response = await fetch(`http://localhost:8080/api/community/comments/${commentId}/dislike`, {
+            const response = await fetch(`${API_BASE_URL}/api/community/comments/${commentId}/dislike`, {
                 method: 'POST',
                 credentials: 'include'
             });
@@ -308,7 +310,7 @@ function PostDetail() {
         }
 
         try {
-            const response = await fetch(`http://localhost:8080/api/community/comments/${reportingCommentId}/report`, {
+            const response = await fetch(`${API_BASE_URL}/api/community/comments/${reportingCommentId}/report`, {
                 method: 'POST',
                 credentials: 'include',
                 headers: {
@@ -482,12 +484,14 @@ function PostDetail() {
                             <span>조회 {post.viewCount}</span>
                         </div>
 
-                        <button
-                            onClick={() => setShowReportModal(true)}
-                            className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md text-xs font-semibold transition"
-                        >
-                            🚨 신고
-                        </button>
+                        {currentUser && currentUser.username !== post.username && (
+                            <button
+                                onClick={() => setShowReportModal(true)}
+                                className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md text-xs font-semibold transition"
+                            >
+                                🚨 신고
+                            </button>
+                        )}
                     </div>
 
                     <div className="text-base leading-relaxed mb-8 whitespace-pre-wrap">
