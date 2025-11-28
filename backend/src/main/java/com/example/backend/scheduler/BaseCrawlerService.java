@@ -87,4 +87,19 @@ public abstract class BaseCrawlerService {
         }
         return text.replaceAll("\\s+", " ").trim();
     }
+
+    /**
+     * WebDriver 안전하게 종료 (메모리 누수 방지)
+     * @param driver 종료할 WebDriver 인스턴스
+     */
+    protected void safeQuitDriver(WebDriver driver) {
+        if (driver != null) {
+            try {
+                driver.quit();
+                log.info("✅ WebDriver 정상 종료");
+            } catch (Exception e) {
+                log.warn("⚠️ WebDriver 종료 중 오류 (무시됨): {}", e.getMessage());
+            }
+        }
+    }
 }

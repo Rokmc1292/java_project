@@ -55,9 +55,9 @@ public class NewsCrawlerService {
     }};
 
     /**
-     * 30분마다 자동 실행
+     * 60분마다 자동 실행 (비용 절감 최적화)
      */
-    @Scheduled(fixedRate = 1800000) // 30분
+    @Scheduled(fixedRate = 3600000) // 60분
     @Transactional
     public void crawlAllSportsNews() {
         log.info("=== 네이버 뉴스 API 수집 시작 ===");
