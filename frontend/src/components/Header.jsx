@@ -1,29 +1,56 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { checkAuth, logout as apiLogout } from '../api/auth';
 
 const Header = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [user, setUser] = useState(null);
+    const [isCheckingAuth, setIsCheckingAuth] = useState(true);
     const location = useLocation();
     const navigate = useNavigate();
 
-    // 로그인 상태 확인
+    // 초기 로드 시 세션 확인 (한 번만 실행)
     useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (userData) {
+        const verifySession = async () => {
             try {
-                const parsedUser = JSON.parse(userData);
-                setUser(parsedUser);
-            } catch (e) {
-                console.error('사용자 정보 파싱 오류:', e);
-                localStorage.removeItem('user');
+                // 백엔드 세션 확인
+                const userData = await checkAuth();
+                setUser(userData);
+            } catch (err) {
+                // 세션이 없거나 만료됨
+                setUser(null);
+            } finally {
+                setIsCheckingAuth(false);
+            }
+        };
+
+        verifySession();
+    }, []); // 마운트 시 한 번만 실행
+
+    // location 변경 시 localStorage 동기화
+    useEffect(() => {
+        if (!isCheckingAuth) {
+            const userData = localStorage.getItem('user');
+            if (userData) {
+                try {
+                    const parsedUser = JSON.parse(userData);
+                    setUser(parsedUser);
+                } catch (e) {
+                    console.error('사용자 정보 파싱 오류:', e);
+                    localStorage.removeItem('user');
+                    setUser(null);
+                }
             }
         }
-    }, [location]); // location 변경 시마다 체크
+    }, [location, isCheckingAuth]);
 
     // 로그아웃 처리
-    const handleLogout = () => {
-        localStorage.removeItem('user');
+    const handleLogout = async () => {
+        try {
+            await apiLogout();
+        } catch (err) {
+            console.error('로그아웃 오류:', err);
+        }
         setUser(null);
         navigate('/');
     };

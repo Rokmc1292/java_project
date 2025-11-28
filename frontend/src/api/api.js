@@ -98,7 +98,11 @@ export const apiDelete = (endpoint) => {
  * 로컬 스토리지에 사용자 정보 저장
  */
 export const saveUserData = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData));
+    if (userData === null || userData === undefined) {
+        localStorage.removeItem('user');
+    } else {
+        localStorage.setItem('user', JSON.stringify(userData));
+    }
 };
 
 /**
