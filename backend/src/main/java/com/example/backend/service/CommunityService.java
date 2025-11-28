@@ -773,6 +773,12 @@ public class CommunityService {
         User reporter = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
+        // 중복 신고 확인
+        boolean alreadyReported = reportRepository.existsByReporterAndTargetTypeAndTargetId(reporter, "POST", postId);
+        if (alreadyReported) {
+            throw new RuntimeException("이미 신고한 게시글입니다.");
+        }
+
         Report report = new Report();
         report.setReporter(reporter);
         report.setTargetType("POST");
@@ -794,6 +800,12 @@ public class CommunityService {
 
         User reporter = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        // 중복 신고 확인
+        boolean alreadyReported = reportRepository.existsByReporterAndTargetTypeAndTargetId(reporter, "COMMENT", commentId);
+        if (alreadyReported) {
+            throw new RuntimeException("이미 신고한 댓글입니다.");
+        }
 
         Report report = new Report();
         report.setReporter(reporter);

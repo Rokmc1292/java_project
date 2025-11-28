@@ -26,5 +26,7 @@ public class CommentDto {
     private LocalDateTime createdAt;  // 작성일
     private LocalDateTime updatedAt;  // 수정일
     private List<CommentDto> replies; // 대댓글 목록
-    private Boolean isBest;  // ⭐ 추가
+    private Boolean isBest;           // 베스트 댓글 여부
+    private Boolean isReported;       // 현재 사용자가 신고했는지 여부
+    private String userTier;          // 사용자 티어
 }
