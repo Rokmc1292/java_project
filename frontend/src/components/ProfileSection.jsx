@@ -103,17 +103,13 @@ const ProfileSection = ({ profile }) => {
 
           {/* 티어 진행 바 */}
           <div className="tier-progress-container">
-            <div 
+            <div
               className="tier-progress-bar"
-              style={{ 
+              style={{
                 width: `${progress}%`,
                 backgroundColor: getTierColor(profile.tier)
               }}
-            >
-              <span className="tier-progress-text">
-                {Math.round(progress)}%
-              </span>
-            </div>
+            />
           </div>
 
           {/* 다음 티어 정보 */}

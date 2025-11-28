@@ -189,8 +189,8 @@ function News() {
 
   useEffect(() => {
     fetchNews();
-  }, [currentPage, selectedSport, searchKeyword, showLikedOnly]);
-  
+  }, [currentPage, selectedSport, searchKeyword, showLikedOnly, userId]);
+
   useEffect(() => {
     fetchPopularNews();
   }, [userId]);
