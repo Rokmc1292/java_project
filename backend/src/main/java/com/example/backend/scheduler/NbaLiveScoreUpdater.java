@@ -140,7 +140,7 @@ public class NbaLiveScoreUpdater {
      * fixedDelay: 이전 실행이 끝난 후 10초 대기
      * initialDelay: 서버 시작 후 10초 뒤 첫 실행
      */
-    @Scheduled(fixedDelay = 10000, initialDelay = 10000)
+    @Scheduled(fixedDelay = 60000, initialDelay = 10000)
     @Transactional
     public void updateLiveScores() {
         // NBA 리그의 LIVE 경기 조회 (날짜 관계없이 LIVE 상태만 추적)

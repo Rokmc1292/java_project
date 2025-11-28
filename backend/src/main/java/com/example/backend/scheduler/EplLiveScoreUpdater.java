@@ -141,7 +141,7 @@ public class EplLiveScoreUpdater {
      * initialDelay: 서버 시작 후 10초 뒤 첫 실행
      * LIVE 상태 경기를 조회하므로 자정을 넘어가도 계속 추적 가능
      */
-    @Scheduled(fixedDelay = 10000, initialDelay = 10000)
+    @Scheduled(fixedDelay = 60000, initialDelay = 10000)
     @Transactional
     public void updateLiveScores() {
         // EPL 리그의 LIVE 상태 경기 조회 (날짜와 관계없이)

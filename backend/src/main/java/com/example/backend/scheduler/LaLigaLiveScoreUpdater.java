@@ -140,7 +140,7 @@ public class LaLigaLiveScoreUpdater {
      * fixedDelay: 이전 실행이 끝난 후 10초 대기
      * initialDelay: 서버 시작 후 20초 뒤 첫 실행 (EPL/NBA/분데스리가와 시간 차이)
      */
-    @Scheduled(fixedDelay = 10000, initialDelay = 20000)
+    @Scheduled(fixedDelay = 60000, initialDelay = 20000)
     @Transactional
     public void updateLiveScores() {
         // 라리가 리그의 LIVE 경기 조회 (날짜 관계없이 LIVE 상태만 추적)

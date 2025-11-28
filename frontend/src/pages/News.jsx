@@ -64,14 +64,14 @@ function News() {
     setLoading(true);
     try {
       let url = `${API_BASE_URL}/api/news?page=${currentPage}&size=10${userId ? `&userId=${userId}` : ''}`;
-      
+
       if (showLikedOnly) {
         if (!userId) {
           setNews([]);
           setLoading(false);
           return;
         }
-        url = `${API_BASE_URL}/api/news/liked?userId=${userId}&page=${currentPage}&size=10`;
+        url = `${API_BASE_URL}/api/news/liked?page=${currentPage}&size=10`;
       }
       else if (searchKeyword.trim()) {
         if (selectedSport === 'ALL') {
@@ -85,7 +85,9 @@ function News() {
         }
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        credentials: 'include' // 세션 쿠키 전송
+      });
       const data = await response.json();
       setNews(data.content || []);
       setTotalPages(data.totalPages || 0);

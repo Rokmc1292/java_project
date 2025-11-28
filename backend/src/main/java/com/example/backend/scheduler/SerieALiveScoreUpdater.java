@@ -140,7 +140,7 @@ public class SerieALiveScoreUpdater {
      * fixedDelay: 이전 실행이 끝난 후 10초 대기
      * initialDelay: 서버 시작 후 25초 뒤 첫 실행 (EPL/NBA/분데스리가/라리가와 시간 차이)
      */
-    @Scheduled(fixedDelay = 10000, initialDelay = 25000)
+    @Scheduled(fixedDelay = 60000, initialDelay = 25000)
     @Transactional
     public void updateLiveScores() {
         // 세리에 A 리그의 LIVE 경기 조회 (날짜 관계없이 LIVE 상태만 추적)
