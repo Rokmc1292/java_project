@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { checkAuth } from '../api/auth';
 import mypageApi from '../api/mypageApi';
 import ProfileSection from '../components/ProfileSection';
 import StatsSection from '../components/StatsSection';
@@ -30,15 +31,20 @@ const MyPage = () => {
 
   // 컴포넌트 마운트 시 인증 체크 및 데이터 로드
   useEffect(() => {
-    // 로그인 체크
-    const userData = localStorage.getItem('user');
-    if (!userData) {
-      alert('로그인이 필요합니다.');
-      navigate('/login');
-      return;
-    }
+    const verifyAndLoadData = async () => {
+      try {
+        // 서버 세션 확인
+        await checkAuth();
+        // 세션이 유효하면 데이터 로드
+        loadMyPageData();
+      } catch (err) {
+        // 세션이 없거나 만료됨
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+      }
+    };
 
-    loadMyPageData();
+    verifyAndLoadData();
   }, []);
 
   /**

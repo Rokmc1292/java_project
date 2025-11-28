@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
+import { checkAuth } from '../api/auth';
 
 // 환경변수에서 API Base URL 가져오기
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
@@ -50,22 +51,20 @@ function Live() {
 
   // 로그인 상태 확인
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
+    const verifySession = async () => {
       try {
-        const parsedUser = JSON.parse(userData);
-        // username 필드 검증
-        if (parsedUser && parsedUser.username) {
-          setUser(parsedUser);
-        } else {
-          console.error('사용자 정보가 올바르지 않습니다.');
-          localStorage.removeItem('user');
+        // 서버 세션 확인
+        const userData = await checkAuth();
+        if (userData && userData.username) {
+          setUser(userData);
         }
-      } catch (e) {
-        console.error('사용자 정보 파싱 오류:', e);
-        localStorage.removeItem('user');
+      } catch (err) {
+        // 세션이 없거나 만료됨
+        setUser(null);
       }
-    }
+    };
+
+    verifySession();
   }, []);
 
   // 진행 중인 경기 조회

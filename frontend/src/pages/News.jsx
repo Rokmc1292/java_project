@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { checkAuth } from '../api/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -14,18 +15,27 @@ function News() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: '' });
   const [popularNews, setPopularNews] = useState([]);
-  
+
   // 로그인한 사용자 정보 가져오기
   const [currentUser, setCurrentUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  // 초기 로드 시 세션 확인
   useEffect(() => {
-    // localStorage에서 로그인 정보 확인
-    const user = JSON.parse(localStorage.getItem('user') || 'null');
-    if (user && user.userId) {
-      setCurrentUser(user);
-      setIsLoggedIn(true);
-    }
+    const verifySession = async () => {
+      try {
+        // 서버 세션 확인
+        const userData = await checkAuth();
+        setCurrentUser(userData);
+        setIsLoggedIn(true);
+      } catch (err) {
+        // 세션이 없거나 만료됨
+        setCurrentUser(null);
+        setIsLoggedIn(false);
+      }
+    };
+
+    verifySession();
   }, []);
 
   const userId = currentUser?.userId || null;
