@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { checkAuth } from '../api/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
@@ -39,25 +40,22 @@ function AdminPage() {
 
     // 관리자 권한 체크
     useEffect(() => {
-        const userData = localStorage.getItem('user');
-        if (!userData) {
-            alert('로그인이 필요합니다.');
-            navigate('/login');
-            return;
-        }
-
-        try {
-            const user = JSON.parse(userData);
-            if (!user.isAdmin) {
-                alert('관리자 권한이 필요합니다.');
-                navigate('/');
-                return;
+        const verifyAdmin = async () => {
+            try {
+                // 서버 세션 확인
+                const userData = await checkAuth();
+                if (!userData.isAdmin) {
+                    alert('관리자 권한이 필요합니다.');
+                    navigate('/');
+                }
+            } catch (err) {
+                // 세션이 없거나 만료됨
+                alert('로그인이 필요합니다.');
+                navigate('/login');
             }
-        } catch (e) {
-            alert('사용자 정보 오류');
-            navigate('/login');
-            return;
-        }
+        };
+
+        verifyAdmin();
     }, [navigate]);
 
     // 탭 변경 시 데이터 로드
