@@ -1,6 +1,7 @@
 package com.example.backend.repository;
 
 import com.example.backend.entity.Report;
+import com.example.backend.entity.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -24,4 +25,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
 
     long countByStatus(String status);
     Page<Report> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+
+    // 중복 신고 확인
+    boolean existsByReporterAndTargetTypeAndTargetId(User reporter, String targetType, Long targetId);
 }

@@ -19,6 +19,7 @@ public class PostDetailDto {
     private Boolean isNotice;
     private Boolean isPopular;
     private Boolean isBest;
+    private Boolean isReported;  // 현재 사용자가 신고했는지 여부
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<PostAttachmentDto> attachments;
