@@ -108,4 +108,13 @@ public class SerieACrawlerService extends BaseCrawlerService {
     public Long getTeamId(String teamName) {
         return TEAM_NAME_TO_ID.get(teamName);
     }
+    // Public wrapper methods for external classes
+    public WebDriver setupDriver() {
+        return super.setupDriver();
+    }
+
+    public String cleanText(String text) {
+        return super.cleanText(text);
+    }
+
 }
