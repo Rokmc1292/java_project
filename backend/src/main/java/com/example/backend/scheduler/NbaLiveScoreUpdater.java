@@ -507,31 +507,49 @@ public class NbaLiveScoreUpdater {
     @Transactional
     public void checkMatchStartTime() {
         LocalDateTime now = LocalDateTime.now();
+        log.debug("⏰ [NBA] 경기 시작 시간 체크 실행 (현재 시간: {})", now);
 
         // SCHEDULED 상태이면서 NBA 리그(league_id = 2)인 경기 조회
         List<Match> scheduledMatches = matchRepository.findByStatus("SCHEDULED");
+        List<Match> nbaScheduledMatches = scheduledMatches.stream()
+                .filter(m -> m.getLeague().getLeagueId().equals(2L))
+                .toList();
+
+        if (nbaScheduledMatches.isEmpty()) {
+            log.debug("📭 [NBA] SCHEDULED 상태 경기 없음");
+            return;
+        }
+
+        log.info("📋 [NBA] SCHEDULED 상태 경기 {}개 발견", nbaScheduledMatches.size());
 
         int updatedCount = 0;
+        int notYetCount = 0;
 
-        for (Match match : scheduledMatches) {
-            // NBA 경기만 처리
-            if (match.getLeague().getLeagueId().equals(2L)) {
-                // 경기 시작 시간이 현재 시간보다 이전이면 LIVE로 변경
-                if (match.getMatchDate().isBefore(now)) {
-                    match.setStatus("LIVE");
-                    matchRepository.save(match);
-                    updatedCount++;
+        for (Match match : nbaScheduledMatches) {
+            LocalDateTime matchDate = match.getMatchDate();
+            String homeTeam = match.getHomeTeam().getTeamName();
+            String awayTeam = match.getAwayTeam().getTeamName();
 
-                    log.info("🟢 경기 시작: {} vs {} ({})",
-                            match.getHomeTeam().getTeamName(),
-                            match.getAwayTeam().getTeamName(),
-                            match.getMatchDate());
-                }
+            // 경기 시작 시간이 현재 시간보다 이전이면 LIVE로 변경
+            if (matchDate.isBefore(now)) {
+                match.setStatus("LIVE");
+                matchRepository.save(match);
+                updatedCount++;
+
+                log.info("🟢 경기 시작: {} vs {} (경기 시간: {}, 현재 시간: {})",
+                        homeTeam, awayTeam, matchDate, now);
+            } else {
+                notYetCount++;
+                log.debug("⏳ [NBA] 아직 시작 안됨: {} vs {} (경기 시간: {}, 현재 시간: {}, 차이: {}분)",
+                        homeTeam, awayTeam, matchDate, now,
+                        java.time.Duration.between(now, matchDate).toMinutes());
             }
         }
 
         if (updatedCount > 0) {
-            log.info("✅ {}개 NBA 경기가 LIVE 상태로 변경됨", updatedCount);
+            log.info("✅ {}개 NBA 경기가 LIVE 상태로 변경됨 (대기 중: {}개)", updatedCount, notYetCount);
+        } else {
+            log.debug("⏳ [NBA] 아직 시작할 경기 없음 (대기 중: {}개)", notYetCount);
         }
     }
 }
