@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 /**
@@ -506,8 +507,9 @@ public class NbaLiveScoreUpdater {
     @Scheduled(fixedDelay = 300000, initialDelay = 60000)
     @Transactional
     public void checkMatchStartTime() {
-        LocalDateTime now = LocalDateTime.now();
-        log.debug("⏰ [NBA] 경기 시작 시간 체크 실행 (현재 시간: {})", now);
+        // DB에 저장된 시간은 한국 시간이므로, 현재 시간도 한국 시간으로 가져와야 함
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        log.debug("⏰ [NBA] 경기 시작 시간 체크 실행 (현재 한국 시간: {})", now);
 
         // SCHEDULED 상태이면서 NBA 리그(league_id = 2)인 경기 조회
         List<Match> scheduledMatches = matchRepository.findByStatus("SCHEDULED");
