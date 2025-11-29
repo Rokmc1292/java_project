@@ -72,12 +72,13 @@ public class NotificationService {
                 replyAuthor.getNickname(),
                 reply.getContent().length() > 30 ? reply.getContent().substring(0, 30) + "..." : reply.getContent());
 
+        // 대댓글 알림은 POST로 연결 (댓글이 달린 게시글로 이동)
         Notification notification = Notification.builder()
                 .user(commentAuthor)
                 .notificationType("REPLY")
                 .content(content)
-                .relatedType("COMMENT")
-                .relatedId(parentComment.getCommentId())
+                .relatedType("POST")
+                .relatedId(parentComment.getPost().getPostId())
                 .isRead(false)
                 .build();
 
@@ -132,12 +133,13 @@ public class NotificationService {
                 match.getAwayTeam().getTeamName(),
                 result);
 
+        // 예측 결과 알림은 MATCH로 연결 (예측 상세 페이지로 이동)
         Notification notification = Notification.builder()
                 .user(user)
                 .notificationType("PREDICTION_RESULT")
                 .content(content)
-                .relatedType("PREDICTION")
-                .relatedId(prediction.getPredictionId())
+                .relatedType("MATCH")
+                .relatedId(match.getMatchId())
                 .isRead(false)
                 .build();
 

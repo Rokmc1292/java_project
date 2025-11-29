@@ -142,8 +142,8 @@ function Live() {
 
   useEffect(() => {
     fetchLiveMatches();
-    // 10초마다 점수 자동 업데이트
-    const interval = setInterval(fetchLiveMatches, 10000);
+    // 60초마다 점수 자동 업데이트
+    const interval = setInterval(fetchLiveMatches, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -234,7 +234,7 @@ function Live() {
         <h1 className="text-4xl font-bold mb-4">🔴 실시간</h1>
 
         <div className="bg-red-500/20 border border-red-500 rounded-lg p-4 mb-8">
-          <p className="text-red-400 font-bold">🔴 LIVE | 실시간 점수는 10초마다 자동 업데이트됩니다.</p>
+          <p className="text-red-400 font-bold">🔴 LIVE | 실시간 점수는 60초마다 자동 업데이트됩니다.</p>
           <p className="text-sm text-gray-400 mt-1">
             경기를 클릭하면 실시간 채팅방에 참여할 수 있습니다.
           </p>

@@ -104,6 +104,8 @@ const Header = () => {
             // 관련 페이지로 이동
             if (notification.relatedType === 'POST' && notification.relatedId) {
                 navigate(`/board/post/${notification.relatedId}`);
+            } else if (notification.relatedType === 'MATCH' && notification.relatedId) {
+                navigate(`/predictions/match/${notification.relatedId}`);
             }
             setShowNotifications(false);
         } catch (err) {
