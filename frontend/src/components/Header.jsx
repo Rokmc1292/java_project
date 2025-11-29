@@ -101,13 +101,7 @@ const Header = () => {
             await mypageApi.markNotificationAsRead(notification.notificationId);
             // 알림 개수 업데이트
             loadUnreadCount();
-            // 관련 페이지로 이동
-            if (notification.relatedType === 'POST' && notification.relatedId) {
-                navigate(`/board/post/${notification.relatedId}`);
-            } else if (notification.relatedType === 'MATCH' && notification.relatedId) {
-                navigate(`/predictions/match/${notification.relatedId}`);
-            }
-            setShowNotifications(false);
+            // 페이지 이동 비활성화 - 알림만 표시
         } catch (err) {
             console.error('알림 처리 실패:', err);
         }
