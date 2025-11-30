@@ -75,12 +75,23 @@ public class Ligue1LiveScoreUpdater {
                     LocalDateTime now = LocalDateTime.now();
                     for (Match match : leagueMatches) {
                         if (match.getMatchDate().plusHours(3).isBefore(now)) {
-                            match.setStatus("FINISHED");
-                            match.setUpdatedAt(now);
-                            matchRepository.save(match);
-                            log.info("🏁 [Ligue1] 과거 경기 종료 처리: {} vs {}",
-                                    match.getHomeTeam().getTeamName(),
-                                    match.getAwayTeam().getTeamName());
+                            // 점수가 있는 경우에만 FINISHED 처리
+                            if (match.getHomeScore() != null && match.getAwayScore() != null) {
+                                match.setStatus("FINISHED");
+                                match.setUpdatedAt(now);
+                                matchRepository.save(match);
+                                log.info("🏁 [Ligue1] 과거 경기 종료 처리: {} {} - {} {}",
+                                        match.getHomeTeam().getTeamName(),
+                                        match.getHomeScore(),
+                                        match.getAwayScore(),
+                                        match.getAwayTeam().getTeamName());
+                            } else {
+                                log.warn("⚠️ [Ligue1] 점수 없이 FINISHED 처리 불가: {} vs {} (점수: {}-{})",
+                                        match.getHomeTeam().getTeamName(),
+                                        match.getAwayTeam().getTeamName(),
+                                        match.getHomeScore(),
+                                        match.getAwayScore());
+                            }
                         }
                     }
                     return;
@@ -107,13 +118,24 @@ public class Ligue1LiveScoreUpdater {
                     } else {
                         // 웹에서 찾지 못한 경기는 시간 기반으로 처리
                         if (match.getMatchDate().plusHours(3).isBefore(now)) {
-                            match.setStatus("FINISHED");
-                            match.setUpdatedAt(now);
-                            matchRepository.save(match);
-                            finishedCount++;
-                            log.info("🏁 [Ligue1] 과거 경기 종료 처리: {} vs {}",
-                                    match.getHomeTeam().getTeamName(),
-                                    match.getAwayTeam().getTeamName());
+                            // 점수가 있는 경우에만 FINISHED 처리
+                            if (match.getHomeScore() != null && match.getAwayScore() != null) {
+                                match.setStatus("FINISHED");
+                                match.setUpdatedAt(now);
+                                matchRepository.save(match);
+                                finishedCount++;
+                                log.info("🏁 [Ligue1] 과거 경기 종료 처리: {} {} - {} {}",
+                                        match.getHomeTeam().getTeamName(),
+                                        match.getHomeScore(),
+                                        match.getAwayScore(),
+                                        match.getAwayTeam().getTeamName());
+                            } else {
+                                log.warn("⚠️ [Ligue1] 점수 없이 FINISHED 처리 불가: {} vs {} (점수: {}-{})",
+                                        match.getHomeTeam().getTeamName(),
+                                        match.getAwayTeam().getTeamName(),
+                                        match.getHomeScore(),
+                                        match.getAwayScore());
+                            }
                         }
                     }
                 }
@@ -270,15 +292,23 @@ public class Ligue1LiveScoreUpdater {
                         LocalDateTime now = LocalDateTime.now();
 
                         if (matchEndTime.isBefore(now) && "LIVE".equals(beforeStatus)) {
-                            match.setStatus("FINISHED");
-                            match.setUpdatedAt(now);
-                            matchRepository.save(match);
-                            finishedCount++;
-                            log.info("🏁 과거 경기 종료 처리: {} {} - {} {} (웹에서 경기 찾지 못함, 마지막 점수 유지)",
-                                    homeTeam,
-                                    match.getHomeScore() != null ? match.getHomeScore() : 0,
-                                    match.getAwayScore() != null ? match.getAwayScore() : 0,
-                                    awayTeam);
+                            // 점수가 있는 경우에만 FINISHED 처리
+                            if (match.getHomeScore() != null && match.getAwayScore() != null) {
+                                match.setStatus("FINISHED");
+                                match.setUpdatedAt(now);
+                                matchRepository.save(match);
+                                finishedCount++;
+                                log.info("🏁 과거 경기 종료 처리: {} {} - {} {} (웹에서 경기 찾지 못함, 마지막 점수 유지)",
+                                        homeTeam,
+                                        match.getHomeScore(),
+                                        match.getAwayScore(),
+                                        awayTeam);
+                            } else {
+                                log.warn("⚠️ [Ligue1] 점수 없이 FINISHED 처리 불가: {} vs {} (점수: {}-{})",
+                                        homeTeam, awayTeam,
+                                        match.getHomeScore(),
+                                        match.getAwayScore());
+                            }
                         } else {
                             log.warn("❌ 웹에서 경기를 찾지 못함: {} vs {} (상태: {}, 점수: {}-{})",
                                     homeTeam, awayTeam, beforeStatus,
