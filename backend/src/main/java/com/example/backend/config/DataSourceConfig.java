@@ -83,11 +83,12 @@ public class DataSourceConfig {
         boolean hasParams = originalUrl.contains("?");
         StringBuilder urlBuilder = new StringBuilder(originalUrl);
 
-        // 필수 파라미터들 (serverTimezone 제외 - 기존 설정 유지)
+        // 필수 파라미터들
         String[] requiredParams = {
             "autoReconnect=true",              // 자동 재연결
             "useSSL=false",                     // SSL 설정 (필요시 true로 변경)
             "allowPublicKeyRetrieval=true",    // MySQL 8.0+ 인증
+            "serverTimezone=Asia/Seoul",       // 타임존 설정 (JVM 타임존과 일치)
             "useUnicode=true",                 // 유니코드 사용
             "characterEncoding=UTF-8",         // 문자 인코딩
             "cachePrepStmts=true",            // PreparedStatement 캐싱
