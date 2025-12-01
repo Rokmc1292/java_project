@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 /**
  * MMA 승부예측 엔티티
@@ -51,6 +50,6 @@ public class MmaPrediction {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        createdAt = LocalDateTime.now();
     }
 }

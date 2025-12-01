@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 /**
  * User 엔티티 클래스
@@ -75,13 +74,13 @@ public class User {
     // 엔티티가 저장되기 전에 실행되는 메서드
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
-        updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
 
     // 엔티티가 업데이트되기 전에 실행되는 메서드
     @PreUpdate
     protected void onUpdate() {
-        updatedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        updatedAt = LocalDateTime.now();
     }
 }

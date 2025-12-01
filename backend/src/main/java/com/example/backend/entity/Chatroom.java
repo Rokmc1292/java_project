@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 
 /**
  * 채팅방 엔티티
@@ -36,6 +35,6 @@ public class Chatroom {
 
     @PrePersist
     protected void onCreate() {
-        createdAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+        createdAt = LocalDateTime.now();
     }
 }
