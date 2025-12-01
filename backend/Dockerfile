@@ -25,7 +25,9 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
 # Chromium 및 ChromeDriver 설치 (크롤링용)
-RUN apk add --no-cache \
+# I/O 에러 방지를 위해 apk update 먼저 실행
+RUN apk update && \
+    apk add --no-cache \
     chromium \
     chromium-chromedriver \
     nss \
@@ -33,7 +35,18 @@ RUN apk add --no-cache \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
-    font-noto-cjk
+    font-noto-cjk || \
+    (echo "First attempt failed, retrying..." && \
+     apk update && \
+     apk add --no-cache \
+     chromium \
+     chromium-chromedriver \
+     nss \
+     freetype \
+     harfbuzz \
+     ca-certificates \
+     ttf-freefont \
+     font-noto-cjk)
 
 # Chromium 환경 변수 설정
 ENV CHROME_BIN=/usr/bin/chromium-browser \
